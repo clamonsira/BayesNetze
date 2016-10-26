@@ -52,7 +52,7 @@ var width = 960,
 var svgContainer = d3.select("body").append("svg")
                                     .attr("width", width)//"100%")
                                     .attr("height", height)// "100%")
-                                    //.style("border", "1px solid black");
+                                    
 var force = d3.layout.force()
                 .size([width, height])
                 .linkDistance(60)
@@ -69,7 +69,7 @@ d3.json("graph.json", function(error, json) {
     force.nodes(json.nodes)
         .links(json.links)
         //.on("tick", tick)
-        .start();
+        //.start();
       
     // -----------------
     // Edges
@@ -77,7 +77,8 @@ d3.json("graph.json", function(error, json) {
     var link = svgContainer.selectAll(".link")
                     .data(json.links)
                     .enter().append("line")
-                    .attr("class", "link");/*.append("g")
+                    .attr("class", "link");
+            /*.append("g")
             .attr("class", "link")
             .selectAll("line")
             .data(json.links)
@@ -111,30 +112,29 @@ d3.json("graph.json", function(error, json) {
                           .data(json.nodes)
                         .enter().append("g")
                           .attr("class", "node")
-                          .call(force.drag);
+                         .attr("transform", function(d,i) { return "translate(" + statePosX[i] + "," + statePosY[i] + ")"}) 
+                         // .call(force.drag);
                         /*.append("g")
                         .attr("class", "node")
                         .selectAll("g") //pro Zustand eine Gruppe
                         .data(json.nodes)//liest array ein
                         .enter() 
                         .append("g")
-                        //.attr("transform", function(d,i) { return "translate(" + statePosX[i] + "," + statePosY[i] + ")"}) 
-                        .attr("id", function(d) {return d.name;})
-                        .call(force.drag);*/
+                        .attr("id", function(d) {return d.name;});*/
 
     var rects = node.append("rect");
 
     var rectAttributes = rects.attr("x", 0)//function(d,i) {return statePosX[i]})
                               .attr("y", 0)//statePosY)
                               .attr("width",200)
-                              .attr("height", function(d,i) {return getStateHeight(jsonNodes)[i]})
+                              .attr("height", function(d,i) {return getStateHeight(json.nodes)[i]})
                               .style("fill", "white")
                               .style("stroke", "orange")
                               .attr("rx", 10)
                               .attr("ry", 10)
 
 
-    var names  = node.append("text");
+    var name = node.append("text");
 
     var nameAttributes = name.style("fill", "purple")
                      .attr("x", 100)//function(d,i) {return  statePosX[i] + 50;})
@@ -193,12 +193,12 @@ d3.json("graph.json", function(error, json) {
                      .attr("x", 190)
                      .attr("text-anchor", "end");
 
-    force.on("tick", function() {
+    /*force.on("tick", function() {
     link.attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-    });
+    });*/
 });
