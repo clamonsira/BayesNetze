@@ -1,0 +1,13 @@
+{"nodes": [
+  { "name": "Alter", "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
+  { "name": "Blutdruck", "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
+  { "name": "Krebs", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Asien", "values": ["ja","nein"], "probabilities": [0.2,0.8]}
+  ],
+
+"dependencies": [
+    {"source": "Alter", "target": "Blutdruck"},
+    {"source": "Blutdruck", "target": "Krebs"},
+    {"source": "Alter", "target": "Krebs"},
+    {"source": "Asien", "target": "Blutdruck"}
+]}
