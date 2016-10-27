@@ -5,7 +5,7 @@
   { "name": "Asien", "values": ["ja","nein"], "probabilities": [0.2,0.8]}
   ],
 
-"dependencies": [
+"links": [
     {"source": "Alter", "target": "Blutdruck"},
     {"source": "Blutdruck", "target": "Krebs"},
     {"source": "Alter", "target": "Krebs"},
