@@ -6,8 +6,8 @@
   ],
 
 "links": [
-    {"source": "Alter", "target": "Blutdruck"},
-    {"source": "Blutdruck", "target": "Krebs"},
-    {"source": "Alter", "target": "Krebs"},
-    {"source": "Asien", "target": "Blutdruck"}
+    {"source": 0, "target": 1},
+    {"source": 1, "target": 2},
+    {"source": 0, "target": 2},
+    {"source": 3, "target": 1}
 ]}
