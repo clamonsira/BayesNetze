@@ -2,12 +2,20 @@
   { "name": "Alter", "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
   { "name": "Blutdruck", "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
   { "name": "Krebs", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Asien", "values": ["ja","nein"], "probabilities": [0.2,0.8]}
+  { "name": "Asien", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Tuberculose", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Röntgenbefund", "values": ["normal","unnormal"], "probabilities": [0.2,0.8]},
+  { "name": "Atemnot", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Bronchitis", "values": ["ja","nein"], "probabilities": [0.2,0.8]}
   ],
 
 "links": [
     {"source": 0, "target": 1},
     {"source": 1, "target": 2},
     {"source": 0, "target": 2},
-    {"source": 3, "target": 1}
+    {"source": 3, "target": 1},
+    {"source": 3, "target": 4},
+    {"source": 5, "target": 2},
+    {"source": 6, "target": 7},
+    {"source": 4, "target": 2}
 ]}

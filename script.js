@@ -17,6 +17,20 @@ function getStateHeight(nodes){
     return stateHeight
 }
 
+function getNodeHeight(node){
+    var heigth = 0;
+    d3.json("graph.json", function(error, json) {
+        if (error) throw error;
+        $.each(json.nodes,function(i, v) {
+            if (v.name == node.name) {
+                heigth = node.values.length *20 +27;
+                
+            }
+        });
+    })
+    return height;
+}
+
 /*function getNamePos(nodes){}
 function getValuePos(nodes){
     ys= []
@@ -44,22 +58,18 @@ function getEdgeLength(parent){
 
 
 // ------------------------------------------
+// Bayes Netz
 // ------------------------------------------
 
-var width = 2000,
+var width = 900,
     height = 1000;
 
 var svgContainer = d3.select("body").append("svg")
-                                    .attr("width", width)//"100%")
-                                    .attr("height", height)// "100%")
+                                    .attr("width", "70%")
+                                    .attr("height", "100%")
+                                    .style("border", "1px solid black");
+
                                     
-var force = d3.layout.force()
-                .size([width, height])
-                .linkDistance(600)
-                .charge(0)
-                .gravity(0.05)
-                .linkStrength(0.1);
-                
 d3.json("graph.json", function(error, json) {
     if (error) throw error;
     
@@ -67,6 +77,13 @@ d3.json("graph.json", function(error, json) {
     // ------------------------------------------
     // Graph-Layout
     // ------------------------------------------
+    var force = d3.layout.force()
+                .size([width, height])
+                .linkDistance(300)
+                .charge(-3000)
+                .gravity(0.08)
+                .linkStrength(3);
+                
     force.nodes(d3.values(json.nodes))
         .links(json.links)
         .start();
@@ -78,35 +95,29 @@ d3.json("graph.json", function(error, json) {
                     .data(json.links)
                     .enter().append("line")
                     .attr("class", "link")
-            .attr("stroke-width", 2)
-            .attr("stroke", "steelblue");
-            /*.append("g")
-            .attr("class", "link")
-            .selectAll("line")
-            .data(json.links)
-            .enter().append("line")
-            .attr("stroke-width", 2)
-            .attr("stroke", "steelblue");*/
+                    .attr("transform", function(d,i){return "translate(100,67)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
+                    .attr("stroke-width", 2)
+                    .attr("stroke", "steelblue")
+                    .style("marker-end",  "url(#suit)");
+    //Pfeile
+                svgContainer.append("defs").selectAll("marker")
+                    .data(["suit", "licensing", "resolved"])
+                    .enter().append("marker")
+                    .attr("id", function(d) { return d; })
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 25)
+                    .attr("refY", 0)
+                    .attr("markerWidth", 10)
+                    .attr("markerHeight", 10)
+                    .attr("orient", "auto")
+                    .append("path")
+                    .attr("d", "M0,-5L10,0L0,5 L10,0 L0, -5")
+                    .style("stroke", "steelblue")
+                    .style("stroke-width", 1)
+                    //.style("opacity", "0.6");
+
+
     
-
-    /*
-    var edges = nodes.append("g")
-                     //.attr("transform", "")
-                     .attr("transform", "translate(100,0)")
-                           /* .attr("id", "edges")
-                            .selectAll("g")
-                            .data(jsonNodes)
-                            .enter()
-                            .append("g")*/
-                            /*.selectAll("polyline")
-                            .data(function(d,i){return d.parents})
-                            .enter()
-                            .append("polyline")
-
-    var edgeAttributes = edges.style("stroke", "steelblue")
-                            .style("stroke-width", 4)
-                            .style("fill","none")
-                            .attr("points", function(d,i) {return "0,0," + getEdgeLength(d)})*/
     // -----------------
     // Nodes
     // -----------------    
@@ -116,53 +127,37 @@ d3.json("graph.json", function(error, json) {
                           .attr("class", "node")
                          //.attr("transform", function(d,i) { return "translate(" + statePosX[i] + "," + statePosY[i] + ")"}) 
                          .call(force.drag);
-                        /*.append("g")
-                        .attr("class", "node")
-                        .selectAll("g") //pro Zustand eine Gruppe
-                        .data(json.nodes)//liest array ein
-                        .enter() 
-                        .append("g")
-                        .attr("id", function(d) {return d.name;});*/
 
     var rects = node.append("rect");
 
-    var rectAttributes = rects.attr("x", 0)//function(d,i) {return statePosX[i]})
-                              .attr("y", 0)//statePosY)
+    var rectAttributes = rects.attr("x", 0)
+                              .attr("y", 0)
                               .attr("width",200)
                               .attr("height", function(d,i) {return getStateHeight(json.nodes)[i]})
                               .style("fill", "white")
                               .style("stroke", "orange")
                               .attr("rx", 10)
-                              .attr("ry", 10)
+                              .attr("ry", 10);
 
 
     var name = node.append("text");
 
     var nameAttributes = name.style("fill", "purple")
-                     .attr("x", 100)//function(d,i) {return  statePosX[i] + 50;})
-                     .attr("y", 22)//statePosY + 22)
+                     .attr("x", 100)
+                     .attr("y", 22)
                      .text(function (d) {return d.name;})
                      .attr("font-family", "sans-serif")
                      .attr("font-size", "22px")
                      .attr("text-anchor", "middle");
 
-
-    /*var values = nodes.append("g")
-                        .selectAll("text")
-                        .data(function(i) {return i.values;})
-                        .enter()
-                        .append("text")
-                        .text(function (d) {return d})*/
-
-    var valueText = node.append("text")
-                      //.attr("id", function(d,i){return "values" + i});
+    var valueText = node.append("text");
 
     var valueAttributes = valueText
                      .style("fill", "purple")
                      .attr("font-family", "sans-serif")
                      .attr("font-size", "15px")
                      .attr("x", 5)
-                     .attr("y", 22)
+                     .attr("y", 22);
                      //.attr("transform", "translate(0,20)")
 
     var values = valueAttributes.selectAll("tspan")
@@ -171,18 +166,17 @@ d3.json("graph.json", function(error, json) {
                      .append("tspan")
                      .text(function(d) { return d; })
                      .attr("dy", 20)
-                     .attr("x", 10)//this.parentElement.getAttribute("x"))
+                     .attr("x", 10);
 
 
-    var probabilityText = node.append("text")
-                      //.attr("id", function(d,i){return "values" + i});
+    var probabilityText = node.append("text");
 
     var probabilityAttributes = probabilityText
                      .style("fill", "purple")
                      .attr("font-family", "sans-serif")
                      .attr("font-size", "15px")
                      .attr("x", 5)
-                     .attr("y", 22)
+                     .attr("y", 22);
 
                      //.attr("transform", "translate(0,20)")
 
@@ -196,11 +190,25 @@ d3.json("graph.json", function(error, json) {
                      .attr("text-anchor", "end");
 
     force.on("tick", function() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+    link.attr("x1", function(d) { return Math.min(width,d.source.x); })
+        .attr("y1", function(d) { return Math.min(width,d.source.y); })
+        .attr("x2", function(d) { return Math.min(width,d.target.x); })
+        .attr("y2", function(d) { return Math.min(width,d.target.y); });
 
-    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    node.attr("transform", function(d) { return "translate(" + Math.min(width, d.x) + "," + Math.min(height, d.y) + ")"; });
     });
 });
+
+// ------------------------------------------
+// rechte Seite
+// ------------------------------------------
+
+var widthRight = 800;
+
+var svgContainerRight = d3.select("body").append("svg")
+                                    .attr("width", "29%")
+                                    .attr("height", "100%")
+                                    .style("border", "1px solid black");
+
+                                    
+            
