@@ -56,6 +56,9 @@ function getEdgeLength(parent){
     return " " + statePosX[index] + "," + (statePosY[index]+getStateHeight(jsonNodes)[index])
 }
 
+function hightlightNode(){
+    node.style("fill", "black");
+}
 
 // ------------------------------------------
 // Bayes Netz
@@ -64,7 +67,7 @@ function getEdgeLength(parent){
 var width = 900,
     height = 1000;
 
-var svgContainer = d3.select("body").append("svg")
+var leftContainer = d3.select("body").append("svg")
                                     .attr("width", "70%")
                                     .attr("height", "100%")
                                     .style("border", "1px solid black");
@@ -91,7 +94,7 @@ d3.json("graph.json", function(error, json) {
     // -----------------
     // Edges
     // -----------------
-    var link = svgContainer.selectAll(".link")
+    var link = leftContainer.selectAll(".link")
                     .data(json.links)
                     .enter().append("line")
                     .attr("class", "link")
@@ -100,7 +103,7 @@ d3.json("graph.json", function(error, json) {
                     .attr("stroke", "steelblue")
                     .style("marker-end",  "url(#suit)");
     //Pfeile
-                svgContainer.append("defs").selectAll("marker")
+                leftContainer.append("defs").selectAll("marker")
                     .data(["suit", "licensing", "resolved"])
                     .enter().append("marker")
                     .attr("id", function(d) { return d; })
@@ -121,12 +124,25 @@ d3.json("graph.json", function(error, json) {
     // -----------------
     // Nodes
     // -----------------    
-    var node = svgContainer.selectAll(".node")
+    var node = leftContainer.selectAll(".node")
                           .data(json.nodes)
                         .enter().append("g")
                           .attr("class", "node")
+                          .attr("id", function(d){return d.name})
                          //.attr("transform", function(d,i) { return "translate(" + statePosX[i] + "," + statePosY[i] + ")"}) 
-                         .call(force.drag);
+                         .call(force.drag)
+                         .on("click", function(){
+                             var r = d3.select(this).id;
+                             var active = r.active? false : true,
+                             newWidth = active ? 5 : 1;
+                             if (r.active){
+                                 d3.select(this).select("rect").style("stroke-width", 1);
+                             }
+                             if (!r.active){
+                                 d3.select(this).select("rect").style("stroke-width", 5);
+                             }
+                             r.active = active;
+                         });
 
     var rects = node.append("rect");
 
@@ -134,7 +150,7 @@ d3.json("graph.json", function(error, json) {
                               .attr("y", 0)
                               .attr("width",200)
                               .attr("height", function(d,i) {return getStateHeight(json.nodes)[i]})
-                              .style("fill", "white")
+                              .style("fill", function(d,i) {if(d.disease) {return "#EFFBFB";} else {return "white";}})
                               .style("stroke", "orange")
                               .attr("rx", 10)
                               .attr("ry", 10);
@@ -205,9 +221,10 @@ d3.json("graph.json", function(error, json) {
 
 var widthRight = 800;
 
-var svgContainerRight = d3.select("body").append("svg")
+var rightContainer = d3.select("body").append("svg")
                                     .attr("width", "29%")
                                     .attr("height", "100%")
+                                    .style("background", "lightyellow")
                                     .style("border", "1px solid black");
 
                                     
