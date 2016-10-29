@@ -56,16 +56,13 @@ function getEdgeLength(parent){
     return " " + statePosX[index] + "," + (statePosY[index]+getStateHeight(jsonNodes)[index])
 }
 
-function hightlightNode(){
-    node.style("fill", "black");
-}
-
 // ------------------------------------------
 // Bayes Netz
 // ------------------------------------------
 
 var width = 900,
     height = 1000;
+
 
 var leftContainer = d3.select("body").append("svg")
                                     .attr("width", "70%")
@@ -123,7 +120,11 @@ d3.json("graph.json", function(error, json) {
     
     // -----------------
     // Nodes
-    // -----------------    
+    // -----------------   
+                
+    var activeNodes = new Array(json.nodes.length);
+    for (var i = 0; i < activeNodes.length; ++i) { activeNodes[i] = false; };
+    
     var node = leftContainer.selectAll(".node")
                           .data(json.nodes)
                         .enter().append("g")
@@ -131,18 +132,28 @@ d3.json("graph.json", function(error, json) {
                           .attr("id", function(d){return d.name})
                          //.attr("transform", function(d,i) { return "translate(" + statePosX[i] + "," + statePosY[i] + ")"}) 
                          .call(force.drag)
-                         .on("click", function(){
-                             var r = d3.select(this).id;
-                             var active = r.active? false : true,
-                             newWidth = active ? 5 : 1;
-                             if (r.active){
-                                 d3.select(this).select("rect").style("stroke-width", 1);
-                             }
-                             if (!r.active){
-                                 d3.select(this).select("rect").style("stroke-width", 5);
-                             }
-                             r.active = active;
-                         });
+                         .on("click", function hightlightNode(){
+
+     for (i=0; i<json.nodes.length; i++){
+         if (this.id == json.nodes[i].name){
+                            
+             if (activeNodes[i]){
+                d3.select(this.childNodes[0]).style("stroke-width", 2);
+                rightContainer.select("text").text(" ");
+                rightContainer.select("rect").attr("height", 0);
+                activeNodes[i] = false;
+                break;
+             }
+            if (!activeNodes[i]){
+                d3.select(this.childNodes[0]).style("stroke-width", 5);
+                rightContainer.select("text").text(this.id);
+                rightContainer.select("rect").attr("height",200);
+                activeNodes[i] = true;
+                break;
+            }  
+         }
+     }
+});
 
     var rects = node.append("rect");
 
@@ -152,6 +163,7 @@ d3.json("graph.json", function(error, json) {
                               .attr("height", function(d,i) {return getStateHeight(json.nodes)[i]})
                               .style("fill", function(d,i) {if(d.disease) {return "#EFFBFB";} else {return "white";}})
                               .style("stroke", "orange")
+                              .style("stroke-width", 2)
                               .attr("rx", 10)
                               .attr("ry", 10);
 
@@ -226,6 +238,20 @@ var rightContainer = d3.select("body").append("svg")
                                     .attr("height", "100%")
                                     .style("background", "lightyellow")
                                     .style("border", "1px solid black");
-
-                                    
-            
+var heading = rightContainer.append("text")
+                     .style("fill", "purple")
+                     .attr("x", 100)
+                     .attr("y", 50)
+                     //.text("test")
+                     .attr("font-family", "sans-serif")
+                     .attr("font-size", "22px");
+var table = rightContainer.append("rect")
+                          .attr("x", 70)
+                          .attr("y", 70)
+                          .attr("width",400)
+                          .attr("height",0)
+                          .style("fill", "white")
+                          .style("stroke", "orange")
+                          .style("stroke-width", 5)
+                          .attr("rx", 2)
+                          .attr("ry", 2);
