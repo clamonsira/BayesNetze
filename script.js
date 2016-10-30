@@ -9,14 +9,16 @@ var statePosY = [70,70,70,200];
 // Bayes Netz
 // ------------------------------------------
 
-var width = screen.width *0.7,
-    height = screen.height;
-
+var width = window.innerWidth*0.7,
+    height = window.innerHeight;
 
 var leftContainer = d3.select("body").append("svg")
                                     .attr("width", width)
                                     .attr("height", height)
-                                    .style("border", "1px solid black");
+                                    .style("border", "1px solid black")
+                                    .attr("id", "leftContainer")
+                                    .append("g")
+                                    .attr("id", "graph");
 
                                     
 d3.json("graph.json", function(error, json) {
@@ -32,8 +34,8 @@ d3.json("graph.json", function(error, json) {
                 .charge(-3000)
                 .gravity(0.08)
                 .linkStrength(3);
-                
-    force.nodes(d3.values(json.nodes))
+    
+    force.nodes(json.nodes)//.concat(linkNodes))
         .links(json.links)
         .start();
       
@@ -97,7 +99,7 @@ d3.json("graph.json", function(error, json) {
                                         if (!activeNodes[i]){
                                             d3.select(this.childNodes[0]).style("stroke-width", 5);
                                             rightContainer.select("text").text(this.id);
-                                            rightContainer.select("rect").attr("height",200);
+                                            rightContainer.select("rect").attr("height",600);
                                             for (var j = 0; j < activeNodes.length; ++j) { 
                                                 if (activeNodes[j]){
                                                     d3.select(document.getElementById(json.nodes[j].name).childNodes[0]).style("stroke-width", 2)
@@ -134,8 +136,10 @@ d3.json("graph.json", function(error, json) {
                      .attr("font-family", "sans-serif")
                      .attr("font-size", "22px")
                      .attr("text-anchor", "middle");
-
-    var valueText = node.append("text");
+    
+    var valueGroup = node.append("g");
+    
+    var valueText = valueGroup.append("text");
 
     var valueAttributes = valueText
                      .style("fill", "purple")
@@ -143,7 +147,6 @@ d3.json("graph.json", function(error, json) {
                      .attr("font-size", "15px")
                      .attr("x", 5)
                      .attr("y", 22);
-                     //.attr("transform", "translate(0,20)")
 
     var values = valueAttributes.selectAll("tspan")
                      .data(function (d,i) {return d.values})
@@ -154,7 +157,7 @@ d3.json("graph.json", function(error, json) {
                      .attr("x", 10);
 
 
-    var probabilityText = node.append("text");
+    var probabilityText = valueGroup.append("text");
 
     var probabilityAttributes = probabilityText
                      .style("fill", "purple")
@@ -174,69 +177,87 @@ d3.json("graph.json", function(error, json) {
                      .attr("x", 190)
                      .attr("text-anchor", "end");
 
+    
+/*    var middle = node.append("circle")
+                        .attr("cx", 100)
+                        .attr("cy", function(d,i) {return getStateHeight(json.nodes)[i] * 0.5})
+                        .attr("r", 100)
+                        .style("fill", "red");*/
+        
+    // -----------------
+    // linkNodes (to avoid link overlapping)
+    // ----------------- 
+    var linkNodes = [];
+
+    json.links.forEach(function(link) {
+      linkNodes.push({
+        source: json.nodes.indexOf(link.source),
+        target: json.nodes.indexOf(link.target)
+      });
+    });
+/*    json.links.forEach(function(link) {
+      linkNodes.push({
+        source: document.getElementById(json.nodes[link.source].name),
+        target: document.getElementById(json.nodes[link.target].name)
+      });
+    });*/
+    
+    var linkNode = leftContainer.selectAll(".link-node")
+                    .data(linkNodes)
+                    .enter().append("circle")
+                    .attr("class", "link-node")
+                    .attr("id", function(d) {return json.nodes[d.source].name + " + " + json.nodes[d.target].name})
+                    .attr("r", 2)
+                    .style("fill", "red");
+    
     force.on("tick", function() {
         
-        var q = d3.geom.quadtree(json.nodes),
-            i = 0,
-            n = json.nodes.length;
-
-        while (++i < n) q.visit(collide(json.nodes[i]));
-        
+        linkNode.attr("cx", function(d) { return d.x = (json.nodes[d.source].x + json.nodes[d.target].x) * 0.5 + 100; })
+                .attr("cy", function(d) { return d.y = (json.nodes[d.source].y + json.nodes[d.target].y) * 0.5 + 67; });
+        /*linkNode.attr("cx", function(d) { return d.x = (d.source.x + d.target.x) * 0.5; })
+                .attr("cy", function(d) { return d.y = (d.source.y + d.target.y) * 0.5; });
+        */
         link.attr("x1", function(d) { return Math.max(0, Math.min(width,d.source.x)); })
-            .attr("y1", function(d) { return Math.max(0, Math.min(width,d.source.y)); })
+            .attr("y1", function(d) { return Math.max(0, Math.min(height,d.source.y)); })
             .attr("x2", function(d) { return Math.max(0, Math.min(width,d.target.x)); })
-            .attr("y2", function(d) { return Math.max(0, Math.min(width,d.target.y)); });
-
-        node.attr("transform", function(d) { return "translate(" + Math.max(0, Math.min(width, d.x)) + "," + Math.max(0, Math.min(height, d.y)) + ")"; });
+            .attr("y2", function(d) { return Math.max(0, Math.min(height,d.target.y)); });
+        
+        //node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        rectAttributes.attr("x", function(d) { return Math.max(0, Math.min(width - 200, d.x)); })
+                      .attr("y", function(d) { return Math.max(0, Math.min(height - 67, d.y)); });
+        nameAttributes.attr("x", function(d) { return Math.max(0, Math.min(width - 200, d.x))+100; })
+                      .attr("y", function(d) { return Math.max(0, Math.min(height - 67, d.y))+22; })
+        valueGroup.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        
+        var bBox = document.getElementById("graph").getBBox() // später zur Zentrierung
+        //document.getElementById("leftContainer").select("g").attr("transform", "scale(" + width / bBox.width+ "," + height / bBox.height + ")");
         });
-    
-    function collide(node) {
-        var r = 100,
-            nx1 = node.x - r,
-            nx2 = node.x + r,
-            ny1 = node.y - r,
-            ny2 = node.y + r;
-      return function(quad, x1, y1, x2, y2) {
-        if (quad.point && (quad.point !== node)) {
-          var x = node.x - quad.point.x,
-              y = node.y - quad.point.y,
-              l = Math.sqrt(x * x + y * y),
-              r = node.radius + quad.point.radius;
-          if (l < r) {
-            l = (l - r) / l * .5;
-            node.x -= x *= l;
-            node.y -= y *= l;
-            quad.point.x += x;
-            quad.point.y += y;
-          }
-        }
-        return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-      };
-}
+
 });
 
 // ------------------------------------------
 // rechte Seite
 // ------------------------------------------
 
-var widthRight = screen.width *0.25;
+var widthRight = window.innerWidth * 0.28;
 
 var rightContainer = d3.select("body").append("svg")
                                     .attr("width", widthRight)
                                     .attr("height", height)
                                     .style("background", "lightyellow")
-                                    .style("border", "1px solid black");
+                                    .style("border", "1px solid black")
+                                    .attr("id", "rightContainer");
 
 var heading = rightContainer.append("text")
                      .style("fill", "purple")
-                     .attr("x", 100)
+                     .attr("x", 60)
                      .attr("y", 50)
                      //.text("test")
                      .attr("font-family", "sans-serif")
                      .attr("font-size", "22px");
 
 var table = rightContainer.append("rect")
-                          .attr("x", 70)
+                          .attr("x", 40)
                           .attr("y", 70)
                           .attr("width",400)
                           .attr("height",0)
