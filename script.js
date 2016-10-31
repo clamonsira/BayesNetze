@@ -24,18 +24,31 @@ var leftContainer = d3.select("body").append("svg")
 d3.json("graph.json", function(error, json) {
     if (error) throw error;
     
+    // -----------------
+    // Linknodes to avoid edge overlapping
+    // -----------------
+      var linkNodes = [];
+
+      json.links.forEach(function(link) {
+            linkNodes.push({
+                source: json.nodes[link.source],
+                target: json.nodes[link.target]
+            });
+      });   
     
     // ------------------------------------------
     // Graph-Layout
     // ------------------------------------------
     var force = d3.layout.force()
-                .size([width, height])
+                .size([width, height])                
                 .linkDistance(300)
-                .charge(-3000)
+                .charge(-2000)
                 .gravity(0.08)
                 .linkStrength(3);
+        
+                //.friction(0.5).chargeDistance(400);
     
-    force.nodes(json.nodes)//.concat(linkNodes))
+    force.nodes(json.nodes.concat(linkNodes))
         .links(json.links)
         .start();
       
@@ -58,8 +71,8 @@ d3.json("graph.json", function(error, json) {
                     .attr("viewBox", "0 -5 10 10")
                     .attr("refX", 10)
                     .attr("refY", 0)
-                    .attr("markerWidth", 5)
-                    .attr("markerHeight", 5)
+                    .attr("markerWidth", 7)
+                    .attr("markerHeight", 17)
                     .attr("orient", "auto")
                     .append("path")
                     .attr("d", "M0,-5L10,0L0,5")
@@ -84,6 +97,10 @@ d3.json("graph.json", function(error, json) {
                           .attr("id", function(d){return d.name})
                          //.attr("transform", function(d,i) { return "translate(" + statePosX[i] + "," + statePosY[i] + ")"}) 
                          .call(force.drag)
+
+                        // -----------------
+                        // highlight Node
+                        // -----------------
                          .on("click", function hightlightNode(){
 
                                  for (i=0; i<json.nodes.length; i++){
@@ -92,21 +109,25 @@ d3.json("graph.json", function(error, json) {
                                          if (activeNodes[i]){
                                             d3.select(this.childNodes[0]).style("stroke-width", 2);
                                             rightContainer.select("text").text(" ");
-                                            rightContainer.select("rect").attr("height", 0);
+                                            //deletetable
+                                            rightContainer.selectAll("table").remove();
                                             activeNodes[i] = false;
                                             break;
                                          }
                                         if (!activeNodes[i]){
                                             d3.select(this.childNodes[0]).style("stroke-width", 5);
                                             rightContainer.select("text").text(this.id);
-                                            rightContainer.select("rect").attr("height",600);
+                                            
                                             for (var j = 0; j < activeNodes.length; ++j) { 
                                                 if (activeNodes[j]){
-                                                    d3.select(document.getElementById(json.nodes[j].name).childNodes[0]).style("stroke-width", 2)
+                                                    d3.select(document.getElementById(json.nodes[j].name).childNodes[0]).style("stroke-width", 2);
+                                                    rightContainer.selectAll("table").remove();
                                                 }
                                                 activeNodes[j] = false; 
                                             };
                                             activeNodes[i] = true;
+                                                                                        //createTable
+                                            var tabl = tabulate(json.nodes[i].probabilities, json.nodes[i].values);
                                             break;
                                         }  
                                      }
@@ -137,7 +158,8 @@ d3.json("graph.json", function(error, json) {
                      .attr("font-size", "22px")
                      .attr("text-anchor", "middle");
     
-    var valueGroup = node.append("g");
+    var valueGroup = node.append("g")
+                         .attr("id", "valueGroup");
     
     var valueText = valueGroup.append("text");
 
@@ -183,51 +205,49 @@ d3.json("graph.json", function(error, json) {
                         .attr("cy", function(d,i) {return getStateHeight(json.nodes)[i] * 0.5})
                         .attr("r", 100)
                         .style("fill", "red");*/
-        
-    // -----------------
-    // linkNodes (to avoid link overlapping)
-    // ----------------- 
-    var linkNodes = [];
-
-    json.links.forEach(function(link) {
-      linkNodes.push({
-        source: json.nodes.indexOf(link.source),
-        target: json.nodes.indexOf(link.target)
-      });
-    });
-/*    json.links.forEach(function(link) {
-      linkNodes.push({
-        source: document.getElementById(json.nodes[link.source].name),
-        target: document.getElementById(json.nodes[link.target].name)
-      });
-    });*/
     
+    
+    // -----------------
+    // Linknodes
+    // -----------------
     var linkNode = leftContainer.selectAll(".link-node")
                     .data(linkNodes)
                     .enter().append("circle")
                     .attr("class", "link-node")
-                    .attr("id", function(d) {return json.nodes[d.source].name + " + " + json.nodes[d.target].name})
+                    //.attr("id", function(d) {return json.nodes[d.source].name + " + " + json.nodes[d.target].name})
                     .attr("r", 2)
                     .style("fill", "red");
     
-    force.on("tick", function() {
-        
-        linkNode.attr("cx", function(d) { return d.x = (json.nodes[d.source].x + json.nodes[d.target].x) * 0.5 + 100; })
-                .attr("cy", function(d) { return d.y = (json.nodes[d.source].y + json.nodes[d.target].y) * 0.5 + 67; });
-        /*linkNode.attr("cx", function(d) { return d.x = (d.source.x + d.target.x) * 0.5; })
-                .attr("cy", function(d) { return d.y = (d.source.y + d.target.y) * 0.5; });
-        */
-        link.attr("x1", function(d) { return Math.max(0, Math.min(width,d.source.x)); })
-            .attr("y1", function(d) { return Math.max(0, Math.min(height,d.source.y)); })
-            .attr("x2", function(d) { return Math.max(0, Math.min(width,d.target.x)); })
-            .attr("y2", function(d) { return Math.max(0, Math.min(height,d.target.y)); });
+    // -----------------
+    // adjust Layout after moving a node
+    // -----------------
+    force.on("tick", function() { 
+    
+        link.attr("x1", function(d) { return Math.max(0, Math.min(width, d.source.x)); })
+            .attr("y1", function(d) { return Math.max(0, Math.min(height, d.source.y)); })
+            .attr("x2", function(d) { return Math.max(0, Math.min(width, d.target.x)); })
+            .attr("y2", function(d) { return Math.max(0, Math.min(height, d.target.y)); });
         
         //node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
         rectAttributes.attr("x", function(d) { return Math.max(0, Math.min(width - 200, d.x)); })
-                      .attr("y", function(d) { return Math.max(0, Math.min(height - 67, d.y)); });
+                      .attr("y", function(d) { return Math.max(0, Math.min(height - 67, d.y)); }); //getStateHeight
         nameAttributes.attr("x", function(d) { return Math.max(0, Math.min(width - 200, d.x))+100; })
                       .attr("y", function(d) { return Math.max(0, Math.min(height - 67, d.y))+22; })
-        valueGroup.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        
+        var valueBBox = document.getElementById("valueGroup").getBBox();
+        var valueWidth = valueBBox.width + valueBBox.x;
+        var valueHeight = valueBBox.height + valueBBox.y;
+        
+        valueGroup.forEach(function(d) {
+            if((valueWidth < width) && (valueHeight < height) && (valueWidth > 0) && (valueHeight > 0)){
+                valueGroup.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                //valueGroup.attr("transform", function(d) { return "translate(" + d.childNodes[0].childNodes[0].x + "," + d.childNodes[0].childNodes[0].y + ")"; }); muss noch angepasst werden(xWert von erstem tspan)
+            }
+        })
+
+        linkNode.attr("cx", function(d) { return d.x = (d.source.x + d.target.x) * 0.5 +100; })
+                .attr("cy", function(d) { return d.y = (d.source.y + d.target.y) * 0.5 + 67; });
+        
         
         var bBox = document.getElementById("graph").getBBox() // später zur Zentrierung
         //document.getElementById("leftContainer").select("g").attr("transform", "scale(" + width / bBox.width+ "," + height / bBox.height + ")");
@@ -256,8 +276,13 @@ var heading = rightContainer.append("text")
                      .attr("font-family", "sans-serif")
                      .attr("font-size", "22px");
 
-var table = rightContainer.append("rect")
-                          .attr("x", 40)
+var table = rightContainer.append("table")
+                          .attr("style", "margin-left: 250px")
+                          .attr("border", "1px solid black")
+                          
+var thread = table.append("thread")
+var tbody = table.append("tbody")
+                          /*.attr("x", 40)
                           .attr("y", 70)
                           .attr("width",400)
                           .attr("height",0)
@@ -265,7 +290,8 @@ var table = rightContainer.append("rect")
                           .style("stroke", "orange")
                           .style("stroke-width", 5)
                           .attr("rx", 2)
-                          .attr("ry", 2);
+                          .attr("ry", 2);*/
+
 
 
 // ------------------------------------------
@@ -317,4 +343,64 @@ function getEdgeLength(parent){
     }
     //return " 200,0 "
     return " " + statePosX[index] + "," + (statePosY[index]+getStateHeight(jsonNodes)[index])
+}
+
+function tabulate(data, columns) {
+/*    var table = d3.select("body").append("table")
+            .attr("style", "margin-left: 250px"),
+        thead = table.append("thead"),
+        tbody = table.append("tbody");
+
+    // append the header row
+    thead.append("tr")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+            .text(function(column) { return column; });
+
+    // create a row for each object in the data
+    var rows = tbody.selectAll("tr")
+        .data(data)
+        .enter()
+        .append("tr");
+
+    // create a cell in each row for each column
+    var cells = rows.selectAll("td")
+        .data(function(row) {
+            return columns.map(function(column) {
+                return {column: column, value: row[column]};
+            });
+        })
+        .enter()
+        .append("td")
+        .attr("style", "font-family: Courier")
+            .html{function(d) { return d.value; });
+    
+    return table;*/
+
+var table = rightContainer.append("foreignObject").attr("width", 480)
+  .attr("height", 500).append("xhtml:body")
+.append("table")
+                          .attr("style", "margin-left: 250px")
+                          .attr("border", "1")
+                          
+var thread = table.append("thread")
+var tbody = table.append("tbody")
+
+d3.json("graph.json", function(error, json) {
+    if (error) throw error;
+    
+    thread.append("tr")
+        .selectAll("th").data(columns).enter().append("th")
+        .text(function (d) { return d;});
+    
+    var rows = tbody.append("tr").selectAll("td")
+                  .data(data)
+                  .enter()
+                  .append("td")
+                  .attr("width", 20)
+                  .html(function (d) { return d;});
+})
+return table;
 }
