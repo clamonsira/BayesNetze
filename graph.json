@@ -1,12 +1,13 @@
 {"nodes": [
-  { "name": "Alter", "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
-  { "name": "Blutdruck", "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
-  { "name": "Krebs", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Asien", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Tuberculose", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Röntgenbefund", "values": ["normal","unnormal"], "probabilities": [0.2,0.8]},
-  { "name": "Atemnot", "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Bronchitis", "values": ["ja","nein"], "probabilities": [0.2,0.8]}
+  { "name": "Alter", "disease": false,  "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
+  { "name": "Blutdruck", "disease": false, "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
+  { "name": "Krebs", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Asien", "disease": false, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Tuberculose", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Röntgenbefund", "disease": false, "values": ["normal","unnormal"], "probabilities": [0.2,0.8]},
+  { "name": "Atemnot", "disease": false, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Bronchitis", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Gewichtsverlust", "disease": false, "values": ["unter 5kg","von 5 bis 10 kg", "mehr als 10kg"], "probabilities": [0.5,0.2, 0.3]}
   ],
 
 "links": [
@@ -17,5 +18,7 @@
     {"source": 3, "target": 4},
     {"source": 5, "target": 2},
     {"source": 6, "target": 7},
-    {"source": 4, "target": 2}
+    {"source": 4, "target": 2},
+    {"source": 8, "target": 2},
+    {"source": 8, "target": 4}
 ]}
