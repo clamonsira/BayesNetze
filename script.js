@@ -61,7 +61,7 @@ d3.json("graph.json", function(error, json) {
                     .attr("class", "link")
                     .attr("transform", function(d,i){return "translate(100,67)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
                     .attr("stroke-width", 4)
-                    .attr("stroke", "steelblue")
+                    .attr("stroke", "#e6e6ff")
                     .style("marker-end",  "url(#end)");
     //Arrows
                 leftContainer.append("defs").selectAll("marker")
@@ -76,8 +76,8 @@ d3.json("graph.json", function(error, json) {
                     .attr("orient", "auto")
                     .append("path")
                     .attr("d", "M0,-5L10,0L0,5")
-                    .style("stroke", "steelblue")
-                    .style("fill", "steelblue")
+                    .style("stroke", "white")
+                    .style("fill", "#e6e6ff")
                     .style("stroke-width", 1)
                     //.style("opacity", "0.6");
 
@@ -141,7 +141,7 @@ d3.json("graph.json", function(error, json) {
                               .attr("y", 0)
                               .attr("width",200)
                               .attr("height", function(d,i) {return getStateHeight(json.nodes)[i]})
-                              .style("fill", function(d,i) {if(d.disease) {return "#ffffe6";} else {return "white";}})
+                              .style("fill", function(d,i) {if(d.disease) {return "#f2f2f2";} else {return "white";}})
                               .style("stroke", "orange")
                               .style("stroke-width", 2)
                               .attr("rx", 10)
@@ -339,18 +339,12 @@ var table = rightContainer.append("foreignObject")
                             .append("xhtml:body")
                             .append("table")
                             //.attr("style", "margin-left: 250px")
-                            .attr("border", "5")
-                            .attr("bgcolor", "white")
-                            .style("border", "solid")
-                            .style("border-color", "orange")
-                            .style("border-radius", 10)
-                            .style("border-collapse", "collapse")
-                            .style("font-family", "sans-serif")
-                            .style("table-layout", "fixed")
+                            .attr("id", "table")
+                            .attr("border", 1)
 
-                            
+         
                           
-    var thread = table.append("thread")
+    var thread = table.append("thread").attr("width", 400)
                         
     var tbody = table.append("tbody")
                               /*.attr("x", 40)
@@ -364,7 +358,7 @@ var table = rightContainer.append("foreignObject")
                           .attr("ry", 2);*/
     var cellwidth = 400/columns.length;
     // header row
-    thread.append("tr")
+/*    thread.append("tr")
         .selectAll("th")
         .data(columns)
         .enter()
@@ -384,7 +378,7 @@ var table = rightContainer.append("foreignObject")
                   .append("td")
                   .html(function (d) { return d;});*/
     
-    
+    /*
     // create a cell in each row for each column
     var cells = rows.selectAll("td")
         .data(function(row) {
@@ -394,6 +388,28 @@ var table = rightContainer.append("foreignObject")
         })
         .enter()
         .append("td")   
-        .attr("width", cellwidth);
+        .attr("width", cellwidth);*/
+        //thread.append("tr").attr("width", 400)
+        table.append("tr").selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+        .attr("overflow", "hidden")
+        .text(function(column) { return column; }).attr("width", cellwidth);
+    
+                d3.text("prob.csv", function(data) {
+                var parsedCSV = d3.csv.parseRows(data);
+
+
+                    table.selectAll("tr")
+                        .data(parsedCSV).enter()
+                        .append("tr")
+                        
+
+                    .selectAll("td")
+                        .data(function(d) { return d; }).enter()
+                        .append("td")
+                        .text(function(d) { return d; }).attr("width", cellwidth);
+            });
 return table;
-})}
+}

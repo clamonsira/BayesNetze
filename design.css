@@ -3,6 +3,14 @@ html,body {
     padding: 0 0 0 0;
     margin: 0 0 0 0;
 }
+#table {
+    border: 3px solid orange;
+    background-color: white;
+    border-collapse : collapse;
+    font-family: sans-serif;
+    
+    
+}
 td, th {
     padding: 1px 4px;
 }
