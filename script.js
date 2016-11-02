@@ -24,7 +24,7 @@ var leftContainer = d3.select("body").append("svg")
 d3.json("graph.json", function(error, json) {
     if (error) throw error;
     
-    // -----------------
+   /* // -----------------
     // Linknodes to avoid edge overlapping
     // -----------------
       var linkNodes = [];
@@ -34,7 +34,7 @@ d3.json("graph.json", function(error, json) {
                 source: json.nodes[link.source],
                 target: json.nodes[link.target]
             });
-      });   
+      });   */
     
     // ------------------------------------------
     // Graph-Layout
@@ -48,8 +48,8 @@ d3.json("graph.json", function(error, json) {
         
                 //.friction(0.5).chargeDistance(400);
     
-    force.nodes(json.nodes.concat(linkNodes))
-        .links(json.links)
+    force.nodes(json.nodes)//.concat(linkNodes))
+        .links(json.links)//.concat(invisibleArray))
         .start();
       
     // -----------------
@@ -110,7 +110,7 @@ d3.json("graph.json", function(error, json) {
                                             d3.select(this.childNodes[0]).style("stroke-width", 2);
                                             rightContainer.select("text").text(" ");
                                             //deletetable
-                                            rightContainer.selectAll("table").remove();
+                                            rightContainer.selectAll("foreignObject").remove();
                                             activeNodes[i] = false;
                                             break;
                                          }
@@ -121,13 +121,13 @@ d3.json("graph.json", function(error, json) {
                                             for (var j = 0; j < activeNodes.length; ++j) { 
                                                 if (activeNodes[j]){
                                                     d3.select(document.getElementById(json.nodes[j].name).childNodes[0]).style("stroke-width", 2);
-                                                    rightContainer.selectAll("table").remove();
+                                                    rightContainer.selectAll("foreignObject").remove();
                                                 }
                                                 activeNodes[j] = false; 
                                             };
                                             activeNodes[i] = true;
                                                                                         //createTable
-                                            var tabl = tabulate(json.nodes[i].probabilities, json.nodes[i].values);
+                                            var tabl = tabulate([json.nodes[i].probabilities], json.nodes[i].values);
                                             break;
                                         }  
                                      }
@@ -141,7 +141,7 @@ d3.json("graph.json", function(error, json) {
                               .attr("y", 0)
                               .attr("width",200)
                               .attr("height", function(d,i) {return getStateHeight(json.nodes)[i]})
-                              .style("fill", function(d,i) {if(d.disease) {return "#F6E3CE";} else {return "white";}})
+                              .style("fill", function(d,i) {if(d.disease) {return "#ffffe6";} else {return "white";}})
                               .style("stroke", "orange")
                               .style("stroke-width", 2)
                               .attr("rx", 10)
@@ -206,7 +206,7 @@ d3.json("graph.json", function(error, json) {
                         .attr("r", 100)
                         .style("fill", "red");*/
     
-    
+  /*  
     // -----------------
     // Linknodes
     // -----------------
@@ -217,7 +217,7 @@ d3.json("graph.json", function(error, json) {
                     //.attr("id", function(d) {return json.nodes[d.source].name + " + " + json.nodes[d.target].name})
                     .attr("r", 2)
                     .style("fill", "red");
-    
+    */
     // -----------------
     // adjust Layout after moving a node
     // -----------------
@@ -245,8 +245,8 @@ d3.json("graph.json", function(error, json) {
             }
         })
 
-        linkNode.attr("cx", function(d) { return d.x = (d.source.x + d.target.x) * 0.5 +100; })
-                .attr("cy", function(d) { return d.y = (d.source.y + d.target.y) * 0.5 + 67; });
+       /* linkNode.attr("cx", function(d) { return d.x = (d.source.x + d.target.x) * 0.5 +100; })
+                .attr("cy", function(d) { return d.y = (d.source.y + d.target.y) * 0.5 + 67; });*/
         
         
         var bBox = document.getElementById("graph").getBBox() // später zur Zentrierung
@@ -275,22 +275,6 @@ var heading = rightContainer.append("text")
                      //.text("test")
                      .attr("font-family", "sans-serif")
                      .attr("font-size", "22px");
-
-var table = rightContainer.append("table")
-                          .attr("style", "margin-left: 250px")
-                          .attr("border", "1px solid black")
-                          
-var thread = table.append("thread")
-var tbody = table.append("tbody")
-                          /*.attr("x", 40)
-                          .attr("y", 70)
-                          .attr("width",400)
-                          .attr("height",0)
-                          .style("fill", "white")
-                          .style("stroke", "orange")
-                          .style("stroke-width", 5)
-                          .attr("rx", 2)
-                          .attr("ry", 2);*/
 
 
 
@@ -345,26 +329,62 @@ function getEdgeLength(parent){
     return " " + statePosX[index] + "," + (statePosY[index]+getStateHeight(jsonNodes)[index])
 }
 
-function tabulate(data, columns) {
-/*    var table = d3.select("body").append("table")
-            .attr("style", "margin-left: 250px"),
-        thead = table.append("thead"),
-        tbody = table.append("tbody");
+function tabulate(datas, columns) {
 
-    // append the header row
-    thead.append("tr")
+var table = rightContainer.append("foreignObject")
+                            .attr("y", 100)
+                            .attr("x", 50)
+                            .attr("width", widthRight)
+                            .attr("height", height / 2)
+                            .append("xhtml:body")
+                            .append("table")
+                            //.attr("style", "margin-left: 250px")
+                            .attr("border", "5")
+                            .attr("bgcolor", "white")
+                            .style("border", "solid")
+                            .style("border-color", "orange")
+                            .style("border-radius", 10)
+                            .style("border-collapse", "collapse")
+                            .style("font-family", "sans-serif")
+                            .style("table-layout", "fixed")
+
+                            
+                          
+    var thread = table.append("thread")
+                        
+    var tbody = table.append("tbody")
+                              /*.attr("x", 40)
+                          .attr("y", 70)
+                          .attr("width",400)
+                          .attr("height",0)
+                          .style("fill", "white")
+                          .style("stroke", "orange")
+                          .style("stroke-width", 5)
+                          .attr("rx", 2)
+                          .attr("ry", 2);*/
+    var cellwidth = 400/columns.length;
+    // header row
+    thread.append("tr")
         .selectAll("th")
         .data(columns)
         .enter()
         .append("th")
-            .text(function(column) { return column; });
-
-    // create a row for each object in the data
+        .text(function(column) { return column; }).attr("width", cellwidth);
+    
+    d3.csv("prob.csv", function(error, data) {
+    // im moment müsste immer nur ein tr entstehen create a row for each object in the data
     var rows = tbody.selectAll("tr")
         .data(data)
         .enter()
         .append("tr");
 
+    /*var rows = tbody.append("tr").selectAll("td")
+                  .data(data)
+                  .enter()
+                  .append("td")
+                  .html(function (d) { return d;});*/
+    
+    
     // create a cell in each row for each column
     var cells = rows.selectAll("td")
         .data(function(row) {
@@ -373,34 +393,7 @@ function tabulate(data, columns) {
             });
         })
         .enter()
-        .append("td")
-        .attr("style", "font-family: Courier")
-            .html{function(d) { return d.value; });
-    
-    return table;*/
-
-var table = rightContainer.append("foreignObject").attr("width", 480)
-  .attr("height", 500).append("xhtml:body")
-.append("table")
-                          .attr("style", "margin-left: 250px")
-                          .attr("border", "1")
-                          
-var thread = table.append("thread")
-var tbody = table.append("tbody")
-
-d3.json("graph.json", function(error, json) {
-    if (error) throw error;
-    
-    thread.append("tr")
-        .selectAll("th").data(columns).enter().append("th")
-        .text(function (d) { return d;});
-    
-    var rows = tbody.append("tr").selectAll("td")
-                  .data(data)
-                  .enter()
-                  .append("td")
-                  .attr("width", 20)
-                  .html(function (d) { return d;});
-})
+        .append("td")   
+        .attr("width", cellwidth);
 return table;
-}
+})}
