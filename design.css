@@ -4,13 +4,16 @@ html,body {
     margin: 0 0 0 0;
 }
 #table {
-    border: 3px solid orange;
+    border: thick solid orange;
+    border-top: none;
     background-color: white;
     border-collapse : collapse;
     font-family: sans-serif;
-    
-    
 }
 td, th {
     padding: 1px 4px;
+}
+
+th {
+    border-top: thick solid orange;
 }

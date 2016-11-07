@@ -338,7 +338,6 @@ var table = rightContainer.append("foreignObject")
                             .attr("height", height / 2)
                             .append("xhtml:body")
                             .append("table")
-                            //.attr("style", "margin-left: 250px")
                             .attr("id", "table")
                             .attr("border", 1)
 
@@ -347,15 +346,7 @@ var table = rightContainer.append("foreignObject")
     var thread = table.append("thread").attr("width", 400)
                         
     var tbody = table.append("tbody")
-                              /*.attr("x", 40)
-                          .attr("y", 70)
-                          .attr("width",400)
-                          .attr("height",0)
-                          .style("fill", "white")
-                          .style("stroke", "orange")
-                          .style("stroke-width", 5)
-                          .attr("rx", 2)
-                          .attr("ry", 2);*/
+
     var cellwidth = 400/columns.length;
     // header row
 /*    thread.append("tr")
@@ -395,6 +386,7 @@ var table = rightContainer.append("foreignObject")
         .enter()
         .append("th")
         .attr("overflow", "hidden")
+        
         .text(function(column) { return column; }).attr("width", cellwidth);
     
                 d3.text("prob.csv", function(data) {
