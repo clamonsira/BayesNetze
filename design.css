@@ -5,7 +5,7 @@ html,body {
 }
 #table {
     border: thick solid orange;
-    border-top: none;
+    /*border-top: none;*/
     background-color: white;
     border-collapse : collapse;
     font-family: sans-serif;
@@ -15,5 +15,5 @@ td, th {
 }
 
 th {
-    border-top: thick solid orange;
+    /*border-top: thick solid orange;*/
 }

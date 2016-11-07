@@ -9,7 +9,7 @@ var statePosY = [70,70,70,200];
 // Bayes Netz
 // ------------------------------------------
 
-var width = window.innerWidth*0.7,
+var width = window.innerWidth * 0.7,
     height = window.innerHeight;
 
 var leftContainer = d3.select("body").append("svg")
@@ -126,7 +126,7 @@ d3.json("graph.json", function(error, json) {
                                                 activeNodes[j] = false; 
                                             };
                                             activeNodes[i] = true;
-                                                                                        //createTable
+                                            //createTable       //array mit array mit wkeiten für jede zeile
                                             var tabl = tabulate([json.nodes[i].probabilities], json.nodes[i].values);
                                             break;
                                         }  
@@ -141,7 +141,7 @@ d3.json("graph.json", function(error, json) {
                               .attr("y", 0)
                               .attr("width",200)
                               .attr("height", function(d,i) {return getStateHeight(json.nodes)[i]})
-                              .style("fill", function(d,i) {if(d.disease) {return "#f2f2f2";} else {return "white";}})
+                              .style("fill", function(d,i) {if(d.disease) {return "#ffc266";} else {return "white";}})
                               .style("stroke", "orange")
                               .style("stroke-width", 2)
                               .attr("rx", 10)
@@ -329,7 +329,7 @@ function getEdgeLength(parent){
     return " " + statePosX[index] + "," + (statePosY[index]+getStateHeight(jsonNodes)[index])
 }
 
-function tabulate(datas, columns) {
+function tabulate(rows, columns) {
 
 var table = rightContainer.append("foreignObject")
                             .attr("y", 100)
@@ -340,12 +340,10 @@ var table = rightContainer.append("foreignObject")
                             .append("table")
                             .attr("id", "table")
                             .attr("border", 1)
-
-         
-                          
-    var thread = table.append("thread").attr("width", 400)
+                  
+   // var thread = table.append("thread").attr("width", 400)
                         
-    var tbody = table.append("tbody")
+    //var tbody = table.append("tbody")
 
     var cellwidth = 400/columns.length;
     // header row
@@ -381,27 +379,51 @@ var table = rightContainer.append("foreignObject")
         .append("td")   
         .attr("width", cellwidth);*/
         //thread.append("tr").attr("width", 400)
-        table.append("tr").selectAll("th")
+       /* table.append("tr").attr("class", "thread")
+        .selectAll("th")
         .data(columns)
         .enter()
         .append("th")
         .attr("overflow", "hidden")
-        
         .text(function(column) { return column; }).attr("width", cellwidth);
-    
-                d3.text("prob.csv", function(data) {
-                var parsedCSV = d3.csv.parseRows(data);
-
-
-                    table.selectAll("tr")
-                        .data(parsedCSV).enter()
+    */
+        var row = table.selectAll("tr")//.selectAll("*:not(.thread)")
+                        .data(rows.concat([columns]))
+                        .enter()
                         .append("tr")
-                        
-
-                    .selectAll("td")
-                        .data(function(d) { return d; }).enter()
-                        .append("td")
-                        .text(function(d) { return d; }).attr("width", cellwidth);
-            });
-return table;
+        
+        //Unterscheidung zw thread und tbody(th und td)
+/*        row.forEach(function(d,i){
+            if(i == 0){
+                d3.select(this).attr("class", "thread")
+                            .selectAll("td")
+                            .data(columns)
+                            .enter()
+                            .append("td")
+                            .text(function(cell) {return cell;})
+            }
+            else{
+                d3.select(this).attr("class", "tbody")
+                        .selectAll("th")
+                        .data(rows[i-1])
+                        .enter()
+                        .append("th")
+                        .attr("overflow", "hidden")
+                        .text(function(cell) {return cell; })
+                        .attr("width", cellwidth);
+            }
+        })*/
+        
+        //funktioniert aber keine unterscheidung zw td und th
+        var cells = row.selectAll("th")
+                        .data(function(d,i) {if(i==0) {return columns;}
+                                             else {return rows[i-1];}}
+                             )
+                        .enter()
+                        .append("th")
+                        .attr("overflow", "hidden")
+                        .text(function(cell) { return cell; })
+                        .attr("width", cellwidth);
+    
+    return table;
 }

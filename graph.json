@@ -2,7 +2,7 @@
   { "name": "Alter", "disease": false,  "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
   { "name": "Blutdruck", "disease": false, "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
   { "name": "Krebs", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Asien", "disease": false, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Asien-Besuch", "disease": false, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
   { "name": "Tuberculose", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
   { "name": "Röntgenbefund", "disease": false, "values": ["normal","unnormal"], "probabilities": [0.2,0.8]},
   { "name": "Atemnot", "disease": false, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
