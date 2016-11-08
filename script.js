@@ -44,7 +44,8 @@ d3.json("graph.json", function(error, json) {
                 .linkDistance(300)
                 .charge(-2000)
                 .gravity(0.08)
-                .linkStrength(3);
+                .linkStrength(3)
+                //.center(d3.forceCenter(width / 2, height / 2));
         
                 //.friction(0.5).chargeDistance(400);
     
@@ -86,10 +87,12 @@ d3.json("graph.json", function(error, json) {
     // -----------------
     // Nodes
     // -----------------   
-                
+
+
     var activeNodes = new Array(json.nodes.length);
     for (var i = 0; i < activeNodes.length; ++i) { activeNodes[i] = false; };
-    
+
+
     var node = leftContainer.selectAll(".node")
                           .data(json.nodes)
                         .enter().append("g")
@@ -103,37 +106,35 @@ d3.json("graph.json", function(error, json) {
                         // -----------------
                          .on("click", function hightlightNode(){
 
-                                 for (i=0; i<json.nodes.length; i++){
-                                     if (this.id == json.nodes[i].name){
+                                     for (i=0; i<json.nodes.length; i++){
+                                         if (this.id == json.nodes[i].name){
 
-                                         if (activeNodes[i]){
-                                            d3.select(this.childNodes[0]).style("stroke-width", 2);
-                                            rightContainer.select("text").text(" ");
-                                            //deletetable
-                                            rightContainer.selectAll("foreignObject").remove();
-                                            activeNodes[i] = false;
-                                            break;
+                                             if (activeNodes[i]){
+                                                d3.select(node.firstChild).style("stroke-width", 2);
+                                                rightContainer.select("text").text(" ");
+                                                rightContainer.selectAll("foreignObject").remove();
+                                                activeNodes[i] = false;
+                                                break;
+                                             }
+                                            if (!activeNodes[i]){
+                                                d3.select(this.childNodes[0]).style("stroke-width", 5);
+                                                rightContainer.select("text").text(this.id);
+
+                                                for (var j = 0; j < activeNodes.length; ++j) { 
+                                                    if (activeNodes[j]){
+                                                        d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
+                                                        rightContainer.selectAll("foreignObject").remove();
+                                                    }
+                                                    activeNodes[j] = false; 
+                                                };
+                                                activeNodes[i] = true;
+                                                //createTable       //array mit array mit wkeiten für jede zeile
+                                                var tabl = tabulate([json.nodes[i].probabilities], json.nodes[i].values);
+                                                break;
+                                            }  
                                          }
-                                        if (!activeNodes[i]){
-                                            d3.select(this.childNodes[0]).style("stroke-width", 5);
-                                            rightContainer.select("text").text(this.id);
-                                            
-                                            for (var j = 0; j < activeNodes.length; ++j) { 
-                                                if (activeNodes[j]){
-                                                    d3.select(document.getElementById(json.nodes[j].name).childNodes[0]).style("stroke-width", 2);
-                                                    rightContainer.selectAll("foreignObject").remove();
-                                                }
-                                                activeNodes[j] = false; 
-                                            };
-                                            activeNodes[i] = true;
-                                            //createTable       //array mit array mit wkeiten für jede zeile
-                                            var tabl = tabulate([json.nodes[i].probabilities], json.nodes[i].values);
-                                            break;
-                                        }  
                                      }
-                                 }
-                            
-                        });
+                                });
 
     var rects = node.append("rect");
 
@@ -159,7 +160,7 @@ d3.json("graph.json", function(error, json) {
                      .attr("text-anchor", "middle");
     
     var valueGroup = node.append("g")
-                         .attr("id", "valueGroup");
+                         .attr("id", function(d) {return "valueGroup" });//+ d.name} );
     
     var valueText = valueGroup.append("text");
 
@@ -167,7 +168,7 @@ d3.json("graph.json", function(error, json) {
                      .style("fill", "purple")
                      .attr("font-family", "sans-serif")
                      .attr("font-size", "15px")
-                     .attr("x", 5)
+                     .attr("x", 15)
                      .attr("y", 22);
 
     var values = valueAttributes.selectAll("tspan")
@@ -176,7 +177,57 @@ d3.json("graph.json", function(error, json) {
                      .append("tspan")
                      .text(function(d) { return d; })
                      .attr("dy", 20)
-                     .attr("x", 10);
+                     .attr("x", 30);
+    
+    var click = valueGroup.append("g")
+                     .selectAll("rect")
+                     .data(function (d,i) {return d.values})
+                     .enter()
+                     .append("rect")
+                     .attr("id", function(d) {return d;})
+    
+    var activeClicks = new Array(json.nodes.length);
+    for (var j = 0; j < activeClicks.length; j++) {
+        activeClicks[j] = new Array(json.nodes[j].values.length)
+    }
+    for (var i = 0; i < activeClicks.length; ++i) { 
+        for (var k = 0; k < activeClicks[i].length; k++){
+            activeNodes[i][k] = false; 
+        }
+    };
+    
+    var clickAttributes = click.attr("width", 17)
+                     .attr("height", 15)
+                     .attr("x", 5)
+                     .attr("y", function(d,i) {return 20 * (i+1) +8})
+                     .style("fill", "#F8FBEF")
+                     .style("stroke", "orange")
+                     .on("click",function(){
+                         for (i=0; i<json.nodes.length; i++){
+                            if(this.parentNode.parentNode.parentNode.id == json.nodes[i].name)
+                                for (j=0; j<json.nodes[i].values.length; j++){
+                                    if(d3.select(this).id = json.nodes[i].values[j]){
+                                        if(activeClicks[i][j]){
+                                            d3.select(this).style("fill", "#F8FBEF")
+                                            activeClicks[i][j] = false;
+                                        }
+                                        else {
+                                            for (k = 0; k < activeClicks[i].length; k++){
+                                                if(activeClicks[i][k]) {
+                                                    d3.select(document.getElementById(json.nodes[i].values[k])).style("fill", "#F8FBEF")
+                                                    activeClicks[i][k] = false;
+                                                }
+                                                d3.select(this).style("fill", "purple");
+                                                activeClicks[i][j] = true;
+                                               /// hightlightNode(this.parentNode.parentNode.parentNode,json);
+                                                
+                                            }
+                                        }
+                                    }
+                                }
+                         }
+                     }
+                    )
 
 
     var probabilityText = valueGroup.append("text");
@@ -200,7 +251,7 @@ d3.json("graph.json", function(error, json) {
                      .attr("text-anchor", "end");
 
     
-/*    var middle = node.append("circle")
+/*  var middle = node.append("circle")
                         .attr("cx", 100)
                         .attr("cy", function(d,i) {return getStateHeight(json.nodes)[i] * 0.5})
                         .attr("r", 100)
@@ -228,7 +279,16 @@ d3.json("graph.json", function(error, json) {
             .attr("x2", function(d) { return Math.max(0, Math.min(width, d.target.x)); })
             .attr("y2", function(d) { return Math.max(0, Math.min(height, d.target.y)); });
         
-        //node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+/*      node.forEach(function(d){
+
+            var valueBBox = document.getElementById(d.name).getBBox();
+            var valueWidth = valueBBox.width + valueBBox.x;
+            var valueHeight = valueBBox.height + valueBBox.y;
+
+            if((valueWidth < width) && (valueHeight < height) && (valueWidth > 0) && (valueHeight > 0)){
+                document.getElementById(d.name).attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                }
+        })*/
         rectAttributes.attr("x", function(d) { return Math.max(0, Math.min(width - 200, d.x)); })
                       .attr("y", function(d) { return Math.max(0, Math.min(height - 67, d.y)); }); //getStateHeight
         nameAttributes.attr("x", function(d) { return Math.max(0, Math.min(width - 200, d.x))+100; })
@@ -244,6 +304,12 @@ d3.json("graph.json", function(error, json) {
                 //valueGroup.attr("transform", function(d) { return "translate(" + d.childNodes[0].childNodes[0].x + "," + d.childNodes[0].childNodes[0].y + ")"; }); muss noch angepasst werden(xWert von erstem tspan)
             }
         })
+        
+        /*valueGroup.selectAll("text").attr("y", function(d) { return Math.max(0, Math.min(height - 67, d.y))+22; })
+                                    .attr("x", function(d) { return Math.max(0, Math.min(width - 200, d.x))+5; })
+        
+        valueText.selectAll("tspan").attr("dx", function(d) { return Math.max(0, Math.min(width - 200, d.x))+5; })
+        probabilityText.selectAll("tspan").attr("dx", function(d) { return Math.max(0, Math.min(width - 200, d.x))+190; })*/
 
        /* linkNode.attr("cx", function(d) { return d.x = (d.source.x + d.target.x) * 0.5 +100; })
                 .attr("cy", function(d) { return d.y = (d.source.y + d.target.y) * 0.5 + 67; });*/
@@ -271,10 +337,9 @@ var rightContainer = d3.select("body").append("svg")
 var heading = rightContainer.append("text")
                      .style("fill", "purple")
                      .attr("x", 60)
-                     .attr("y", 50)
-                     //.text("test")
+                     .attr("y", 70)
                      .attr("font-family", "sans-serif")
-                     .attr("font-size", "22px");
+                     .attr("font-size", "25px");
 
 
 
@@ -328,6 +393,7 @@ function getEdgeLength(parent){
     //return " 200,0 "
     return " " + statePosX[index] + "," + (statePosY[index]+getStateHeight(jsonNodes)[index])
 }
+ 
 
 function tabulate(rows, columns) {
 
@@ -345,53 +411,15 @@ var table = rightContainer.append("foreignObject")
                         
     //var tbody = table.append("tbody")
 
+    //tablelength = 400
     var cellwidth = 400/columns.length;
-    // header row
-/*    thread.append("tr")
-        .selectAll("th")
-        .data(columns)
-        .enter()
-        .append("th")
-        .text(function(column) { return column; }).attr("width", cellwidth);
     
-    d3.csv("prob.csv", function(error, data) {
-    // im moment müsste immer nur ein tr entstehen create a row for each object in the data
-    var rows = tbody.selectAll("tr")
-        .data(data)
-        .enter()
-        .append("tr");
-
-    /*var rows = tbody.append("tr").selectAll("td")
-                  .data(data)
-                  .enter()
-                  .append("td")
-                  .html(function (d) { return d;});*/
+    var row = table.selectAll("tr")
+                .data(rows.concat([columns]))
+                .enter()
+                .append("tr")
     
-    /*
-    // create a cell in each row for each column
-    var cells = rows.selectAll("td")
-        .data(function(row) {
-            return columns.map(function(column) {
-                return {column: column, value: row[column]};
-            });
-        })
-        .enter()
-        .append("td")   
-        .attr("width", cellwidth);*/
-        //thread.append("tr").attr("width", 400)
-       /* table.append("tr").attr("class", "thread")
-        .selectAll("th")
-        .data(columns)
-        .enter()
-        .append("th")
-        .attr("overflow", "hidden")
-        .text(function(column) { return column; }).attr("width", cellwidth);
-    */
-        var row = table.selectAll("tr")//.selectAll("*:not(.thread)")
-                        .data(rows.concat([columns]))
-                        .enter()
-                        .append("tr")
-        
+    
         //Unterscheidung zw thread und tbody(th und td)
 /*        row.forEach(function(d,i){
             if(i == 0){

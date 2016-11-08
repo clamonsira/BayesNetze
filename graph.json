@@ -1,6 +1,6 @@
 {"nodes": [
   { "name": "Alter", "disease": false,  "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
-  { "name": "Blutdruck", "disease": false, "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
+  { "name": "Blutdruck", "disease": false, "values": ["< 120/ < 80","120-129/80-89", "130-179/90-109",">= 180/ >= 110"], "probabilities": [0.2,0.4,0.1,0.1234]},
   { "name": "Krebs", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
   { "name": "Asien-Besuch", "disease": false, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
   { "name": "Tuberculose", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
