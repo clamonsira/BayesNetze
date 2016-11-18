@@ -15,7 +15,7 @@ var width = window.innerWidth * 0.7,
 var leftContainer = d3.select("body").append("svg")
                                     .attr("width", width)
                                     .attr("height", height)
-                                    .style("border", "1px solid black")
+                                    //.style("border", "1px solid black")
                                     .attr("id", "leftContainer")
                                     .append("g")
                                     .attr("id", "graph");
@@ -58,11 +58,9 @@ d3.json("graph.json", function(error, json) {
     // -----------------
     var link = leftContainer.selectAll(".link")
                     .data(json.links)
-                    .enter().append("line")
+                    .enter().append("line").attr("id", "link")
                     .attr("class", "link")
                     .attr("transform", function(d,i){return "translate(100,67)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
-                    .attr("stroke-width", 4)
-                    .attr("stroke", "#e6e6ff")
                     .style("marker-end",  "url(#end)");
     //Arrows
                 leftContainer.append("defs").selectAll("marker")
@@ -77,9 +75,6 @@ d3.json("graph.json", function(error, json) {
                     .attr("orient", "auto")
                     .append("path")
                     .attr("d", "M0,-5L10,0L0,5")
-                    .style("stroke", "white")
-                    .style("fill", "#e6e6ff")
-                    .style("stroke-width", 1)
                     //.style("opacity", "0.6");
 
 
@@ -91,7 +86,6 @@ d3.json("graph.json", function(error, json) {
 
     var activeNodes = new Array(json.nodes.length);
     for (var i = 0; i < activeNodes.length; ++i) { activeNodes[i] = false; };
-
 
     var node = leftContainer.selectAll(".node")
                           .data(json.nodes)
@@ -110,16 +104,14 @@ d3.json("graph.json", function(error, json) {
                                          if (this.id == json.nodes[i].name){
 
                                              if (activeNodes[i]){
-                                                d3.select(node.firstChild).style("stroke-width", 2);
+                                                d3.select(this.firstChild).style("stroke-width", 2);
                                                 rightContainer.select("text").text(" ");
                                                 rightContainer.selectAll("foreignObject").remove();
                                                 activeNodes[i] = false;
                                                 break;
                                              }
                                             if (!activeNodes[i]){
-                                                d3.select(this.childNodes[0]).style("stroke-width", 5);
-                                                rightContainer.select("text").text(this.id);
-
+                                                //wenn schon ein anderer active war
                                                 for (var j = 0; j < activeNodes.length; ++j) { 
                                                     if (activeNodes[j]){
                                                         d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
@@ -127,23 +119,138 @@ d3.json("graph.json", function(error, json) {
                                                     }
                                                     activeNodes[j] = false; 
                                                 };
+                                                d3.select(this.childNodes[0]).style("stroke-width", 5);
+                                                rightContainer.select("text").text(this.id);
                                                 activeNodes[i] = true;
-                                                //createTable       //array mit array mit wkeiten für jede zeile
-                                                var tabl = tabulate([json.nodes[i].probabilities], json.nodes[i].values);
+                                                //createTable
+                                                var tabl = createTable(i);
                                                 break;
                                             }  
                                          }
                                      }
-                                });
+                        });
+    // -----------------
+    // create Table
+    // -----------------
+    
+    function createTable(indexOfNode){
+        //gibt im Moment immer einen leeren Array zurueck
+        //var p = getParentsIndex(indexOfNode);
+        var parents = [2,4,1] 
+        parents.push(indexOfNode)
+        
+        var columns = new Array(0);
+        parents.forEach(function(element,index, array){
+            columns.push(json.nodes[element].name)
+        })
+        
+        var rows = [];
+        var countRows = 1;
+        for (p = 0; p < parents.length; p++){
+            countRows *= json.nodes[parents[p]].values.length;
+        }
+        
+        for (i = 0; i < countRows ; i++){
+            rows.push(new Array (columns.length));
+        }
+        
+        // jede Zusammensetzung der Values
+/*        for (i = 0; i < rows.length; i++){
+            for (j = 0; j < parents.length; j++) {
+                for (k=0; k<json.nodes[parents[j]].values.length; k++) {
+                   rows[i][j] = json.nodes[parents[j]].values[k];
+                }
+            }
+        }*/
 
-    var rects = node.append("rect");
+        return tabulate(rows, columns)
+    }
+    
+    function getParentsIndex(indexOfNode){
+        var name = json.nodes[indexOfNode].name;
+        //maximal 6 elternknoten
+        var parents = new Array(6);
+        for (i = 0; i < json.links.length; i++) {
+            //alert(parseInt((json.links[i].target)))
+            // das sind beides Ojects, keine ints und sind nie gleich
+            if (json.links[i].target == indexOfNode) {
+                parents.push(json.links[i].source);
+            }
+        }
+        return parents;
+    }
+    
+    function tabulate(rows, columns) {
+
+    var table = rightContainer.append("foreignObject")
+                                .attr("y", 100)
+                                .attr("x", 50)
+                                .attr("width", widthRight)
+                                .attr("height", height / 2)
+                                .append("xhtml:body")
+                                .append("table")
+                                .attr("id", "table")
+                                .attr("border", 1)
+
+       // var thread = table.append("thread").attr("width", 400)
+
+        //var tbody = table.append("tbody")
+
+        //tablelength = 400
+        var cellwidth = 400/columns.length;
+
+        var row = table.selectAll("tr")
+                    .data(rows.concat([columns]))
+                    .enter()
+                    .append("tr")
+
+
+            //Unterscheidung zw thread und tbody(th und td)
+    /*        row.forEach(function(d,i){
+                if(i == 0){
+                    d3.select(this).attr("class", "thread")
+                                .selectAll("td")
+                                .data(columns)
+                                .enter()
+                                .append("td")
+                                .text(function(cell) {return cell;})
+                }
+                else{
+                    d3.select(this).attr("class", "tbody")
+                            .selectAll("th")
+                            .data(rows[i-1])
+                            .enter()
+                            .append("th")
+                            .attr("overflow", "hidden")
+                            .text(function(cell) {return cell; })
+                            .attr("width", cellwidth);
+                }
+            })*/
+
+            //funktioniert aber keine unterscheidung zw td und th
+            var cells = row.selectAll("th")
+                            .data(function(d,i) {if(i==0) {return columns;}
+                                                 else {return rows[i-1];}}
+                                 )
+                            .enter()
+                            .append("th")
+                            .attr("overflow", "hidden")
+                            .text(function(cell) { return cell; })
+                            .attr("width", cellwidth);
+
+        return table;
+    }
+    // -----------------
+    // end Table
+    // -----------------
+    
+    var rects = node.append("rect").attr("class", "nodeRect");
 
     var rectAttributes = rects.attr("x", 0)
                               .attr("y", 0)
-                              .attr("width",200)
+                              .attr("width", 200)
                               .attr("height", function(d,i) {return getStateHeight(json.nodes)[i]})
                               .style("fill", function(d,i) {if(d.disease) {return "#ffc266";} else {return "white";}})
-                              .style("stroke", "orange")
                               .style("stroke-width", 2)
                               .attr("rx", 10)
                               .attr("ry", 10);
@@ -155,7 +262,7 @@ d3.json("graph.json", function(error, json) {
                      .attr("x", 100)
                      .attr("y", 22)
                      .text(function (d) {return d.name;})
-                     .attr("font-family", "sans-serif")
+                     .text(function (d) {return d.name;})
                      .attr("font-size", "22px")
                      .attr("text-anchor", "middle");
     
@@ -166,7 +273,6 @@ d3.json("graph.json", function(error, json) {
 
     var valueAttributes = valueText
                      .style("fill", "purple")
-                     .attr("font-family", "sans-serif")
                      .attr("font-size", "15px")
                      .attr("x", 15)
                      .attr("y", 22);
@@ -179,7 +285,7 @@ d3.json("graph.json", function(error, json) {
                      .attr("dy", 20)
                      .attr("x", 30);
     
-    var click = valueGroup.append("g")
+/*    var click = valueGroup.append("g")
                      .selectAll("rect")
                      .data(function (d,i) {return d.values})
                      .enter()
@@ -227,14 +333,13 @@ d3.json("graph.json", function(error, json) {
                                 }
                          }
                      }
-                    )
+                    )*/
 
 
     var probabilityText = valueGroup.append("text");
 
     var probabilityAttributes = probabilityText
                      .style("fill", "purple")
-                     .attr("font-family", "sans-serif")
                      .attr("font-size", "15px")
                      .attr("x", 5)
                      .attr("y", 22);
@@ -330,15 +435,13 @@ var widthRight = window.innerWidth * 0.28;
 var rightContainer = d3.select("body").append("svg")
                                     .attr("width", widthRight)
                                     .attr("height", height)
-                                    .style("background", "lightyellow")
-                                    .style("border", "1px solid black")
+                                    .style("border", "1px solid #e6e6ff")
                                     .attr("id", "rightContainer");
 
 var heading = rightContainer.append("text")
                      .style("fill", "purple")
                      .attr("x", 60)
                      .attr("y", 70)
-                     .attr("font-family", "sans-serif")
                      .attr("font-size", "25px");
 
 
@@ -394,64 +497,3 @@ function getEdgeLength(parent){
     return " " + statePosX[index] + "," + (statePosY[index]+getStateHeight(jsonNodes)[index])
 }
  
-
-function tabulate(rows, columns) {
-
-var table = rightContainer.append("foreignObject")
-                            .attr("y", 100)
-                            .attr("x", 50)
-                            .attr("width", widthRight)
-                            .attr("height", height / 2)
-                            .append("xhtml:body")
-                            .append("table")
-                            .attr("id", "table")
-                            .attr("border", 1)
-                  
-   // var thread = table.append("thread").attr("width", 400)
-                        
-    //var tbody = table.append("tbody")
-
-    //tablelength = 400
-    var cellwidth = 400/columns.length;
-    
-    var row = table.selectAll("tr")
-                .data(rows.concat([columns]))
-                .enter()
-                .append("tr")
-    
-    
-        //Unterscheidung zw thread und tbody(th und td)
-/*        row.forEach(function(d,i){
-            if(i == 0){
-                d3.select(this).attr("class", "thread")
-                            .selectAll("td")
-                            .data(columns)
-                            .enter()
-                            .append("td")
-                            .text(function(cell) {return cell;})
-            }
-            else{
-                d3.select(this).attr("class", "tbody")
-                        .selectAll("th")
-                        .data(rows[i-1])
-                        .enter()
-                        .append("th")
-                        .attr("overflow", "hidden")
-                        .text(function(cell) {return cell; })
-                        .attr("width", cellwidth);
-            }
-        })*/
-        
-        //funktioniert aber keine unterscheidung zw td und th
-        var cells = row.selectAll("th")
-                        .data(function(d,i) {if(i==0) {return columns;}
-                                             else {return rows[i-1];}}
-                             )
-                        .enter()
-                        .append("th")
-                        .attr("overflow", "hidden")
-                        .text(function(cell) { return cell; })
-                        .attr("width", cellwidth);
-    
-    return table;
-}
