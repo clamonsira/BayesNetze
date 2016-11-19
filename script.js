@@ -68,7 +68,7 @@ d3.json("graph.json", function(error, json) {
                     .enter().append("marker")
                     .attr("id", function(d) { return d; })
                     .attr("viewBox", "0 -5 10 10")
-                    .attr("refX", 10)
+                    .attr("refX", 15)//versetzt den Marker nach hinten
                     .attr("refY", 0)
                     .attr("markerWidth", 7)
                     .attr("markerHeight", 17)
@@ -78,64 +78,25 @@ d3.json("graph.json", function(error, json) {
                     //.style("opacity", "0.6");
 
 
-    
-    // -----------------
-    // Nodes
-    // -----------------   
-
-
-    var activeNodes = new Array(json.nodes.length);
-    for (var i = 0; i < activeNodes.length; ++i) { activeNodes[i] = false; };
-
-    var node = leftContainer.selectAll(".node")
-                          .data(json.nodes)
-                        .enter().append("g")
-                          .attr("class", "node")
-                          .attr("id", function(d){return d.name})
-                         //.attr("transform", function(d,i) { return "translate(" + statePosX[i] + "," + statePosY[i] + ")"}) 
-                         .call(force.drag)
-
-                        // -----------------
-                        // highlight Node
-                        // -----------------
-                         .on("click", function hightlightNode(){
-
-                                     for (i=0; i<json.nodes.length; i++){
-                                         if (this.id == json.nodes[i].name){
-
-                                             if (activeNodes[i]){
-                                                d3.select(this.firstChild).style("stroke-width", 2);
-                                                rightContainer.select("text").text(" ");
-                                                rightContainer.selectAll("foreignObject").remove();
-                                                activeNodes[i] = false;
-                                                break;
-                                             }
-                                            if (!activeNodes[i]){
-                                                //wenn schon ein anderer active war
-                                                for (var j = 0; j < activeNodes.length; ++j) { 
-                                                    if (activeNodes[j]){
-                                                        d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
-                                                        rightContainer.selectAll("foreignObject").remove();
-                                                    }
-                                                    activeNodes[j] = false; 
-                                                };
-                                                d3.select(this.childNodes[0]).style("stroke-width", 5);
-                                                rightContainer.select("text").text(this.id);
-                                                activeNodes[i] = true;
-                                                //createTable
-                                                var tabl = createTable(i);
-                                                break;
-                                            }  
-                                         }
-                                     }
-                        });
-    // -----------------
+     // -----------------
     // create Table
     // -----------------
+    function getParentsIndex(indexOfNode){
+        var name = json.nodes[indexOfNode].name;
+        var parents = new Array(6);
+        for (i = 0; i < json.links.length; i++) {
+            //alert(parseInt((json.links[i].target)))
+            // das sind beides Ojects, keine ints und sind nie gleich
+            if (json.links[i].target == indexOfNode) {
+                parents.push(json.links[i].source);
+            }
+        }
+        return parents;
+    }
     
     function createTable(indexOfNode){
         //gibt im Moment immer einen leeren Array zurueck
-        //var p = getParentsIndex(indexOfNode);
+        //var parents = getParentsIndex(indexOfNode);
         var parents = [2,4,1] 
         parents.push(indexOfNode)
         
@@ -162,22 +123,7 @@ d3.json("graph.json", function(error, json) {
                 }
             }
         }*/
-
         return tabulate(rows, columns)
-    }
-    
-    function getParentsIndex(indexOfNode){
-        var name = json.nodes[indexOfNode].name;
-        //maximal 6 elternknoten
-        var parents = new Array(6);
-        for (i = 0; i < json.links.length; i++) {
-            //alert(parseInt((json.links[i].target)))
-            // das sind beides Ojects, keine ints und sind nie gleich
-            if (json.links[i].target == indexOfNode) {
-                parents.push(json.links[i].source);
-            }
-        }
-        return parents;
     }
     
     function tabulate(rows, columns) {
@@ -240,9 +186,57 @@ d3.json("graph.json", function(error, json) {
 
         return table;
     }
+    
     // -----------------
-    // end Table
-    // -----------------
+    // Nodes
+    // -----------------   
+
+
+    var activeNodes = new Array(json.nodes.length);
+    for (var i = 0; i < activeNodes.length; ++i) { activeNodes[i] = false; };
+
+    var node = leftContainer.selectAll(".node")
+                          .data(json.nodes)
+                        .enter().append("g")
+                          .attr("class", "node")
+                          .attr("id", function(d){return d.name})
+                         //.attr("transform", function(d,i) { return "translate(" + statePosX[i] + "," + statePosY[i] + ")"}) 
+                         .call(force.drag)
+
+                        // -----------------
+                        // highlight Node
+                        // -----------------
+                         .on("click", function hightlightNode(){
+
+                                     for (i=0; i<json.nodes.length; i++){
+                                         if (this.id == json.nodes[i].name){
+
+                                             if (activeNodes[i]){
+                                                d3.select(this.firstChild).style("stroke-width", 2);
+                                                rightContainer.select("text").text(" ");
+                                                rightContainer.selectAll("foreignObject").remove();
+                                                activeNodes[i] = false;
+                                                break;
+                                             }
+                                            if (!activeNodes[i]){
+                                                //wenn schon ein anderer active war
+                                                for (var j = 0; j < activeNodes.length; ++j) { 
+                                                    if (activeNodes[j]){
+                                                        d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
+                                                        rightContainer.selectAll("foreignObject").remove();
+                                                    }
+                                                    activeNodes[j] = false; 
+                                                };
+                                                d3.select(this.childNodes[0]).style("stroke-width", 5);
+                                                rightContainer.select("text").text(this.id);
+                                                activeNodes[i] = true;
+                                                //createTable
+                                                var tabl = createTable(i);
+                                                break;
+                                            }  
+                                         }
+                                     }
+                        });
     
     var rects = node.append("rect").attr("class", "nodeRect");
 
