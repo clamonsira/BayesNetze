@@ -1,5 +1,5 @@
 # BayesNetze
 - blab la
 	- bkjf
-   -bkdjf
-   -koasdk
+   	-bkdjf
+   		-koasdk
