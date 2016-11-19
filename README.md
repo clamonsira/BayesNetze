@@ -1,9 +1,8 @@
 # BayesNetze
 - Edges
-		- todo: hinter Marker weiß, verschwinden hinter Zustand, getStateHeight
-
 	- links über force directed graph
 	- Überlegung: curvededges (in tick)
+		- todo: hinter Marker weiß, verschwinden hinter Zustand, getStateHeight
 	
 - Nodes
 		- todo: Balken für W'keit
