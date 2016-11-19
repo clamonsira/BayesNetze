@@ -5,11 +5,14 @@
 		- todo: hinter Marker weiß, verschwinden hinter Zustand, getStateHeight
 	
 - Nodes
-		- todo: Balken für W'keit
+	- BoundingBox im leftContainer
 		- todo: BBox valueGroup
+	- HighlightNode: wenn angeklickt wird Node eingefärbt und Tabelle öffnet sich
+		- todo: Balken für W'keit
 		- todo: Radio Buttons
 	
 - Tabellen
+	- Anzahl der Zeilen -> alle Kombinationen der values aus Knoten und Elternknoten
 		- todo: getParents??
 		- todo: scroll bei großen Tabellen
 		- todo: Spalten+values von Hauptnode, Zeilen - #values von Hauptnode
