@@ -20,6 +20,7 @@
 - Layout
 	- Überlegung: sigma.js
 	- Überlegung: force layout + Rechtsklick fest + linkNodes
+		- kann man auch force layout mit festen Punkten am Anfang machen?
 	- Überlegung: Ebenen (oben ohne eingehende Kanten, unten ohne ausgehende), bereits vorhandener Code?
 	- Überlegung: unsichtbare Links zwischen alle Zuständen -> sedgeDist
 	
