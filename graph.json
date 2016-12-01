@@ -25,5 +25,6 @@
     {"source": 6, "target": 9},
     {"source": 7, "target": 8},
     {"source": 7, "target": 10},
-    {"source": 6, "target": 10}
+    {"source": 6, "target": 10},
+    {"source": 6, "target": 11}
 ]}
