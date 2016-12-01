@@ -3,12 +3,38 @@ html,body {
     padding: 0 0 0 0;
     margin: 0 0 0 0;
 }
+
+#leftContainer {
+    border: 1px solid #e6e6ff;
+}
+
+#link { 
+    stroke-width: 4;
+    stroke : lightblue;
+    opacity: 0.5;
+}
+
+marker {
+    stroke: white;
+    fill: lightblue;
+    stroke-width: 1;
+                   
+}
+
+rect {
+}
+
+text {
+    font-family: sans-serif;
+    
+}
 #table {
     border: thick solid orange;
     /*border-top: none;*/
     background-color: white;
     border-collapse : collapse;
     font-family: sans-serif;
+    overflow-y: scroll;
 }
 td, th {
     padding: 1px 4px;

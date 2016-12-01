@@ -1,25 +1,29 @@
 {"nodes": [
-  { "name": "Blutdruck", "disease": false, "values": ["< 120/ < 80","120-129/80-89", "130-179/90-109",">= 180/ >= 110"], "probabilities": [0.2,0.4,0.1,0.1234]},
-  { "name": "Alter", "disease": false,  "values": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
-  { "name": "Krebs", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Asien-Besuch", "disease": false, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Tuberculose", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Röntgenbefund", "disease": false, "values": ["normal","unnormal"], "probabilities": [0.2,0.8]},
-  { "name": "Atemnot", "disease": false, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Bronchitis", "disease": true, "values": ["ja","nein"], "probabilities": [0.2,0.8]},
-  { "name": "Gewichtsverlust", "disease": false, "values": ["unter 5kg","von 5 bis 10 kg", "mehr als 10kg"], "probabilities": [0.5,0.2, 0.3]}
+  { "name": "Blutdruck", "type": "symptom", "states": ["< 120/ < 80","120-129/80-89", "130-179/90-109",">= 180/ >= 110"], "probabilities": [0.2,0.4,0.1,0.1234]},
+  { "name": "Alter", "type": "symptom",  "states": ["unter 18","von 18 bis 50", "über 50"], "probabilities": [0.2,0.4,0.4]},
+  { "name": "Asien-Besuch", "type": "symptom", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Atemnot", "type": "symptom", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Gewichtsverlust", "type": "symptom", "states": ["unter 5kg","von 5 bis 10 kg", "mehr als 10kg"], "probabilities": [0.5,0.2, 0.3]},
+  { "name": "Tuberculose", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Bronchitis", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
+      { "name": "Bronchtis", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
+
+  { "name": "Krebs", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Chemo", "type": "therapy", "states": ["einmalig","mehrmals"], "probabilities": [0.5,0.5]},
+  { "name": "Antibiotika", "type": "therapy", "states": ["einmalig","mehrmals"], "probabilities": [0.5,0.5]},
+  { "name": "Röntgenbefund", "type": "examination", "states": ["normal","unnormal"], "probabilities": [0.2,0.8]}
   ],
 
 "links": [
-    {"source": 0, "target": 1},
-    {"source": 1, "target": 2},
-    {"source": 0, "target": 2},
-    {"source": 3, "target": 1},
-    {"source": 3, "target": 4},
-    {"source": 5, "target": 2},
-    {"source": 6, "target": 7},
-    {"source": 4, "target": 2},
-    {"source": 8, "target": 2},
-    {"source": 8, "target": 4},
-    {"source": 5, "target": 7}
+    {"source": 1, "target": 7},
+    {"source": 3, "target": 5},
+    {"source": 3, "target": 6},
+    {"source": 2, "target": 5},
+    {"source": 4, "target": 7},
+    {"source": 0, "target": 7},
+    {"source": 0, "target": 5},
+    {"source": 6, "target": 9},
+    {"source": 7, "target": 8},
+    {"source": 7, "target": 10},
+    {"source": 6, "target": 10}
 ]}
