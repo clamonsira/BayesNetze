@@ -116,7 +116,7 @@ d3.json("graph.json", function(error, json) {
                               .style("stroke", function(d,i) {if(d.type == "disease") {return "#ffc266";};
                                                             if(d.type == "therapy") {return "steelblue";};
                                                             if(d.type == "examination") {return " #12858e";};
-                                                            if(d.type == "symptom") {return "orange";}})
+                                                            if(d.type == "symptom") {return "#FE642E";}})
                               .style("stroke-width", 2)
                               .attr("rx", 10)
                               .attr("ry", 10);
@@ -207,24 +207,24 @@ var menuHeading = menu.append("text")
 var aktualisierButton = menu.append("rect")
                         .attr("x", 60)
                         .attr("y", 800)
-                        .attr("width", 100)
-                        .attr("height", 22)
+                        .attr("width", 150)
+                        .attr("height", 40)
                         .style("fill", "white")
                         .style("stroke", "orange")
                         .attr("rx", 10)
                         .attr("ry", 10);
                         
 var aktualisierButtonName = menu.append("text")
-                     .attr("x", 65)
-                     .attr("y", 818)
+                     .attr("x", 75)
+                     .attr("y", 824)
                      .text("aktualisieren")
-                     .style("fill", "purple");
+                     .style("fill", "purple").attr("font-size", "20px");
 
 var erweiterButton = menu.append("rect")
                         .attr("x", 60)
-                        .attr("y", 840)
-                        .attr("width", 100)
-                        .attr("height", 22)
+                        .attr("y", 900)
+                        .attr("width", 150)
+                        .attr("height", 40)
                         .style("fill", "white")
                         .style("stroke", "orange")
                         .attr("rx", 10)
@@ -232,9 +232,9 @@ var erweiterButton = menu.append("rect")
                         
 var erweiterButtonName = menu.append("text")
                      .attr("x", 75)
-                     .attr("y", 858)
+                     .attr("y", 924)
                      .text("erweitern")
-                     .style("fill", "purple");
+                     .style("fill", "purple").attr("font-size", "20px");
 
 var heading = rightContainer.append("text")
                      .style("fill", "purple")
@@ -392,10 +392,18 @@ function computeLayout() {
     var table = rightContainer.append("foreignObject")
                                 .attr("y", 100)
                                 .attr("x", 50)
-                                .attr("width", widthRight)
-                                .attr("height", height / 2)
+                                .attr("width",520)// widthRight)
+                                .attr("height",500)// height / 2)
                                 .append("xhtml:body")
+                                .append("div")
+                                .attr("width", 520)
+                                .attr("height", 500)
+                                .style("overflow-y","scroll")
+                                .style("overflow-x","auto")
+                                //.style("display", "table")
                                 .append("table")
+                                .attr("width", 500)
+                                .attr("heigth", "30%")
                                 .attr("id", "table")
                                 .attr("border", 1)
 
@@ -443,7 +451,7 @@ function computeLayout() {
                             .append("th")
                             //.attr("overflow", "hidden")
                             .text(function(cell) { return cell; })
-                            .attr("width", cellwidth);
+                           // .attr("width", cellwidth);
 
         return table;
     }
