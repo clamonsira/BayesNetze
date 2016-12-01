@@ -396,16 +396,16 @@ function computeLayout() {
                                 .attr("height",500)// height / 2)
                                 .append("xhtml:body")
                                 .append("div")
-                                .attr("width", 520)
-                                .attr("height", 500)
-                                .style("overflow-y","scroll")
+                                .style("width", "520px")
+                                .style("height", "500px")
+                                .style("overflow-y","auto")
                                 .style("overflow-x","auto")
                                 //.style("display", "table")
                                 .append("table")
                                 .attr("width", 500)
                                 .attr("heigth", "30%")
                                 .attr("id", "table")
-                                .attr("border", 1)
+                                .attr("border", 1);
 
        // var thread = table.append("thread").attr("width", 400)
 
