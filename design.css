@@ -28,13 +28,15 @@ text {
     font-family: sans-serif;
     
 }
+
 #table {
+    height: 30%;
     border: thick solid orange;
     /*border-top: none;*/
     background-color: white;
     border-collapse : collapse;
     font-family: sans-serif;
-    overflow-y: scroll;
+    border-radius: 6px;
 }
 td, th {
     padding: 1px 4px;
