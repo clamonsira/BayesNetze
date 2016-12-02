@@ -37,11 +37,11 @@ d3.json("graph.json", function(error, json) {
                     .enter().append("line")
                     .attr("id", "link")
                     .attr("class", "link")
-                    .attr("x1",function(d,i){return nodePosX[json.links[i].source];})
-                    .attr("y1",function(d,i){return nodePosY[json.links[i].source];})
-                    .attr("x2",function(d,i){return nodePosX[json.links[i].target];})
-                    .attr("y2",function(d,i){return nodePosY[json.links[i].target];})// unten y  auf 0 setzen?
-                    .attr("transform", function(d,i){return "translate(100,67)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
+                    .attr("x1",function(d,i){return nodePosX[json.links[i].source] + 100;})
+                    .attr("y1",function(d,i){return nodePosY[json.links[i].source] ;}) // hier muss noch der Fall berücksichtigt werden, wenn ein Link in der gleichen Ebene ist, curvedEdges?
+                    .attr("x2",function(d,i){return nodePosX[json.links[i].target] + 100;})
+                    .attr("y2",function(d,i){return nodePosY[json.links[i].target] + getNodeHeight(d.target);})
+                    //.attr("transform", function(d,i){return "translate(100,0)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
                     .style("marker-end",  "url(#end)");
     //Arrows
                 leftContainer.append("defs").selectAll("marker")
@@ -81,8 +81,10 @@ d3.json("graph.json", function(error, json) {
 
                                              if (activeNodes[i]){
                                                 d3.select(this.firstChild).style("stroke-width", 2);
-                                                rightContainer.select("text").text(" ");
+                                                headingDiscription.text(" ");
+                                                headingTable.text(" ");
                                                 rightContainer.selectAll("foreignObject").remove();
+                                                discriptionBackground.attr("fill","white");
                                                 activeNodes[i] = false;
                                                 break;
                                              }
@@ -96,7 +98,9 @@ d3.json("graph.json", function(error, json) {
                                                     activeNodes[j] = false; 
                                                 };
                                                 d3.select(this.childNodes[0]).style("stroke-width", 5);
-                                                rightContainer.select("text").text(this.id);
+                                                headingTable.text(this.id);
+                                                headingDiscription.text("Beschreibung");
+                                                discriptionBackground.attr("fill","lightblue");
                                                 activeNodes[i] = true;
                                                 //createTable
                                                 var tabl = createTable(i);
@@ -135,6 +139,12 @@ d3.json("graph.json", function(error, json) {
     var stateGroup = node.append("g")
                          .attr("id", function(d) {return "stateGroup" });//+ d.name} );
     
+    //RadioButtons
+    var radioButtons = stateGroup//.append("from")
+                                .append("input")
+                                .attr("type", "radio");
+    
+    
     var stateText = stateGroup.append("text");
 
     var stateAttributes = stateText
@@ -149,7 +159,7 @@ d3.json("graph.json", function(error, json) {
                      .append("tspan")
                      .text(function(d) { return d; })
                      .attr("dy", 20)
-                     .attr("x", 10);
+                     .attr("x", 25);
     
     /*var hightlightState = stateAttributes.selectAll("rect")
                          .data(function (d,i) {return d.states})
@@ -180,7 +190,7 @@ d3.json("graph.json", function(error, json) {
 // ------------------------------------------
 // rechte Seite
 // ------------------------------------------
-
+    
 var widthRight = window.innerWidth * 0.35 - 5;
 
 var rightContainer = d3.select("body").append("svg")
@@ -188,56 +198,86 @@ var rightContainer = d3.select("body").append("svg")
                                     .attr("height", height)
                                     .style("border", "1px solid #e6e6ff")
                                     .attr("id", "rightContainer");
+// -----------------
+// Heading of Table
+// -----------------
+var headingTable = rightContainer.append("text")
+                     .style("fill", "steelblue")
+                     .attr("x", widthRight / 2)
+                     .attr("y", 180)
+                     .attr("font-size", "25px")            
+                     .attr("text-anchor","middle");
 
-var heading = rightContainer.append("text")
-                     .style("fill", "purple")
-                     .attr("x", 60)
-                     .attr("y", 70)
-                     .attr("font-size", "25px");
 
-var menu = rightContainer.append("g")
+// -----------------
+// Buttons
+// -----------------
+var allButtons= rightContainer.append("g")
+                    .attr("id","allButtons") 
+
+//fontawesome button labels
+var labels= ['\uf021 aktualisieren','\uf0ad bearbeiten','\uf0e2 zurück', '\uf055 erweitern'];
+
+var buttonGroups= allButtons.selectAll("g.button")
+                        .data(labels)
+                        .enter()
+                        .append("g")
+                        .attr("class","button")
+                        .style("cursor","pointer")
+                        
+//button width and height
+var bWidth= 140; //button width
+var bHeight= 40; //button height
+var bSpace= 10; //space between buttons
+        
+var x0= 20; //x offset
+var y0= 70; //y offset
+
+//adding a rect to each button group
+//sidenote: rx and ry give the rects rounded corners
+buttonGroups.append("rect")
+            .attr("class","buttonRect")
+            .attr("width",bWidth)
+            .attr("height",bHeight)
+            .attr("x",function(d,i) {
+                return x0+(bWidth+bSpace)*i;
+            })
+            .attr("y",y0)
+            .attr("rx",5) 
+            .attr("ry",5)
+            .attr("fill","#FE642E")
+
+//adding text to each button group, centered within the button rect
+buttonGroups.append("text")
+            .attr("class","buttonText")
+            .attr("font-family","sans-serif")
+            .attr("x",function(d,i) {
+                return x0 + (bWidth+bSpace)*i + bWidth/2;
+            })
+            .attr("y",y0+bHeight/2)
+            .attr("text-anchor","middle")
+            .attr("dominant-baseline","central")
+            .attr("fill","white")
+            .text(function(d) {return d;})  
     
-var aktualisierButton = menu.append("rect")
-                        .attr("x", 60)
-                        .attr("y", 800)
-                        .attr("width", 150)
-                        .attr("height", 40)
-                        .style("fill", "white")
-                        .style("stroke", "orange")
-                        .attr("rx", 10)
-                        .attr("ry", 10);
-                        
-var aktualisierButtonName = menu.append("text")
-                     .attr("x", 75)
-                     .attr("y", 824)
-                     .text("aktualisieren")
-                     .style("fill", "purple")
+// -----------------
+// Discription
+// -----------------
+var headingDiscription = rightContainer.append("text")
+                     .style("fill", "steelblue")
+                     .attr("x", x0)
+                     .attr("y", 780)
                      .attr("font-size", "20px");
-
-var erweiterButton = menu.append("rect")
-                        .attr("x", 60)
-                        .attr("y", 900)
-                        .attr("width", 150)
-                        .attr("height", 40)
-                        .style("fill", "white")
-                        .style("stroke", "orange")
-                        .attr("rx", 10)
-                        .attr("ry", 10);
-                        
-var erweiterButtonName = menu.append("text")
-                     .attr("x", 75)
-                     .attr("y", 924)
-                     .text("erweitern")
-                     .style("fill", "purple")
-                     .attr("font-size", "20px");
-
-var heading = rightContainer.append("text")
-                     .style("fill", "purple")
-                     .attr("x", 60)
-                     .attr("y", 70)
-                     .attr("font-size", "25px");
-
-
+var discriptionBackground = rightContainer.append("rect")
+                                            .attr("width",590)
+                                            .attr("height",100) // anpassen
+                                            .attr("x",x0)
+                                            .attr("y",800)
+                                            .attr("rx",5) 
+                                            .attr("ry",5)
+                                            .attr("fill", "white")
+                                    
+    
 // ------------------------------------------
 // Funktionen
 // ------------------------------------------
@@ -321,7 +361,7 @@ function computeLayout() {
             }
             //in der letzten Zeile sind nur 2 Zustände
             if(a.length == 6 || a.length == 2) {
-                xPos[a[a.length-1]] = 500;
+                xPos[a[a.length-1]] = 800;
                 xPos[a[a.length-2]] = 200;
             }
             //in der letzten Zeile ist nur ein Zustand
@@ -347,6 +387,8 @@ function computeLayout() {
     }
     
     function createTable(indexOfNode){
+        
+        //was passiert, wenn keine states da sind? examinations
         var parents = getParentsIndex(indexOfNode);
         parents.push(indexOfNode)
         
@@ -394,19 +436,19 @@ function computeLayout() {
     function tabulate(rows, columns) {
 
     var table = rightContainer.append("foreignObject")
-                                .attr("y", 100)
-                                .attr("x", 50)
-                                .attr("width",520)// widthRight)
+                                .attr("y", 210)
+                                .attr("x", 20)
+                                .attr("width",590)// widthRight)
                                 .attr("height",500)// height / 2)
                                 .append("xhtml:body")
                                 .append("div")
-                                .style("max-width", "520px")
+                                .style("max-width", "590px")
                                 .style("max-height", "500px")
                                 .style("overflow-y","auto")
                                 .style("overflow-x","hidden")
                                 //.style("display", "table")
                                 .append("table")
-                                .attr("width", 500)
+                                .attr("width", 580)
                                 .attr("heigth", "30%")
                                 .attr("id", "table")
                                 .attr("border", 1);
