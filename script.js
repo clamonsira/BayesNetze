@@ -11,8 +11,8 @@ d3.json("graph.json", function(error, json) {
     // Bayes Netz
     // ------------------------------------------
 
-    var width = window.innerWidth * 0.50,
-        height = window.innerHeight;
+    var width = window.innerWidth * 0.65 - 5,
+        height = window.innerHeight - 5;
 
     var leftContainer = d3.select("body").append("svg")
                                         .attr("width", width)
@@ -181,7 +181,7 @@ d3.json("graph.json", function(error, json) {
 // rechte Seite
 // ------------------------------------------
 
-var widthRight = window.innerWidth * 0.48;
+var widthRight = window.innerWidth * 0.35 - 5;
 
 var rightContainer = d3.select("body").append("svg")
                                     .attr("width", widthRight)
@@ -196,13 +196,6 @@ var heading = rightContainer.append("text")
                      .attr("font-size", "25px");
 
 var menu = rightContainer.append("g")
-
-var menuHeading = menu.append("text")
-                     .style("fill", "purple")
-                     .attr("x", 60)
-                     .attr("y", 770)
-                     .attr("font-size", "25px")
-                     .text("Das Bayes Netz ...");
     
 var aktualisierButton = menu.append("rect")
                         .attr("x", 60)
@@ -218,7 +211,8 @@ var aktualisierButtonName = menu.append("text")
                      .attr("x", 75)
                      .attr("y", 824)
                      .text("aktualisieren")
-                     .style("fill", "purple").attr("font-size", "20px");
+                     .style("fill", "purple")
+                     .attr("font-size", "20px");
 
 var erweiterButton = menu.append("rect")
                         .attr("x", 60)
@@ -234,7 +228,8 @@ var erweiterButtonName = menu.append("text")
                      .attr("x", 75)
                      .attr("y", 924)
                      .text("erweitern")
-                     .style("fill", "purple").attr("font-size", "20px");
+                     .style("fill", "purple")
+                     .attr("font-size", "20px");
 
 var heading = rightContainer.append("text")
                      .style("fill", "purple")
@@ -279,7 +274,7 @@ function computeLayout() {
                 // -----------------
                 // yPos
                 // ----------------- 
-                if(noOfIndex < 3) {
+                if(noOfIndex < 4) {
                     if (noOfArray == 0) {
                         yPos[nodeI] = 670;
                     }
@@ -305,24 +300,33 @@ function computeLayout() {
                 // xPos
                 // ----------------- 
                 
-                if(noOfIndex % 3 == 0) {
+                if(noOfIndex % 4 == 0) {
                     xPos[nodeI] = 50;
                 }
-                if(noOfIndex % 3 == 1) {
+                if(noOfIndex % 4 == 1) {
                     xPos[nodeI] = 350;
                 }
-                if(noOfIndex % 3 == 2) {
+                if(noOfIndex % 4 == 2) {
                     xPos[nodeI] = 650;
                 }
+                if(noOfIndex % 4 == 3) {
+                    xPos[nodeI] = 950;
+                }
             })
+            //in der letzten Zeile sind nur drei Zustände
+            if(a.length == 3 || a.length == 7) {
+                xPos[a[a.length-1]] = 800;
+                xPos[a[a.length-2]] = 500;
+                xPos[a[a.length-3]] = 200;
+            }
             //in der letzten Zeile sind nur 2 Zustände
-            if(a.length == 5 || a.length == 2) {
+            if(a.length == 6 || a.length == 2) {
                 xPos[a[a.length-1]] = 500;
                 xPos[a[a.length-2]] = 200;
             }
-            //in der letzten Zeile ist nur ein oder es sind nur 4 Zustände
-            if(a.length == 1 || a.length == 4) {
-                xPos[a[a.length-1]] = 200;
+            //in der letzten Zeile ist nur ein Zustand
+            if(a.length == 1 || a.length == 5) {
+                xPos[a[a.length-1]] = 500;
             }
         }
     })
@@ -396,10 +400,10 @@ function computeLayout() {
                                 .attr("height",500)// height / 2)
                                 .append("xhtml:body")
                                 .append("div")
-                                .style("width", "520px")
-                                .style("height", "500px")
+                                .style("max-width", "520px")
+                                .style("max-height", "500px")
                                 .style("overflow-y","auto")
-                                .style("overflow-x","auto")
+                                .style("overflow-x","hidden")
                                 //.style("display", "table")
                                 .append("table")
                                 .attr("width", 500)

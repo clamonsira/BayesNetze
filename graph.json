@@ -6,12 +6,13 @@
   { "name": "Gewichtsverlust", "type": "symptom", "states": ["unter 5kg","von 5 bis 10 kg", "mehr als 10kg"], "probabilities": [0.5,0.2, 0.3]},
   { "name": "Tuberculose", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
   { "name": "Bronchitis", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
-      { "name": "Bronchtis", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
+  { "name": "Bronchtis", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
 
   { "name": "Krebs", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]},
   { "name": "Chemo", "type": "therapy", "states": ["einmalig","mehrmals"], "probabilities": [0.5,0.5]},
+  { "name": "Röntgenbefund", "type": "examination", "states": ["normal","unnormal"], "probabilities": [0.2,0.8]},
   { "name": "Antibiotika", "type": "therapy", "states": ["einmalig","mehrmals"], "probabilities": [0.5,0.5]},
-  { "name": "Röntgenbefund", "type": "examination", "states": ["normal","unnormal"], "probabilities": [0.2,0.8]}
+  { "name": "Bronchtiss", "type": "disease", "states": ["ja","nein"], "probabilities": [0.2,0.8]}
   ],
 
 "links": [
