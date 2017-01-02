@@ -5,7 +5,7 @@
 var statePosX = [50, 350, 650, 200, 500, 50, 350, 650, 50, 350, 650];
 var statePosY = [670, 670, 670, 870, 870, 300, 300, 300, 70, 70, 70]; 
 
-d3.json("Dgraph.json", function(error, json) {
+d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) {
     if (error) throw error;
     // ------------------------------------------
     // Bayes Netz
