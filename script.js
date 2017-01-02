@@ -106,7 +106,7 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) {
                                             headingTable.text(this.id);
                                             activeNodes[i] = true;
                                             //createTable
-                                            var tabl = createTable(i);
+                                            var tabl = calculateTable(i);
                                             headingDiscription.text("Beschreibung");
                                             discriptionBackground.attr("fill","lightblue");
                                             break;
@@ -430,7 +430,7 @@ function getParentsIndex(indexOfNode){
     return parents;
 }
     
-function createTable(indexOfNode){
+function calculateTable(indexOfNode){
         
     //was passiert, wenn keine states da sind? examinations
     var parents = getParentsIndex(indexOfNode);
@@ -442,9 +442,9 @@ function createTable(indexOfNode){
     })
     json.nodes.forEach(function(d,i){
         if(d.name == columns[columns.length-1]){
-            columns[columns.length-1] = d.properties.states[0];
+            columns[columns.length-1] = d.properties.states[0].name;
             for(i=0; i<d.properties.states.length-1; i++){
-                columns.push(d.properties.states[i+1]);
+                columns.push(d.properties.states[i+1].name);
             }
         }
     })

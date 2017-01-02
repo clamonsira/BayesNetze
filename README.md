@@ -1,26 +1,27 @@
 # BayesNetze
 - Layout
-	- (Überlegung: sigma.js)
-	- (Überlegung: force layout + Rechtsklick fest + linkNodes)
-	- (Überlegung: unsichtbare Links zwischen allen Zuständen -> edgeDist)
-
-	- todo: Ebenen (oben ohne eingehende Kanten, unten ohne ausgehende), bereits vorhandener Code?
+	- Ebenen (oben ohne eingehende Kanten, unten ohne ausgehende), bereits vorhandener Code?
+		- todo: dynamische YPos
+		- von links nach rechts?
+		- planare Graphen
+		- pro Ebene: die mit meisten Kanten nach außen
+		- gerade anz pro Ebene: von außen nach innen plazieren
+		- 1:mitte, 2: außen, 3: mitte,  2 + 3, 4 + 2,   aufteilen
 
 
 - Edges
-	- todo: curvededges (für festes Layout)
+	- todo: curvededges
 	- todo: hinter Marker weiß, verschwinden hinter Zustand, getStateHeight,
 	
 - Nodes
-	- (todo: BBox stateGroup)
 	- HighlightNode: wenn angeklickt wird Node eingefärbt und Tabelle öffnet sich
 		- todo: Balken für W'keit
-		- todo: Radio Buttons oder einfärben wenn markiert
+		- todo: Radio Buttons 
 	
 - Tabellen
 	- Anzahl der Zeilen -> alle Kombinationen der states aus Knoten und Elternknoten
-		- todo: scroll bei großen Tabellen (feste Größe)
-		- (todo: state Fälle)
+	- scroll bei großen Tabellen (feste Größe)
+		- todo: state Fälle mit richtiger Wkeit
 	
 - Zusatzfunktionalitäten
 	- Überlegung: Paper zu Ergebis verlinken -> woher die Daten, wie aktuell
@@ -28,8 +29,9 @@
 
 - todo: Menü
 	- Aktualisier Knopf bei Anpassungen der W'keiten
+
 	- Welche Art von Anfragen?
 
-	- Wieso läuft die Website nicht auf Chrome?
+	- verschiedene Browser: Chrome? Awesome fonts?
 
 	- d3 oder d3.min, d3.v4 oder d3.v3 oder d4
