@@ -10,13 +10,11 @@ html,body {
 
 #link { 
     stroke-width: 4;
-    stroke : lightblue;
     opacity: 0.5;
 }
 
 marker {
     stroke: white;
-    fill: lightblue;
     stroke-width: 1;
                    
 }
@@ -30,8 +28,6 @@ text {
 }
 
 #table {
-    height: 30%;
-    border: thick solid orange;
     /*border-top: none;*/
     background-color: white;
     border-collapse : collapse;
@@ -44,4 +40,8 @@ td, th {
 
 th {
     /*border-top: thick solid orange;*/
+}
+
+div {
+    border: thick solid orange;
 }
