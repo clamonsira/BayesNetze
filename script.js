@@ -5,7 +5,7 @@
 var statePosX = [50, 350, 650, 200, 500, 50, 350, 650, 50, 350, 650];
 var statePosY = [670, 670, 670, 870, 870, 300, 300, 300, 70, 70, 70]; 
 
-d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) {
+d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1"
     if (error) throw error;
     // ------------------------------------------
     // Bayes Netz
@@ -79,7 +79,7 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) {
                     // -----------------
                     // highlight Node
                     // -----------------
-                     .on("click", function hightlightNode(){
+                     .on("click", function highlightNode(){
 
                                  for (i=0; i<json.nodes.length; i++){
                                      if (this.id == json.nodes[i].name){
@@ -91,10 +91,11 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) {
                                             rightContainer.selectAll("foreignObject").remove();
                                             discriptionBackground.attr("fill","white");
                                             activeNodes[i] = false;
+                                      d3.event.stopPropagation(); //? überlappender effekt
                                             break;
                                          }
                                         if (!activeNodes[i]){
-                                            //wenn schon ein anderer active war
+                                            //wenn schon ein anderer activ war
                                             for (var j = 0; j < activeNodes.length; ++j) { 
                                                 if (activeNodes[j]){
                                                     d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
@@ -109,10 +110,13 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) {
                                             var tabl = calculateTable(i);
                                             headingDiscription.text("Beschreibung");
                                             discriptionBackground.attr("fill","lightblue");
+                                    d3.event.stopPropagation();
                                             break;
+                                            
                                         }  
                                      }
                                  }
+
                     });
     
     var rects = node.append("rect").attr("class", "nodeRect");
@@ -176,9 +180,13 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) {
                 })
                 .attr("fill","white")
 
+    clickedButtons = []; // includes all ids of clicked Buttons
+    
     //adding text to each button group, centered within the button rect
     buttonGroups.append("text")
-                .attr("id",function(d,i) { return "label" + i} )
+                .attr("id",function(d,i) { 
+                        return this.parentElement.parentElement.parentElement.id + " " + i
+                } )
                 .attr("font-family","sans-serif")
                 .attr("x",function(d,i) {
                     return x0 + bWidth/2;
@@ -191,8 +199,39 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) {
                 .attr("fill","purple")
                 .text('\uf10c') //fontawesome labels
                 .on("click", function hightlightButton(){
-                        d3.select(document.getElementById(this.id)).text('\uf192');
-                      
+        
+                    active = false;
+                    //checks if clicked button is already clicked an reverses text
+                    if(clickedButtons.indexOf(this.id) != -1){
+                        d3.select(document.getElementById(this.id)).text('\uf10c');
+                        clickedButtons.splice(clickedButtons.indexOf(this.id),1);
+                        active = false;
+                    } else { // button was not clicked before
+                        //checks if there is another clicked button in this node
+                        for(i = 0; i < clickedButtons.length; i++){
+                            if (this.parentElement.parentElement.parentElement.id == clickedButtons[i].split(" ")[0]){
+                                active = true;
+                                break;
+                            }
+                        }
+                        //if not, reverse text of this button and push to list
+                        if(active == false){
+                            d3.select(document.getElementById(this.id)).text('\uf192');
+                            clickedButtons.push(this.id);
+                        } else { // if there already is clickedButton in Node, change text of old and new button and push to list
+                            //old button
+                            for(i = 0; i < clickedButtons.length; i++){
+                                if (this.parentElement.parentElement.parentElement.id == clickedButtons[i].split(" ")[0]){
+                                    d3.select(document.getElementById(clickedButtons[i])).text('\uf10c');
+                                    oldButtonI = clickedButtons.indexOf(clickedButtons[i]);
+                                    clickedButtons.splice(oldButtonI, 1); //removes oldButtons Id
+                                    clickedButtons.push(this.id)
+                                }
+                            }
+                            //new button
+                            d3.select(document.getElementById(this.id)).text('\uf192'); 
+                        }
+                    }              
                  });
     
     
@@ -432,49 +471,49 @@ function getParentsIndex(indexOfNode){
     
 function calculateTable(indexOfNode){
         
-    //was passiert, wenn keine states da sind? examinations
     var parents = getParentsIndex(indexOfNode);
     parents.push(indexOfNode)
 
+    // parents in columns (Spalten)
     var columns = new Array(0);
     parents.forEach(function(element,index, array){
         columns.push(json.nodes[element].name)
     })
+    // states of this node in last columns (this node is last element of parents)
     json.nodes.forEach(function(d,i){
         if(d.name == columns[columns.length-1]){
-            columns[columns.length-1] = d.properties.states[0].name;
-            for(i=0; i<d.properties.states.length-1; i++){
-                columns.push(d.properties.states[i+1].name);
+            if(d.properties.states.length == 0){ //node has no states (examinstions?)
+                columns.split(columns.length-1,1);
+            } else { //node has states
+                columns[columns.length-1] = d.properties.states[0].name;
+                for(i=0; i<d.properties.states.length-1; i++){
+                    columns.push(d.properties.states[i+1].name);
+                }
             }
         }
     })
 
     var rows = [];
+    
     var countRows = 1;
     for (p = 0; p < parents.length-1; p++){
         countRows *= json.nodes[parents[p]].properties.states.length;
-        countRows *= json.nodes[parents[p]].properties.states.length;
     }
-
-    var tryRow = new Array(columns.length - json.nodes[parents[parents.length-1]].properties.states.length)
-    for(i=0;i<tryRow.length;i++){
-        tryRow[i] = "state";
-    }
-    for (i = 0; i < json.nodes[parents[parents.length-1]].properties.states.length; i++){
-        tryRow.push(json.nodes[parents[parents.length-1]].properties.cpt.probabilities[i].probability)
-    }
-    for (i = 0; i < countRows ; i++){
-        rows.push(tryRow);
-    }
-
-    // jede Zusammensetzung der states
-/*        for (i = 0; i < rows.length; i++){
-        for (j = 0; j < parents.length; j++) {
-            for (k=0; k<json.nodes[parents[j]].properties.states.length; k++) {
-               rows[i][j] = json.nodes[parents[j]].properties.states[k];
-            }
+    
+    // statenames 
+    // #columns - #states of this node
+    var stateRow = new Array(columns.length - json.nodes[parents[parents.length-1]].properties.states.length)
+    var probRow = new Array(json.nodes[parents[parents.length-1]].properties.states.length)
+    for (j=0; j<countRows; j++){
+        for(i=0; i<(columns.length - json.nodes[parents[parents.length-1]].properties.states.length); i++){
+            stateRow[i] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*2+i].conditions[i].name;
         }
-    }*/
+        for (h=0; h<json.nodes[parents[parents.length-1]].properties.states.length; h++){
+            probRow[h] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*2+h].probability;
+        }
+        rows.push(stateRow.concat(probRow))
+    }
+    
     return tabulate(rows, columns)
 }
 
