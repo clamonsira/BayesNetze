@@ -5,7 +5,7 @@
 var statePosX = [50, 350, 650, 200, 500, 50, 350, 650, 50, 350, 650];
 var statePosY = [670, 670, 670, 870, 870, 300, 300, 300, 70, 70, 70]; 
 
-d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1"
+d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1"
     if (error) throw error;
     // ------------------------------------------
     // Bayes Netz
@@ -42,20 +42,20 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                     .attr("x2",function(d,i){return nodePosX[d.target] + 100;})
                     .attr("y2",function(d,i){return nodePosY[d.target] + getNodeHeight(d.target);})
                     //.attr("transform", function(d,i){return "translate(100,0)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
-                    .style("marker-end",  "url(#end)")
+                    .style("marker-end",  "url(#low)")
                     .attr("stroke", "lightblue")/*function(l,i) { FARBE PRO EBENE?
                         color = colors[Math.floor(Math.random()*colors.length)];
                         return color;
                     });*/
     //Arrows
                 leftContainer.append("defs").selectAll("marker")
-                    .data(["end"])
+                    .data(["low", "high"])
                     .enter().append("marker")
                     .attr("id", function(d) { return d; })
                     .attr("viewBox", "0 -5 10 10")
                     .attr("refX", 10)//versetzt den Marker nach hinten
                     .attr("refY", 0)
-                    .attr("fill", "lightblue")
+                    .attr("fill", function(d,i) {if(i == 0){return "lightblue"} else{ return "#0489B1"}})
                     .attr("markerWidth", 7)
                     .attr("markerHeight", 17)
                     .attr("orient", "auto")
@@ -79,45 +79,11 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                     // -----------------
                     // highlight Node
                     // -----------------
-                     .on("click", function highlightNode(){
-
-                                 for (i=0; i<json.nodes.length; i++){
-                                     if (this.id == json.nodes[i].name){
-
-                                         if (activeNodes[i]){
-                                            d3.select(this.firstChild).style("stroke-width", 2);
-                                            headingDiscription.text(" ");
-                                            headingTable.text(" ");
-                                            rightContainer.selectAll("foreignObject").remove();
-                                            discriptionBackground.attr("fill","white");
-                                            activeNodes[i] = false;
-                                      d3.event.stopPropagation(); //? überlappender effekt
-                                            break;
-                                         }
-                                        if (!activeNodes[i]){
-                                            //wenn schon ein anderer activ war
-                                            for (var j = 0; j < activeNodes.length; ++j) { 
-                                                if (activeNodes[j]){
-                                                    d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
-                                                    rightContainer.selectAll("foreignObject").remove();
-                                                }
-                                                activeNodes[j] = false; 
-                                            };
-                                            d3.select(this.childNodes[0]).style("stroke-width", 5);
-                                            headingTable.text(this.id);
-                                            activeNodes[i] = true;
-                                            //createTable
-                                            var tabl = calculateTable(i);
-                                            headingDiscription.text("Beschreibung");
-                                            discriptionBackground.attr("fill","lightblue");
-                                    d3.event.stopPropagation();
-                                            break;
-                                            
-                                        }  
-                                     }
-                                 }
-
-                    });
+                     .on("click", function hN() {
+                         
+                         highlightNode(this.id);
+                         
+                     });
     
     var rects = node.append("rect").attr("class", "nodeRect");
 
@@ -199,7 +165,8 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                 .attr("fill","purple")
                 .text('\uf10c') //fontawesome labels
                 .on("click", function hightlightButton(){
-        
+        //Wieso werden alle Nodes unhighlighted wenn ein Button ausgewählt wird??? Der Node soll highlighted sein wenn ein Button ausgewählt wird
+                    highlightNode(this.id.split(" ")[0], true);
                     active = false;
                     //checks if clicked button is already clicked an reverses text
                     if(clickedButtons.indexOf(this.id) != -1){
@@ -231,7 +198,7 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                             //new button
                             d3.select(document.getElementById(this.id)).text('\uf192'); 
                         }
-                    }              
+                    } 
                  });
     
     
@@ -278,8 +245,9 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                      .attr("x", 190)
                      .attr("text-anchor", "end");
     
+    
 // ------------------------------------------
-// rechte Seite
+// RECHTE SEITE
 // ------------------------------------------
     
 var widthRight = window.innerWidth * 0.35 - 5;
@@ -301,7 +269,7 @@ var headingTable = rightContainer.append("text")
 
 
 // -----------------
-// Buttons
+// Menu Buttons
 // -----------------
 var allButtons= rightContainer.append("g")
                     .attr("id","allButtons") 
@@ -600,5 +568,66 @@ var table = rightContainer.append("foreignObject")
 
     return table;
 }
+    
+    function highlightNode(id, ac = false){ //ac = true if node shall stay active
+            
+         for (i=0; i<json.nodes.length; i++){
+             if (id == json.nodes[i].name){
+                 parents = getParentsIndex(i);//links
+                 
+                 if (activeNodes[i] && !ac){
+                    //unhighlight this node
+                    d3.select(document.getElementById(id).firstChild).style("stroke-width", 2);
+                    headingDiscription.text(" ");
+                    headingTable.text(" ");
+                    rightContainer.selectAll("foreignObject").remove();
+                    discriptionBackground.attr("fill","white");
+                    activeNodes[i] = false;
+                    //links
+                    json.links.forEach(function(d,i,a){
+                        d3.select(document.getElementById("graph").childNodes[i]).attr("stroke", "lightblue").style("marker-end",  "url(#low)");
+                    })
+                    break;
+                 }
+                if (!activeNodes[i]){
+                    //highlight this node
+                    
+                        //if there was any other node highlighted, it becomes unhighlighted
+                    for (var j = 0; j < activeNodes.length; ++j) { 
+                        if (activeNodes[j]){
+                            d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2); //rect HARD CODE
+                            rightContainer.selectAll("foreignObject").remove();
+                            //links
+                            json.links.forEach(function(d,i,a){
+                            d3.select(document.getElementById("graph").childNodes[i]).attr("stroke", "lightblue").style("marker-end",  "url(#low)")});
+                        }
+                        activeNodes[j] = false; 
+                    };
+                    
+                    //this node gets highlighted
 
+                    d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 5);
+                    headingTable.text(id);
+                    activeNodes[i] = true;
+                    //createTable
+                    var tabl = calculateTable(i);
+                    headingDiscription.text("Beschreibung");
+                    discriptionBackground.attr("fill","lightblue");
+                    //links
+                    for(k = 0; k < parents.length; k++){
+                        for (l = 0; l < json.links.length; l++) {
+                             if(parents[k] == json.links[l].source) {
+                                 d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
+                                 break;
+                             }
+                        }
+                    }
+                    break;
+
+                }  
+             }
+         }
+
+    }
+    
 })

@@ -13,13 +13,12 @@
 	-lightblue
 		- todo: curvededges
 		- todo: hinter Marker weiß, verschwinden hinter Zustand, getStateHeight,
-		- highlightEdges zu clickedNode
+	- highlightEdges zu clickedNode ÜBERARBEITEN
 	
 - Nodes
-	- HighlightNode: wenn angeklickt wird Node eingefärbt und Tabelle öffnet sich
+	- HighlightNode: wenn angeklickt wird Node eingefärbt und Tabelle öffnet sich ÜBERARBEITEN
 		- todo: Balken für W'keit
 	- Radio Buttons 
-		- todo: Überlagerung von Buttons und Nodes: highlightNodes auslagern
 	
 - Tabellen
 	- Anzahl der Zeilen -> alle Kombinationen der states aus Knoten und Elternknoten
@@ -29,7 +28,10 @@
 
 - Menü
 	- 4 Buttons
-		- todo: Aktualisier Knopf bei Anpassungen der W'keiten
+		- todo: Aktualisier Knopf bei Anpassungen der W'keiten	
+		- Animationen beim Laden, verändern...
+		- speichern?
+		- erweitern?
 
 	
 - Zusatzfunktionalitäten
