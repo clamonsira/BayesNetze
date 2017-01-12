@@ -18,7 +18,7 @@
 	- highlightLinks zu highlightNode ÜBERARBEITEN: getParentsIndex??
 	
 - Nodes
-	- HighlightNode: wenn angeklickt wird Node eingefärbt und Tabelle öffnet sich ÜBERARBEITEN
+	- HighlightNode: wenn angeklickt wird Node eingefärbt und Tabelle öffnet sich
 		- todo: Balken für W'keit
 	- Radio Buttons ÜBERARBEITEN
 	
