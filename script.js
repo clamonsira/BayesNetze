@@ -5,7 +5,7 @@
 var statePosX = [50, 350, 650, 200, 500, 50, 350, 650, 50, 350, 650];
 var statePosY = [670, 670, 670, 870, 870, 300, 300, 300, 70, 70, 70]; 
 
-d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1"
+d3.json("http://10.200.1.75:8012/bn?name=bnlung1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1"
     if (error) throw error;
     // ------------------------------------------
     // Bayes Netz
@@ -37,10 +37,27 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
                     .enter().append("line")
                     .attr("id", "link")
                     .attr("class", "link")
-                    .attr("x1",function(d,i){return nodePosX[d.source] + 100;})
-                    .attr("y1",function(d,i){return nodePosY[d.source] ;}) // hier muss noch der Fall berücksichtigt werden, wenn ein LINK IN GLEICHER EBENE ist, curvedEdges?
-                    .attr("x2",function(d,i){return nodePosX[d.target] + 100;})
-                    .attr("y2",function(d,i){return nodePosY[d.target] + getNodeHeight(d.target);})
+                    .attr("x1",function(d,i){
+                        return nodePosX[d.source] + 100;})
+                    .attr("y1",function(d,i){return nodePosY[d.source] ;}) // hier muss noch der Fall berücksichtigt werden, wenn ein LINK IN GLEICHER EBENE ist, curvedEdges?oder von oben nach unten
+                    .attr("x2",function(d,i){ //i index aller links
+                        var c = 0; //counter, der listen mit dem gleichen target
+                        var p,x; //position dieses links innerhalb der links mit gleichem target
+                        for(j= 0; j < json.links.length;j++){
+                           if(json.links[j].target == json.links[i].target){
+                               c++;
+                               if(j == i) {
+                                   p = c;
+                               }
+                           } 
+                        }
+                        
+                        if(c == 1){x = 100}
+                        else if(c == 2){if(p==1){x = 50}else if(p==2){ x = 150}}
+                        else if(c == 3){if(p==1){x = 40}else if(p==2){ x = 100}else if(p==3){x=160}}
+                        else if(c == 4){if(p==1){x = 30}else if(p==2){ x = 75}else if(p==3){x=125}else if(p==4){x = 170}}
+                        return nodePosX[d.target] + x;})
+                    .attr("y2",function(d,i){return nodePosY[d.target] + getNodeHeight(d.target);})//FALL:obere Ebene zu unterer Ebene
                     //.attr("transform", function(d,i){return "translate(100,0)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
                     .style("marker-end",  "url(#low)")
                     .attr("stroke", "lightblue")/*function(l,i) { FARBE PRO EBENE?
@@ -66,9 +83,9 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
     // -----------------
     // Nodes
     // -----------------   
+
     var activeNodes = new Array(json.nodes.length);
     for (var i = 0; i < activeNodes.length; ++i) { activeNodes[i] = false; };
-
     var node = leftContainer.selectAll(".node")
                       .data(json.nodes)
                     .enter().append("g")
@@ -164,9 +181,9 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
                 .attr("dominant-baseline","central")
                 .attr("fill","purple")
                 .text('\uf10c') //fontawesome labels
-                .on("click", function hightlightButton(){
+                .on("click", function highlightButton(){
         //Wieso werden alle Nodes unhighlighted wenn ein Button ausgewählt wird??? Der Node soll highlighted sein wenn ein Button ausgewählt wird
-                    highlightNode(this.id.split(" ")[0], true);
+                    highlightNode(this.id.split(" ")[0],true);
                     active = false;
                     //checks if clicked button is already clicked an reverses text
                     if(clickedButtons.indexOf(this.id) != -1){
@@ -260,7 +277,7 @@ var rightContainer = d3.select("body").append("svg")
 // -----------------
 // Heading of Table
 // -----------------
-var headingTable = rightContainer.append("text")
+var tableHeading = rightContainer.append("text")
                      .style("fill", "steelblue")
                      .attr("x", widthRight / 2)
                      .attr("y", 180)
@@ -271,13 +288,13 @@ var headingTable = rightContainer.append("text")
 // -----------------
 // Menu Buttons
 // -----------------
-var allButtons= rightContainer.append("g")
-                    .attr("id","allButtons") 
+var MenuButtons= rightContainer.append("g")
+                    .attr("id","MenuButtons") 
 
 //fontawesome button labels
 var labels= ['\uf021 aktualisieren','\uf0ad bearbeiten','\uf0e2 zurück', '\uf055 erweitern'];
 
-var buttonGroups= allButtons.selectAll("g.button")
+var buttonGroups= MenuButtons.selectAll("g.button")
                         .data(labels)
                         .enter()
                         .append("g")
@@ -351,21 +368,29 @@ function computeLayout() {
             therapyNodes.push(i);
         }
     }
-    var allArrays = [symptomNodes, diagnosisNodes, therapyNodes]
+    var allArrays = [therapyNodes, diagnosisNodes, symptomNodes]
     
     var xPos = new Array(json.nodes.length), yPos = new Array(json.nodes.length);
+    var YSpace = 250, tmpYPos = 0, YStart = 70;
+    var XSpace = 300, tmpXPos = 0, XStart = 50;
     
     allArrays.forEach(function(a,noOfArray){
         
-        if (a.length > 6) {
+        if (a.length > 8) {
             throw error;
         }
         else {
+            tmpYPos = YStart + noOfArray * YSpace
+            tmpXPos = XStart 
+
             a.forEach(function(nodeI, noOfIndex,a){
                 // -----------------
-                // yPos // umändern zu dynamisch! (mit scroll)
+                // yPos pro Array
                 // ----------------- 
-                if(noOfIndex < 4) {
+                
+                yPos[nodeI] = tmpYPos; // + 200 *Reihe array intern
+                
+/*                if(noOfIndex < 4) {
                     if (noOfArray == 0) {
                         yPos[nodeI] = 670;
                     }
@@ -386,12 +411,13 @@ function computeLayout() {
                     if (noOfArray == 2) {
                         yPos[nodeI] = 270;
                     }
-                }
+                }*/
             // -----------------
             // xPos
             // ----------------- 
+                xPos[nodeI] = tmpXPos + (noOfIndex % 4)*XSpace;
                 
-                if(noOfIndex % 4 == 0) {
+/*                if(noOfIndex % 4 == 0) {
                     xPos[nodeI] = 50;
                 }
                 if(noOfIndex % 4 == 1) {
@@ -418,8 +444,8 @@ function computeLayout() {
             //in der letzten Zeile ist nur ein Zustand
             if(a.length == 1 || a.length == 5) {
                 xPos[a[a.length-1]] = 500;
-            }
-        }
+            }*/
+        })}
     })
 
     return [xPos, yPos]; 
@@ -434,6 +460,7 @@ function getParentsIndex(indexOfNode){
             parents.push(json.links[i].source);
         }
     }
+    alert("t: " +parents)
     return parents;
 }
     
@@ -474,8 +501,7 @@ function calculateTable(indexOfNode){
     var probRow = new Array(json.nodes[parents[parents.length-1]].properties.states.length)
     for (j=0; j<countRows; j++){
         for(i=0; i<(columns.length - json.nodes[parents[parents.length-1]].properties.states.length); i++){
-            stateRow[i] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*2+i].conditions[i].name;
-        }
+            stateRow[i] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*2+i].conditions[i].name;         }
         for (h=0; h<json.nodes[parents[parents.length-1]].properties.states.length; h++){
             probRow[h] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*2+h].probability;
         }
@@ -569,29 +595,71 @@ var table = rightContainer.append("foreignObject")
     return table;
 }
     
-    function highlightNode(id, ac = false){ //ac = true if node shall stay active
-            
-         for (i=0; i<json.nodes.length; i++){
+    function highlightNode(id,ac=false){
+        for (i=0; i<json.nodes.length; i++){
+              if (id == json.nodes[i].name){
+                  if (activeNodes[i] && !ac){
+                     d3.select(document.getElementById(id).firstChild).style("stroke-width", 2);
+                     headingDiscription.text(" ");
+                     tableHeading.text(" ");
+                     rightContainer.selectAll("foreignObject").remove();
+                     discriptionBackground.attr("fill","white");
+                     activeNodes[i] = false;
+                     break;
+                  }
+                 if (!activeNodes[i]){
+                    //wenn schon ein anderer activ war
+                     for (var j = 0; j < activeNodes.length; ++j) { 
+                         if (activeNodes[j]){
+                             d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
+                             rightContainer.selectAll("foreignObject").remove();
+                         }
+                         activeNodes[j] = false; 
+                     };
+                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 5);
+                     tableHeading.text(id);
+                     activeNodes[i] = true;
+                     //createTable
+                     var tabl = calculateTable(i);
+                     headingDiscription.text("Beschreibung");
+                     discriptionBackground.attr("fill","lightblue");
+                   // parents = getParentsIndex(i);//links HIER MIT FUNKTIONIERT ES NICHT
+                   // alert("p: "+parents)
+/*                    for(k = 0; k < parents.length; k++){
+                        for (l = 0; l < json.links.length; l++) {
+                             if(parents[k] == json.links[l].source) {
+                                 d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
+                                
+                             }
+                        }
+                    }*/
+                     break;
+
+                 }  
+              }
+          }
+        alert(activeNodes)//wieso wird diese Zeile nicht ausgeführt wenn man einen Node makiert?
+    }
+/*         for (i=0; i<json.nodes.length; i++){
              if (id == json.nodes[i].name){
                  parents = getParentsIndex(i);//links
                  
-                 if (activeNodes[i] && !ac){
+                 if (activeNodes[i]){// && !ac){
                     //unhighlight this node
-                    d3.select(document.getElementById(id).firstChild).style("stroke-width", 2);
+                    d3.select(document.getElementById(id).firstChild).style("stroke-width", 2); //rect HARD CODE
                     headingDiscription.text(" ");
-                    headingTable.text(" ");
-                    rightContainer.selectAll("foreignObject").remove();
+                    tableHeading.text(" ");
+                    rightContainer.selectAll("foreignObject").remove(); //removes table
                     discriptionBackground.attr("fill","white");
-                    activeNodes[i] = false;
                     //links
-                    json.links.forEach(function(d,i,a){
-                        d3.select(document.getElementById("graph").childNodes[i]).attr("stroke", "lightblue").style("marker-end",  "url(#low)");
+                    json.links.forEach(function(d,ind,a){
+                        d3.select(document.getElementById("graph").childNodes[ind]).attr("stroke", "lightblue").style("marker-end",  "url(#low)");
                     })
+                    activeNodes[i] = false;
                     break;
                  }
                 if (!activeNodes[i]){
                     //highlight this node
-                    
                         //if there was any other node highlighted, it becomes unhighlighted
                     for (var j = 0; j < activeNodes.length; ++j) { 
                         if (activeNodes[j]){
@@ -600,19 +668,17 @@ var table = rightContainer.append("foreignObject")
                             //links
                             json.links.forEach(function(d,i,a){
                             d3.select(document.getElementById("graph").childNodes[i]).attr("stroke", "lightblue").style("marker-end",  "url(#low)")});
-                        }
-                        activeNodes[j] = false; 
+                            activeNodes[j] = false;
+                        } 
                     };
                     
                     //this node gets highlighted
-
                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 5);
-                    headingTable.text(id);
-                    activeNodes[i] = true;
-                    //createTable
-                    var tabl = calculateTable(i);
+                    tableHeading.text(id);                   
                     headingDiscription.text("Beschreibung");
                     discriptionBackground.attr("fill","lightblue");
+                    //createTable
+                    var tabl = calculateTable(i);
                     //links
                     for(k = 0; k < parents.length; k++){
                         for (l = 0; l < json.links.length; l++) {
@@ -622,12 +688,13 @@ var table = rightContainer.append("foreignObject")
                              }
                         }
                     }
+                    activeNodes[i] = true; 
                     break;
 
                 }  
              }
          }
-
-    }
+alert(activeNodes)
+    }*/
     
 })

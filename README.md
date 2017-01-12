@@ -9,16 +9,18 @@
 		- 1:mitte, 2: außen, 3: mitte,  2 + 3, 4 + 2,   aufteilen
 
 
-- Edges
+- Links
 	-lightblue
-		- todo: curvededges
-		- todo: hinter Marker weiß, verschwinden hinter Zustand, getStateHeight,
-	- highlightEdges zu clickedNode ÜBERARBEITEN
+		- todo: curvedlinks
+		- todo: hinter Marker weiß, verschwinden hinter Zustand, getStateHeight
+	- Links die ankommen zeigen nicht auf gleichen Punkt
+		- todo: Links von oben nach unten sollen oben am target Node zu sehen sein
+	- highlightLinks zu highlightNode ÜBERARBEITEN: getParentsIndex??
 	
 - Nodes
 	- HighlightNode: wenn angeklickt wird Node eingefärbt und Tabelle öffnet sich ÜBERARBEITEN
 		- todo: Balken für W'keit
-	- Radio Buttons 
+	- Radio Buttons ÜBERARBEITEN
 	
 - Tabellen
 	- Anzahl der Zeilen -> alle Kombinationen der states aus Knoten und Elternknoten
