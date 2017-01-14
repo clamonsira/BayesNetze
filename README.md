@@ -11,10 +11,8 @@
 
 - Links
 	-lightblue
-		- todo: curvedlinks
-		- todo: hinter Marker weiß, verschwinden hinter Zustand, getStateHeight
+		- todo: curvedlinks?
 	- Links die ankommen zeigen nicht auf gleichen Punkt
-		- todo: Links von oben nach unten sollen oben am target Node zu sehen sein
 	- highlightLinks zu highlightNode ÜBERARBEITEN: getParentsIndex??
 	- Links gleicher Ebenen werden waagerecht angezeigt
 	

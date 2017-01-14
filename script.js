@@ -30,18 +30,19 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
     nodePosY = positions[1];
     
     // -----------------
-    // Edges
+    // links
     // -----------------
+    var linkSpace = 7;
     var link = leftContainer.selectAll(".link")
                     .data(json.links)
                     .enter().append("line")
                     .attr("id", "link")
                     .attr("class", "link")
                     .attr("x1",function(d,i){
-                        if(nodePosY[d.source]==nodePosY[d.target]){
-                            if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.source] + 200;}//edge from left to right
-                            else {return nodePosX[d.source]}
-                        }
+                        if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+                            if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.source] + 200;}//link from right to left
+                            else {return nodePosX[d.source] }
+                        } 
                         else{
                             var c = 0; //counter, der listen mit dem gleichen target
                             var p,x; //position dieses links innerhalb der links mit gleichem target
@@ -58,15 +59,19 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                             else if(c == 3){if(p==1){x=40}else if(p==2){x=100}else if(p==3){x=160}}
                             else if(c == 4){if(p==1){x=30}else if(p==2){x=75}else if(p==3){x=125}else if(p==4){x=170}}
                             else if(c == 5){if(p==1){x=5}else if(p==2){x=52}else if(p==3){x=100}else if(p==4){x=148}else if(p==5){x=195}}
-                            if(i==5){alert("c,p" + c+p)}
                             return nodePosX[d.source] + x;}
                         })
-                    .attr("y1",function(d,i){if(nodePosY[d.source]==nodePosY[d.target]){return nodePosY[d.source] + getNodeHeight(d.source)*0.5;}
-                                             else{return nodePosY[d.source];}}) // hier muss noch der Fall berücksichtigt werden, wenn ein LINK IN GLEICHER EBENE ist, curvedEdges?oder von oben nach unten
+                    .attr("y1",function(d,i){
+                        if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+                            return nodePosY[d.source] + getNodeHeight(d.source)*0.5;
+                        }                        
+                        else{//link from low to high
+                            return nodePosY[d.source];}
+                    })
                     .attr("x2",function(d,i){ //i index aller links
-                        if(nodePosY[d.source]==nodePosY[d.target]){
-                            if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.target]+200;} //edge from left to right
-                            else {return nodePosX[d.target]}
+                        if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+                            if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.target]+200 + linkSpace;} //link from right to left
+                            else {return nodePosX[d.target] - linkSpace}
                         }
                         else{
                             var c = 0; //counter, der listen mit dem gleichen target
@@ -86,8 +91,17 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                             else if(c == 5){if(p==1){x=5}else if(p==2){x=52}else if(p==3){x=100}else if(p==4){x=148}else if(p==5){x=195}}
                             return nodePosX[d.target] + x;}
                         })
-                    .attr("y2",function(d,i){if(nodePosY[d.source]==nodePosY[d.target]){return nodePosY[d.target] + getNodeHeight(d.target)*0.5;}else{
-                                             return nodePosY[d.target] + getNodeHeight(d.target);}})//FALL:obere Ebene zu unterer Ebene
+                    .attr("y2",function(d,i){
+                        if(nodePosY[d.source]==nodePosY[d.target]){
+                            return nodePosY[d.target] + getNodeHeight(d.target)*0.5;
+                        }
+                        else if(nodePosY[d.source] < nodePosY[d.target]){//link from high to low
+                            return nodePosY[d.target] - linkSpace;
+                        }
+                        else{
+                            return nodePosY[d.target] + getNodeHeight(d.target) + linkSpace;
+                        }
+                    })
                     //.attr("transform", function(d,i){return "translate(100,0)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
                     .style("marker-end",  "url(#low)")
                     .attr("stroke", "lightblue")/*function(l,i) { FARBE PRO EBENE?
