@@ -5,7 +5,7 @@
 var statePosX = [50, 350, 650, 200, 500, 50, 350, 650, 50, 350, 650];
 var statePosY = [670, 670, 670, 870, 870, 300, 300, 300, 70, 70, 70]; 
 
-d3.json("http://10.200.1.75:8012/bn?name=bnlung1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1"
+d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1"
     if (error) throw error;
     // ------------------------------------------
     // Bayes Netz
@@ -38,26 +38,56 @@ d3.json("http://10.200.1.75:8012/bn?name=bnlung1", function(error, json) { //"ht
                     .attr("id", "link")
                     .attr("class", "link")
                     .attr("x1",function(d,i){
-                        return nodePosX[d.source] + 100;})
-                    .attr("y1",function(d,i){return nodePosY[d.source] ;}) // hier muss noch der Fall berücksichtigt werden, wenn ein LINK IN GLEICHER EBENE ist, curvedEdges?oder von oben nach unten
-                    .attr("x2",function(d,i){ //i index aller links
-                        var c = 0; //counter, der listen mit dem gleichen target
-                        var p,x; //position dieses links innerhalb der links mit gleichem target
-                        for(j= 0; j < json.links.length;j++){
-                           if(json.links[j].target == json.links[i].target){
-                               c++;
-                               if(j == i) {
-                                   p = c;
-                               }
-                           } 
+                        if(nodePosY[d.source]==nodePosY[d.target]){
+                            if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.source] + 200;}//edge from left to right
+                            else {return nodePosX[d.source]}
                         }
-                        
-                        if(c == 1){x = 100}
-                        else if(c == 2){if(p==1){x = 50}else if(p==2){ x = 150}}
-                        else if(c == 3){if(p==1){x = 40}else if(p==2){ x = 100}else if(p==3){x=160}}
-                        else if(c == 4){if(p==1){x = 30}else if(p==2){ x = 75}else if(p==3){x=125}else if(p==4){x = 170}}
-                        return nodePosX[d.target] + x;})
-                    .attr("y2",function(d,i){return nodePosY[d.target] + getNodeHeight(d.target);})//FALL:obere Ebene zu unterer Ebene
+                        else{
+                            var c = 0; //counter, der listen mit dem gleichen target
+                            var p,x; //position dieses links innerhalb der links mit gleichem target
+                            for(j= 0; j < json.links.length;j++){
+                               if(json.links[j].target == json.links[i].target || json.links[j].source == json.links[i].source){
+                                   c++;
+                                   if(j == i) {
+                                       p = c;
+                                   }
+                               } 
+                            }
+                            if(c == 1){x = 100}
+                            else if(c == 2){if(p==1){x=50}else if(p==2){x=150}}
+                            else if(c == 3){if(p==1){x=40}else if(p==2){x=100}else if(p==3){x=160}}
+                            else if(c == 4){if(p==1){x=30}else if(p==2){x=75}else if(p==3){x=125}else if(p==4){x=170}}
+                            else if(c == 5){if(p==1){x=5}else if(p==2){x=52}else if(p==3){x=100}else if(p==4){x=148}else if(p==5){x=195}}
+                            if(i==5){alert("c,p" + c+p)}
+                            return nodePosX[d.source] + x;}
+                        })
+                    .attr("y1",function(d,i){if(nodePosY[d.source]==nodePosY[d.target]){return nodePosY[d.source] + getNodeHeight(d.source)*0.5;}
+                                             else{return nodePosY[d.source];}}) // hier muss noch der Fall berücksichtigt werden, wenn ein LINK IN GLEICHER EBENE ist, curvedEdges?oder von oben nach unten
+                    .attr("x2",function(d,i){ //i index aller links
+                        if(nodePosY[d.source]==nodePosY[d.target]){
+                            if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.target]+200;} //edge from left to right
+                            else {return nodePosX[d.target]}
+                        }
+                        else{
+                            var c = 0; //counter, der listen mit dem gleichen target
+                            var p,x; //position dieses links innerhalb der links mit gleichem target
+                            for(j= 0; j < json.links.length;j++){
+                               if(json.links[j].target == json.links[i].target || json.links[j].source == json.links[i].source){
+                                   c++;
+                                   if(j == i) {
+                                       p = c;
+                                   }
+                               } 
+                            }
+                            if(c == 1){x = 100}
+                            else if(c == 2){if(p==1){x=50}else if(p==2){x=150}}
+                            else if(c == 3){if(p==1){x=40}else if(p==2){x=100}else if(p==3){x=160}}
+                            else if(c == 4){if(p==1){x=30}else if(p==2){x=75}else if(p==3){x=125}else if(p==4){x=170}}
+                            else if(c == 5){if(p==1){x=5}else if(p==2){x=52}else if(p==3){x=100}else if(p==4){x=148}else if(p==5){x=195}}
+                            return nodePosX[d.target] + x;}
+                        })
+                    .attr("y2",function(d,i){if(nodePosY[d.source]==nodePosY[d.target]){return nodePosY[d.target] + getNodeHeight(d.target)*0.5;}else{
+                                             return nodePosY[d.target] + getNodeHeight(d.target);}})//FALL:obere Ebene zu unterer Ebene
                     //.attr("transform", function(d,i){return "translate(100,0)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
                     .style("marker-end",  "url(#low)")
                     .attr("stroke", "lightblue")/*function(l,i) { FARBE PRO EBENE?
@@ -202,7 +232,7 @@ d3.json("http://10.200.1.75:8012/bn?name=bnlung1", function(error, json) { //"ht
                         if(active == false){
                             d3.select(document.getElementById(this.id)).text('\uf192');
                             clickedButtons.push(this.id);
-                        } else { // if there already is clickedButton in Node, change text of old and new button and push to list
+                        } else { // if there already is a clicked Button in Node, change text of old and new button and push to list
                             //old button
                             for(i = 0; i < clickedButtons.length; i++){
                                 if (this.parentElement.parentElement.parentElement.id == clickedButtons[i].split(" ")[0]){
@@ -368,7 +398,7 @@ function computeLayout() {
             therapyNodes.push(i);
         }
     }
-    var allArrays = [therapyNodes, diagnosisNodes, symptomNodes]
+    var allArrays = [symptomNodes, diagnosisNodes, therapyNodes] // gibt die Reihenfolge der Ebenen an
     
     var xPos = new Array(json.nodes.length), yPos = new Array(json.nodes.length);
     var YSpace = 250, tmpYPos = 0, YStart = 70;
@@ -388,9 +418,9 @@ function computeLayout() {
                 // yPos pro Array
                 // ----------------- 
                 
-                yPos[nodeI] = tmpYPos; // + 200 *Reihe array intern
+                //dyn: yPos[nodeI] = tmpYPos; // + 200 *Reihe array intern
                 
-/*                if(noOfIndex < 4) {
+                if(noOfIndex < 4) {
                     if (noOfArray == 0) {
                         yPos[nodeI] = 670;
                     }
@@ -411,13 +441,13 @@ function computeLayout() {
                     if (noOfArray == 2) {
                         yPos[nodeI] = 270;
                     }
-                }*/
+                }
             // -----------------
             // xPos
             // ----------------- 
-                xPos[nodeI] = tmpXPos + (noOfIndex % 4)*XSpace;
+                //dyn: xPos[nodeI] = tmpXPos + (noOfIndex % 4)*XSpace;
                 
-/*                if(noOfIndex % 4 == 0) {
+                if(noOfIndex % 4 == 0) {
                     xPos[nodeI] = 50;
                 }
                 if(noOfIndex % 4 == 1) {
@@ -444,8 +474,8 @@ function computeLayout() {
             //in der letzten Zeile ist nur ein Zustand
             if(a.length == 1 || a.length == 5) {
                 xPos[a[a.length-1]] = 500;
-            }*/
-        })}
+            }
+        }
     })
 
     return [xPos, yPos]; 
