@@ -5,7 +5,7 @@
 var statePosX = [50, 350, 650, 200, 500, 50, 350, 650, 50, 350, 650];
 var statePosY = [670, 670, 670, 870, 870, 300, 300, 300, 70, 70, 70]; 
 
-d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1"
+d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1"
     if (error) throw error;
     // ------------------------------------------
     // Bayes Netz
@@ -28,6 +28,22 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
     var positions = computeLayout();
     nodePosX = positions[0];
     nodePosY = positions[1];
+    
+    //turn layout
+    var c1 = 0,c2 = 0;
+    for(i = 0; i < json.links.length; i++) {
+        if(nodePosY[json.links[i].target] < nodePosY[json.links[i].source] ) { //link is from down to up
+            c1++;
+        } else {
+            c2++;
+        }
+    }
+    
+    if(c1 < c2) {
+        positions = computeLayout(true);
+        nodePosX = positions[0];
+        nodePosY = positions[1];
+    }
     
     // -----------------
     // links
@@ -56,7 +72,7 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
                                            }
                                         } 
                                     } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]) { //link from up to down
-                                        if(json.links[j].taget == json.links[i].source){
+                                        if(json.links[j].target == json.links[i].source){
                                            c++;
                                            if(j == i) {
                                                p = c;
@@ -202,10 +218,6 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
                       .attr("class", "node")
                       .attr("id", function(d){return d.name})
                      .attr("transform", function(d,i) { return "translate(" + nodePosX[i] + "," + nodePosY[i] + ")"}) 
-
-                    // -----------------
-                    // highlight Node
-                    // -----------------
                      .on("click", function hN() {
                          
                          highlightNode(this.id);
@@ -231,11 +243,10 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
     var name = node.append("text");
 
     var nameAttributes = name.style("fill", "purple")
-                     .attr("x", 70)
-                     .attr("y", 22)
+                     .attr("x", 5)
+                     .attr("y", 23)
                      .text(function (d) {return d.name;})
-                     .attr("font-size", "22px")
-                     .attr("text-anchor", "middle");
+                     .attr("font-size", function(d) {return Math.min(25, 80 / this.getComputedTextLength() * 24) + "px"; });
     
     var stateGroup = node.append("g")
                          .attr("id", function(d) {return "stateGroup" });//+ d.name} );
@@ -379,7 +390,7 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
           .sort(null);
 
         var path = svg.selectAll('path')
-          .data(pie(d.properties.cpt.probabilities)) //nimmt im moment alle Tabellenwerte
+          .data(pie(d.properties.cpt.probabilities.slice(-(d.properties.states.length - d.properties.cpt.probabilities.length)))) //nimmt im moment die ersten Tabellenwerte
           .enter()
           .append('path')
           .attr('d', arc)
@@ -447,7 +458,7 @@ var MenuButtons= menuGroup.append("g")
                     .attr("id","MenuButtons") 
 
 //fontawesome button labels
-var labels= ['\uf021 aktualisieren','\uf0ad speichern','\uf0e2 zurück', '\uf055 erweitern'];
+var labels= ['\uf021 aktualisieren', '\uf055 erweitern','\uf08e laden','\uf0c7 speichern'];
 
 var buttonGroups= MenuButtons.selectAll("g.button")
                         .data(labels)
@@ -487,8 +498,8 @@ buttonGroups.append("text")
 // Heading of Table
 // -----------------
 
-d3.select(document.getElementById("tableGroup").firstChild).attr("height", 700).attr("x", x0 -20).attr("y", yTemp)
-yTemp += (700 + gSpace)
+d3.select(document.getElementById("tableGroup").firstChild).attr("height", 730).attr("x", x0 -20).attr("y", yTemp)
+yTemp += (730 + gSpace)
 
 var tableHeading = tableGroup.append("text")
                      .style("fill", "steelblue")
@@ -512,14 +523,14 @@ var discriptionBackground = tableGroup.append("rect")
 // -----------------
 // Legende
 // -----------------
-d3.select(document.getElementById("legendeGroup").firstChild).attr("height", 150).attr("x", x0 -20).attr("y", yTemp+5)
+d3.select(document.getElementById("legendeGroup").firstChild).attr("height", 120).attr("x", x0 -20).attr("y", yTemp+5)
 
-var headingLegende = legendeGroup.append("text")
+/*var headingLegende = legendeGroup.append("text")
                      .style("fill", "steelblue")            
                      .attr("x", x0)
                      .attr("y", yTemp+gSpace +35)
                      .attr("font-size", "23px")
-                     .text("Legende");
+                     .text("Legende");*/
 
 var rectLegende = legendeGroup
                 .selectAll("rect")
@@ -527,7 +538,7 @@ var rectLegende = legendeGroup
                 .append("rect")
                 .attr("x", function(d,i) {if(i==5) {return x0 + d*130 }
                                                         else {return x0 + d*120}})
-                .attr("y", yTemp+gSpace+30+30)
+                .attr("y", yTemp+gSpace+30)
                 .attr("height", 60)
                 .attr("width", function(d,i){if(i==5) {return 60} else{return 110}})
                 .style("fill", function(d,i){if(i==5) {return "#FE642E" }
@@ -539,7 +550,7 @@ var rectLegende = legendeGroup
                 .style("stroke-width", "3")
                 .attr("rx", function(d,i){if(i==5) {return 60} else{return 9}}).attr("ry",function(d,i){if(i==5) {return 60} else{return 9}});
 
-var text = [0,"therapy","examination","diagnosis","symptom","\uf059"]
+var text = [0,"Therapie","Test","Diagnose","Symptom","\uf059"]
 
 var textLegende = legendeGroup.selectAll("text").data(text).enter()
                     .append("text")
@@ -547,7 +558,7 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
                      .style("fill", "purple")            
                      .attr("x", function(d,i) {{if(i==5) {return x0 +55+ (i-1)*120 +15} else {
                                                 return x0 +55+ (i-1)*120}}})
-                     .attr("y", yTemp+gSpace+30+30+30)
+                     .attr("y", yTemp+gSpace+30+30)
                      .attr("font-size", function(d,i){if(i==5) {return "50px"} else {return "18px"}})
                      .attr("text-anchor","middle")
                      .attr("dominant-baseline","central")
@@ -557,10 +568,13 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
 // ------------------------------------------
 
 function getNodeHeight(nodeIndex){
+    if(json.nodes[nodeIndex].properties.states.length==1){
+        return (json.nodes[nodeIndex].properties.states.length+1) * 20 + 27
+    }
     return json.nodes[nodeIndex].properties.states.length * 20 + 27
 }
     
-function computeLayout() {
+function computeLayout(turn = false) {
     //Arrays mit Indexen der Nodes nach Typen sortiert, in therapyNodes sind auch die examinations drin
     var symptomNodes = [], therapyNodes = [], diagnosisNodes = [];
     for(i = 0; i < json.nodes.length; i++){
@@ -574,11 +588,16 @@ function computeLayout() {
             therapyNodes.push(i);
         }
     }
-       
-    var allArrays = [symptomNodes, diagnosisNodes, therapyNodes] // gibt die Reihenfolge der Ebenen an
     
+    var allArrays;
+    if(!turn){
+        allArrays = [symptomNodes, diagnosisNodes, therapyNodes] // gibt die Reihenfolge der Ebenen an
+    } else {
+        allArrays = [therapyNodes, diagnosisNodes, symptomNodes]
+    }
     
  //WENN ES WAAGERECHTE EDGES GIBT, DANN FÜGE DIE BEIDEN NODES NACH VORNE IN DER LISTE
+    
     var xPos = new Array(json.nodes.length), yPos = new Array(json.nodes.length);
     var YSpace = 250, tmpYPos = 0, YStart = 70;
     var XSpace = 300, tmpXPos = 0, XStart = 50;
@@ -601,10 +620,10 @@ function computeLayout() {
                 
                 if(noOfIndex < 4) {
                     if (noOfArray == 0) {
-                        yPos[nodeI] = 670;
+                        yPos[nodeI] = 750;
                     }
                     if (noOfArray == 1) {
-                        yPos[nodeI] = 300;
+                        yPos[nodeI] = 400;
                     }
                     if (noOfArray == 2) {
                         yPos[nodeI] = 70;
@@ -612,13 +631,13 @@ function computeLayout() {
                 }
                 else {
                     if (noOfArray == 0) {
-                        yPos[nodeI] = 870;
+                        yPos[nodeI] = 890;
                     }
                     if (noOfArray == 1) {
-                        yPos[nodeI] = 500;
+                        yPos[nodeI] = 550;
                     }
                     if (noOfArray == 2) {
-                        yPos[nodeI] = 270;
+                        yPos[nodeI] = 220;
                     }
                 }
             // -----------------
@@ -837,12 +856,12 @@ function calculateTableContent(indexOfNode){
 
         return table;
     }
-
+    
     function highlightNode(id,ac=false){
         for (i=0; i<json.nodes.length; i++){
               if (id == json.nodes[i].name){
                   if (activeNodes[i] && !ac){
-                     d3.select(document.getElementById(id).firstChild).style("stroke-width", 2);
+                     d3.select(document.getElementById(id).firstChild).style("stroke-width", 4);
                      headingDiscription.text(" ");
                      tableHeading.text(" ");
                      rightContainer.selectAll("foreignObject").remove();
@@ -854,12 +873,12 @@ function calculateTableContent(indexOfNode){
                     //wenn schon ein anderer activ war
                      for (var j = 0; j < activeNodes.length; ++j) { 
                          if (activeNodes[j]){
-                             d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
+                             d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 4);
                              rightContainer.selectAll("foreignObject").remove();
                          }
                          activeNodes[j] = false; 
                      };
-                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 6);
+                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 7);
                      tableHeading.text(id);
                      activeNodes[i] = true;
                      //createTable
