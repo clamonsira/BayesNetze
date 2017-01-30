@@ -5,7 +5,7 @@
 var statePosX = [50, 350, 650, 200, 500, 50, 350, 650, 50, 350, 650];
 var statePosY = [670, 670, 670, 870, 870, 300, 300, 300, 70, 70, 70]; 
 
-d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1"
+d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1 Dgraph.json"
     if (error) throw error;
     // ------------------------------------------
     // Bayes Netz
@@ -17,9 +17,13 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
     var leftContainer = d3.select("body").append("svg")
                                         .attr("width", width)
                                         .attr("height", height);
-                                        leftContainer.attr("id", "leftContainer").append("rect").attr("x", 10).attr("y", 10).attr("height", height-20).attr("width", width-20).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 20).attr("ry", 20);
-                                        leftContainer.append("g")
-                                        .attr("id", "graph");
+    
+    var conrect = leftContainer.attr("id", "leftContainer")
+                                .append("rect").attr("x", 10).attr("y", 10).attr("height", height-20).attr("width", width-20)
+                                .style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 20).attr("ry", 20);
+    
+    var  graph = leftContainer.append("g")
+                              .attr("id", "graph");
     
     // -----------------
     // Compute Layout
@@ -49,7 +53,7 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
     // links
     // -----------------
     var linkSpace = 7;
-    var link = leftContainer.selectAll(".link")
+    var link = graph.selectAll(".link")
                     .data(json.links)
                     .enter().append("line")
                     .attr("id", "link")
@@ -163,7 +167,6 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                                     }
                                 }
                             }
-                            if(i == 3) {alert("p,c "+p+c)}
                             
                             //DYNAMISCH?
                             if(c == 1){x = 100}
@@ -191,7 +194,7 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                         return color;
                     });*/
     //Arrows
-                leftContainer.append("defs").selectAll("marker")
+                graph.append("defs").selectAll("marker")
                     .data(["low", "high"])
                     .enter().append("marker")
                     .attr("id", function(d) { return d; })
@@ -212,15 +215,15 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
 
     var activeNodes = new Array(json.nodes.length);
     for (var i = 0; i < activeNodes.length; ++i) { activeNodes[i] = false; };
-    var node = leftContainer.selectAll(".node")
+    var node = graph.selectAll(".node")
                       .data(json.nodes)
                     .enter().append("g")
                       .attr("class", "node")
                       .attr("id", function(d){return d.name})
                      .attr("transform", function(d,i) { return "translate(" + nodePosX[i] + "," + nodePosY[i] + ")"}) 
                      .on("click", function hN() {
-                         
-                         highlightNode(this.id);
+                         var p = getParentsIndexByIndex(getIndexByName(this.id));
+                         highlightNode(this.id, false, p);
                          
                      });
     
@@ -305,8 +308,8 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
                 .style("fill", function(d,i){return color(i)})
                 .text('\uf10c') //fontawesome labels
                 .on("click", function highlightButton(){
-        //Wieso werden alle Nodes unhighlighted wenn ein Button ausgewählt wird??? Der Node soll highlighted sein wenn ein Button ausgewählt wird, ist auch activeNodes == true!
-                    highlightNode(this.id.split(" ")[0],true);
+                    var p = getParentsIndexByIndex(getIndexByName(this.id.split(" ")[0]));
+                    highlightNode(getIndexByName(this.id.split(" ")[0]),true,p);
                     active = false;
                     //checks if clicked button is already clicked an reverses text
                     if(clickedButtons.indexOf(this.id) != -1){
@@ -498,8 +501,8 @@ buttonGroups.append("text")
 // Heading of Table
 // -----------------
 
-d3.select(document.getElementById("tableGroup").firstChild).attr("height", 730).attr("x", x0 -20).attr("y", yTemp)
-yTemp += (730 + gSpace)
+d3.select(document.getElementById("tableGroup").firstChild).attr("height", 835).attr("x", x0 -20).attr("y", yTemp)
+yTemp += (835 + gSpace)
 
 var tableHeading = tableGroup.append("text")
                      .style("fill", "steelblue")
@@ -567,11 +570,11 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
 // Funktionen
 // ------------------------------------------
 
-function getNodeHeight(nodeIndex){
-    if(json.nodes[nodeIndex].properties.states.length==1){
-        return (json.nodes[nodeIndex].properties.states.length+1) * 20 + 27
+function getNodeHeight(nodeId){
+    if(json.nodes[nodeId].properties.states.length==1){
+        return (json.nodes[nodeId].properties.states.length+1) * 20 + 27
     }
-    return json.nodes[nodeIndex].properties.states.length * 20 + 27
+    return json.nodes[nodeId].properties.states.length * 20 + 27
 }
     
 function computeLayout(turn = false) {
@@ -631,13 +634,13 @@ function computeLayout(turn = false) {
                 }
                 else {
                     if (noOfArray == 0) {
-                        yPos[nodeI] = 890;
+                        yPos[nodeI] = 910;
                     }
                     if (noOfArray == 1) {
-                        yPos[nodeI] = 550;
+                        yPos[nodeI] = 560;
                     }
                     if (noOfArray == 2) {
-                        yPos[nodeI] = 220;
+                        yPos[nodeI] = 230;
                     }
                 }
             // -----------------
@@ -679,7 +682,14 @@ function computeLayout(turn = false) {
     return [xPos, yPos]; 
 }
 
-function getParentsIndex(indexOfNode){
+function getIndexByName(name) {
+    for (var i = 0; i < json.nodes.length; i++) {
+        if(json.nodes[i].name == name){
+            return i;
+        }
+    } // else Fehler
+}
+function getParentsIndexByIndex(indexOfNode){
     var name = json.nodes[indexOfNode].name;
     var parents = new Array(0);
     for (i = 0; i < json.links.length; i++) {
@@ -691,15 +701,15 @@ function getParentsIndex(indexOfNode){
     return parents;
 }
     
-function calculateTableContent(indexOfNode){
+function calculateTableContent(IndexOfNode){
         
-    var parents = getParentsIndex(indexOfNode);
-    parents.push(indexOfNode)
+    var parents = getParentsIndexByIndex(IndexOfNode);
+    parents.push(IndexOfNode)
     var parentSize = parents.length -2;
     
     // parents in columns (Spalten)
     var columns = new Array(0);
-    parents.forEach(function(element,index, array){
+    parents.forEach(function(element,Id, array){
         columns.push(json.nodes[element].name)
     })
     // states of this node in last columns (this node is last element of parents)
@@ -843,13 +853,13 @@ function calculateTableContent(indexOfNode){
 
         var discriptionYPos = document.getElementById("table-div").getBoundingClientRect().height;
 
-        headingDiscription.attr("y", discriptionYPos + y0 + 30)
+        headingDiscription.attr("y", discriptionYPos + y0 + 130)
         //headingDiscription.attr("y", 440)
 
 
         discriptionBackground.attr("height",100) // anpassen
                                                     .attr("x",x0)
-                                                    .attr("y", discriptionYPos + y0 + 50)
+                                                    .attr("y", discriptionYPos + y0 + 150)
                                                     .attr("rx",5) 
                                                     .attr("ry",5)
                                                     .attr("fill", "white")
@@ -857,161 +867,61 @@ function calculateTableContent(indexOfNode){
         return table;
     }
     
-    function highlightNode(id,ac=false){
+    function highlightNode(id, ac=false, parents){
         for (i=0; i<json.nodes.length; i++){
               if (id == json.nodes[i].name){
-                  if (activeNodes[i] && !ac){
-                     d3.select(document.getElementById(id).firstChild).style("stroke-width", 4);
-                     headingDiscription.text(" ");
-                     tableHeading.text(" ");
-                     rightContainer.selectAll("foreignObject").remove();
-                     discriptionBackground.attr("fill","white");
-                     activeNodes[i] = false;
-                     break;
-                  }
-                 if (!activeNodes[i]){
-                    //wenn schon ein anderer activ war
-                     for (var j = 0; j < activeNodes.length; ++j) { 
-                         if (activeNodes[j]){
-                             d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 4);
-                             rightContainer.selectAll("foreignObject").remove();
-                         }
-                         activeNodes[j] = false; 
-                     };
-                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 7);
-                     tableHeading.text(id);
-                     activeNodes[i] = true;
-                     //createTable
-                     var tabl = calculateTableContent(i);
-                     headingDiscription.text("Beschreibung");
-                     discriptionBackground.attr("fill","lightblue");
-                   // parents = getParentsIndex(i);//links HIER MIT FUNKTIONIERT ES NICHT
-                   // alert("p: "+parents)
-/*                    for(k = 0; k < parents.length; k++){
-                        for (l = 0; l < json.links.length; l++) {
-                             if(parents[k] == json.links[l].source) {
-                                 d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
-                                
-                             }
-                        }
+    /*              if (activeNodes[i] && ac){//if this node was highlighted before
+                         d3.select(document.getElementById(id).firstChild).style("stroke-width", 4);
+                         headingDiscription.text(" ");
+                         tableHeading.text(" ");
+                         rightContainer.selectAll("foreignObject").remove();
+                         discriptionBackground.attr("fill","white");
+                         activeNodes[i] = false;
+                         break;
                     }*/
-                     break;
+                    if (!activeNodes[i]){//if this node was not highlighted before
+                         for (var j = 0; j < activeNodes.length; ++j) { 
+                             if (activeNodes[j]){ //if other node was highlighted before unhighlight it
+                                 //rect
+                                 d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 4);
+                                 //table
+                                 rightContainer.selectAll("foreignObject").remove();
+                                 //links
+                                 var otherParents = [1,0,2]; //ANPASSEN
+                                 for(k = 0; k <otherParents.length; k++){
+                                    for (l = 0; l < json.links.length; l++) {
+                                         if(otherParents[k] == json.links[l].source) {
+                                             d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "lightblue").style("marker-end",  "url(#low)");
 
-                 }  
-              }
-          }
-        alert(activeNodes)//wieso wird diese Zeile nicht ausgeführt wenn man einen Node makiert?
-}
-        
-        //AUFGERÄUMT FEHLER?
-/*        for (i=0; i<json.nodes.length; i++){
-              if (id == json.nodes[i].name){
-                  if (activeNodes[i] && !ac){
-                      //Node
-                     d3.select(document.getElementById(id).firstChild).style("stroke-width", 2);
-                     activeNodes[i] = false;
-                     tableHeading.text(" ");
-                     //Table weg
-                     rightContainer.selectAll("foreignObject").remove();
-                      //Discription
-                      headingDiscription.text(" ");
-                     discriptionBackground.attr("fill","white");
-                     break;
-                  }
-                 if (!activeNodes[i]){
-                    //wenn schon ein anderer activ war
-                     for (var j = 0; j < activeNodes.length; ++j) { 
-                         if (activeNodes[j]){
-                             d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2);
-                             rightContainer.selectAll("foreignObject").remove();
-                             //Discriptiion weg
-                             //Pie weg
+                                         }
+                                    }
+                                 }
+                             }
+                             activeNodes[j] = false; 
+                         };
+                         //highlight this node
+                         //links
+                         for(k = 0; k < parents.length; k++){
+                            for (l = 0; l < json.links.length; l++) {
+                                 if(parents[k] == json.links[l].source) {
+                                     d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
+
+                                 }
+                            }
                          }
-                         activeNodes[j] = false; 
-                     };
-                     //Node
-                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 5);
-                     activeNodes[i] = true;  
-                     //Links
-                   // parents = getParentsIndex(i);//links HIER MIT FUNKTIONIERT ES NICHT
-                   // alert("p: "+parents)
-/*                    for(k = 0; k < parents.length; k++){
-                        for (l = 0; l < json.links.length; l++) {
-                             if(parents[k] == json.links[l].source) {
-                                 d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
-                                
-                             }
-                        }
-                    }*/
-                     //Table
-                    /* tableHeading.text(id);
-                     var tabl = calculateTableContent(i);
-                     //Discription
-                     headingDiscription.text("Beschreibung");
-                     discriptionBackground.attr("fill","lightblue");
-                     //chart
-                     break;
+                         //rect
+                         d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 6);
+                         activeNodes[i] = true;
+                         //table
+                         var tabl = calculateTableContent(i);
+                         tableHeading.text(id);
+                         headingDiscription.text("Beschreibung");
+                         discriptionBackground.attr("fill","lightblue");
+                         break;
 
-                 }  
+                     }  
+                  }
               }
-          }}*/
-        //alert(activeNodes)//wieso wird diese Zeile nicht ausgeführt wenn man einen Node makiert?
-    
-/*         for (i=0; i<json.nodes.length; i++){
-             if (id == json.nodes[i].name){
-                 parents = getParentsIndex(i);//links
-                 
-                 if (activeNodes[i]){// && !ac){
-                    //unhighlight this node
-                    d3.select(document.getElementById(id).firstChild).style("stroke-width", 2); //rect HARD CODE
-                    headingDiscription.text(" ");
-                    tableHeading.text(" ");
-                    rightContainer.selectAll("foreignObject").remove(); //removes table
-                    discriptionBackground.attr("fill","white");
-                    //links
-                    json.links.forEach(function(d,ind,a){
-                        d3.select(document.getElementById("graph").childNodes[ind]).attr("stroke", "lightblue").style("marker-end",  "url(#low)");
-                    })
-                    activeNodes[i] = false;
-                    break;
-                 }
-                if (!activeNodes[i]){
-                    //highlight this node
-                        //if there was any other node highlighted, it becomes unhighlighted
-                    for (var j = 0; j < activeNodes.length; ++j) { 
-                        if (activeNodes[j]){
-                            d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 2); //rect HARD CODE
-                            rightContainer.selectAll("foreignObject").remove();
-                            //links
-                            json.links.forEach(function(d,i,a){
-                            d3.select(document.getElementById("graph").childNodes[i]).attr("stroke", "lightblue").style("marker-end",  "url(#low)")});
-                            activeNodes[j] = false;
-                        } 
-                    };
-                    
-                    //this node gets highlighted
-                    d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 5);
-                    tableHeading.text(id);                   
-                    headingDiscription.text("Beschreibung");
-                    discriptionBackground.attr("fill","lightblue");
-                    //createTable
-                    var tabl = calculateTableContent(i);
-                    //links
-                    for(k = 0; k < parents.length; k++){
-                        for (l = 0; l < json.links.length; l++) {
-                             if(parents[k] == json.links[l].source) {
-                                 d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
-                                 break;
-                             }
-                        }
-                    }
-                    activeNodes[i] = true; 
-                    break;
-
-                }  
-             }
-         }
-alert(activeNodes)
-    }*/
-
+         
+    }
 })
