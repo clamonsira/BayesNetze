@@ -1,0 +1,8 @@
+﻿Die Visualisierung ist unterteilt in zwei Hälften.
+Auf der linken Seite sehen Sie das Bayes Netz, bestehend aus bunten rechteckigen Knoten, die entweder für ein Symptom, eine Therapie, eine Untersuchung oder eine Diagnose stehen. 
+Die Typen der Knoten und die zugeordnete Farbe können Sie in der Legende nachlesen. 
+Die Knoten sind mit hellblauen Kanten verbunden, wenn sie voneinander abhängig sind. 
+Zu einem Knoten gehören seine Zustände und ein Diagramm, in dem die Wahrscheinlichkeiten der einzelnen Zustände visualisiert sind.
+Sie können die Wahrscheinlichkeit eines Zustands auf 100 % setzen, indem Sie den Zustand markieren und auf den „Aktualisieren“ - Button (rechts oben) klicken. Dann werden alle davon abhängigen Wahrscheinlichkeiten dementsprechend angepasst. 
+Außerdem finden Sie auf der rechten Seite Details zu den Knoten, wenn Sie diese anklicken. In der Tabelle wird dargestellt, wie die Zustände eines Knotens von seinen Elternknoten abhängt. Sie haben hier die Möglichkeit mit der Suchfunktion in die richtige Zeile zu springen, indem Sie die von Ihnen gesuchten Zustände eingeben.  
+Das Säulendiagramm auf der rechten Seite zeigt die Wahrscheinlichkeiten aus der Tabelle.

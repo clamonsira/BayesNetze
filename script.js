@@ -1,11 +1,4 @@
-// ------------------------------------------
-// Positionen (Vergleichswerte - wird nicht genutzt)
-// ------------------------------------------
-
-var statePosX = [50, 350, 650, 200, 500, 50, 350, 650, 50, 350, 650];
-var statePosY = [670, 670, 670, 870, 870, 300, 300, 300, 70, 70, 70]; 
-
-d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1 Dgraph.json"
+d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1 Dgraph.json"
     if (error) throw error;
     // ------------------------------------------
     // Bayes Netz
@@ -14,11 +7,14 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
     var width = window.innerWidth * 0.65 - 5,
         height = window.innerHeight - 5;
 
-    var leftContainer = d3.select("body").append("svg")
-                                        .attr("width", width)
-                                        .attr("height", height);
+    var container = d3.select("body").append("svg")
+                                        .attr("width", window.innerWidth +5)
+                                        .attr("height",  window.innerHeight +5)
+                                        .attr("id", "container");
     
-    var conrect = leftContainer.attr("id", "leftContainer")
+    var leftContainer = container.append("g");
+    
+    var containerRect = leftContainer.attr("id", "leftContainer")
                                 .append("rect").attr("x", 10).attr("y", 10).attr("height", height-20).attr("width", width-20)
                                 .style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 20).attr("ry", 20);
     
@@ -422,6 +418,36 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
                      .attr("x", 190)
                      .attr("text-anchor", "end");*/
     
+// -----------------
+// Reload Button
+// -----------------
+
+var reloadButton = leftContainer.append("g").attr("class","button")
+                        .style("cursor","pointer")
+
+var reloadRect = reloadButton.append("rect")
+            .attr("id", "reload")
+            .attr("class","buttonRect")
+            .attr("width",50)
+            .attr("height",50)
+            .attr("x", width - 80)
+            .attr("y",32)
+            .attr("rx",5) 
+            .attr("ry",5)
+            .attr("fill","#FE642E")
+
+var reloadText = reloadButton.append("text")
+            .attr("class","buttonText")
+            .attr("font-family","sans-serif")
+            .attr("x",width - 55)
+            .attr("y",32 + 25)
+            .attr("text-anchor","middle")
+            .attr("dominant-baseline","central")
+            .attr("fill","white")
+            .attr("font-size", "20px")  
+            .text("\uf021 ") 
+    
+    
     
 // ------------------------------------------
 // RECHTE SEITE
@@ -429,39 +455,38 @@ d3.json("http://10.200.1.75:8012/bn?name=bncancer1", function(error, json) { //"
     
 var widthRight = window.innerWidth * 0.35 - 5;
 
-var rightContainer = d3.select("body").append("svg")
-                                    .attr("width", widthRight)
-                                    .attr("height", height)
-                                    .attr("id", "rightContainer");
+var rightContainer = container.append("g")
+                                    .attr("id", "rightContainer")
+                                    .attr("transform", "translate(" + width +","+ 0 +")");
 
 var menuGroup = rightContainer.append("g").attr("id","menuGroup")
 var tableGroup = rightContainer.append("g").attr("id","tableGroup")
-var legendeGroup = rightContainer.append("g").attr("id","legendeGroup")
 
-rightContainer.selectAll("g").append("rect").attr("x", 20).attr("y", function(d,i){return i *200}).attr("height", 300).attr("width", widthRight-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15);
+rightContainer.selectAll("g").append("rect").attr("width", widthRight-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15);
         
-var x0= 22; //x offset
-var y0= 70; //y offset
-var yTemp = y0 -60;
+var x0= 10; //x offset
+var y0= 10; //y offset
+var yTemp = y0;
 var gSpace= 10; //space between groups
     
-// -----------------
+// ----------------------------------------------------------
 // Menu Buttons
-// -----------------
+// ----------------------------------------------------------
 
+var menuHeight = 90;
 //button width and height
 var bWidth= 140; //button width
-var bHeight= 40; //button height
+var bHeight= 50; //button height
 var bSpace= 10; //space between buttons
     
-d3.select(document.getElementById("menuGroup").firstChild).attr("height", 90).attr("x", x0-20).attr("y", yTemp)
-yTemp += (90 + gSpace)
+d3.select(document.getElementById("menuGroup").firstChild).attr("height", menuHeight).attr("x", x0).attr("y", yTemp)
+yTemp += (menuHeight + gSpace +10)//2xstroke-width
 
 var MenuButtons= menuGroup.append("g")
                     .attr("id","MenuButtons") 
 
 //fontawesome button labels
-var labels= ['\uf021 aktualisieren', '\uf055 erweitern','\uf08e laden','\uf0c7 speichern'];
+var labels= ['\uf08e laden', '\uf0c7 speichern', "\uf059 Information", '\uf009 Legende',];
 
 var buttonGroups= MenuButtons.selectAll("g.button")
                         .data(labels)
@@ -473,13 +498,14 @@ var buttonGroups= MenuButtons.selectAll("g.button")
 //adding a rect to each button group
 //sidenote: rx and ry give the rects rounded corners
 buttonGroups.append("rect")
+            .attr("id", function(d,i) {return d.split(" ")[1]})
             .attr("class","buttonRect")
             .attr("width",bWidth)
             .attr("height",bHeight)
             .attr("x",function(d,i) {
-                return x0-5+(bWidth+bSpace)*i;
+                return (x0+13)+(bWidth+bSpace)*i;
             })
-            .attr("y",y0-30)
+            .attr("y",y0+22)
             .attr("rx",5) 
             .attr("ry",5)
             .attr("fill","#FE642E")
@@ -489,51 +515,107 @@ buttonGroups.append("text")
             .attr("class","buttonText")
             .attr("font-family","sans-serif")
             .attr("x",function(d,i) {
-                return x0-5 + (bWidth+bSpace)*i + bWidth/2;
+                return x0+13 + (bWidth+bSpace)*i + bWidth/2;
             })
-            .attr("y",(y0-30)+bHeight/2)
+            .attr("y",y0+22+bHeight/2)
             .attr("text-anchor","middle")
             .attr("dominant-baseline","central")
             .attr("fill","white")
+            .attr("font-size", "20px")  
             .text(function(d) {return d;}) 
-
 // -----------------
-// Heading of Table
+// Information
 // -----------------
 
-d3.select(document.getElementById("tableGroup").firstChild).attr("height", 835).attr("x", x0 -20).attr("y", yTemp)
-yTemp += (835 + gSpace)
-
-var tableHeading = tableGroup.append("text")
-                     .style("fill", "steelblue")
-                     .attr("x", widthRight / 2)
-                     .attr("y", 180)
-                     .attr("font-size", "25px")            
-                     .attr("text-anchor","middle");
-    
-
-// -----------------
-// Discription
-// -----------------
-var headingDiscription = tableGroup.append("text")
-                     .style("fill", "steelblue")            
-                     .attr("x", x0)
-                     .attr("font-size", "20px");
-var discriptionBackground = tableGroup.append("rect")
-                                        .attr("width",590);
+d3.select(document.getElementById("Information"))
+    .on("click", function () {
+        var infoGroup = rightContainer.append("g").attr("id","infoGroup")
+        var infoRect = infoGroup.append("rect")
+                    .attr("x", x0+13 - 150).attr("y", y0+22)
+                    .attr("width", 440).attr("height", 680)
+                    .attr("rx",5).attr("ry",5)
+                    .style("fill", "white").style("stroke","orange");
+        d3.text("Info.txt",function(error,text) {
+        var infoText = infoGroup.append("foreignObject")
+                                    .attr("y", y0+22 + 10)
+                                    .attr("x", x0+13 - 150 + 10)
+                                    .attr("width",425)// widthRight)
+                                    .attr("height",219)
+                                    .append("xhtml:body")
+                                    .append("div")
+                                    .attr("id","info-div")
+                                    .append("text").html(text)
+                                    .attr("font-size", 30)
+                                    .style("fill", "purple")
+                                    .attr("x", x0+13 - 150 + 10)
+                                    .attr("y", y0+22 + 10)
+                                    .attr("dy", ".35em");
+        })
+    })
+d3.select(document.getElementById("Information"))
+    .on("mouseout", function () {
+                d3.select(document.getElementById("infoGroup")).remove()
+        })
 
 
 // -----------------
 // Legende
 // -----------------
-d3.select(document.getElementById("legendeGroup").firstChild).attr("height", 120).attr("x", x0 -20).attr("y", yTemp+5)
+var legendTypes = ["Therapie","Test","Diagnose","Symptom"]
+
+d3.select(document.getElementById("Legende"))
+    .on("click", function () {
+        var legendGroup = rightContainer.append("g").attr("id","legendGroup")
+        var legendRect = legendGroup.append("rect")
+                                .attr("id","legendRect")
+                                .attr("x", x0+13).attr("y", y0+22)
+                                .attr("width", 440).attr("height", 219)
+                                .attr("rx",5).attr("ry",5)
+                                .style("fill", "white").style("stroke","orange")
+        var legendRects = legendGroup.append("g").selectAll("rect").data(legendTypes).enter()
+                            .append("rect")
+                                .attr("id",function(d,i) {return "legendRect" + i})
+                                .attr("x", function(d,i) {return x0+13+15 + (i%2)* 210})
+                                .attr("y", function(d,i) {return y0+22+15 + (i<2)* 100})
+                                .attr("width", 200).attr("height", 87)
+                                .attr("rx",5).attr("ry",5)
+                                .style("fill", "white")
+                                .style("stroke-width", 5)
+                                .style("stroke",function(d,i){if(i == 0) {return "#ffc266";};
+                                                             if(i == 1) {return "steelblue";};
+                                                             if(i == 2) {return "#12858e";};
+                                                             if(i == 3) {return "#FE642E";}})
+                            
+                    })
+    .on("mouseout", function () {
+                            d3.select(document.getElementById("legendGroup")).remove()
+                    })
+
+// -----------------
+// Heading of Table
+// -----------------
+var tablePartHeight = height -yTemp - 10 -5;
+d3.select(document.getElementById("tableGroup").firstChild).attr("height", tablePartHeight).attr("x", 10).attr("y", yTemp)
+//yTemp += (tablePartHeight + gSpace)
+
+var tableHeading = tableGroup.append("text")
+                     .style("fill", "purple")
+                     .attr("x", widthRight / 2)
+                     .attr("y", 180)
+                     .attr("font-size", "25px")            
+                     .attr("text-anchor","middle");
+
+// -----------------
+// Legende
+// -----------------
+/*d3.select(document.getElementById("legendeGroup").firstChild).attr("height", 120).attr("x", x0 -20).attr("y", yTemp+5)
 
 /*var headingLegende = legendeGroup.append("text")
                      .style("fill", "steelblue")            
                      .attr("x", x0)
                      .attr("y", yTemp+gSpace +35)
                      .attr("font-size", "23px")
-                     .text("Legende");*/
+                     .text("Legende");
 
 var rectLegende = legendeGroup
                 .selectAll("rect")
@@ -564,7 +646,7 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
                      .attr("y", yTemp+gSpace+30+30)
                      .attr("font-size", function(d,i){if(i==5) {return "50px"} else {return "18px"}})
                      .attr("text-anchor","middle")
-                     .attr("dominant-baseline","central")
+                     .attr("dominant-baseline","central")*/
 
 // ------------------------------------------
 // Funktionen
@@ -803,66 +885,6 @@ function calculateTableContent(IndexOfNode){
         //thick line between parents and states
         tds.style("border-right", function(d,i){
             if(i == parentSize){return "solid orange";}})
-
-       // var thread = table.append("thread").attr("width", 400)
-
-        //var tbody = table.append("tbody")
-
-        //tablelength = 500
-        //var cellwidth = 500/columns.length;
-
-                                            /*    var row = table.selectAll("tr")
-                                                            .data(rows.concat([columns]))
-                                                            .enter()
-                                                            .append("tr")*/
-
-
-            //Unterscheidung zw thread und tbody(th und td)
-    /*        row.forEach(function(d,i){
-                if(i == 0){
-                    d3.select(this).attr("class", "thread")
-                                .selectAll("td")
-                                .data(columns)
-                                .enter()
-                                .append("td")
-                                .text(function(cell) {return cell;})
-                }
-                else{
-                    d3.select(this).attr("class", "tbody")
-                            .selectAll("th")
-                            .data(rows[i-1])
-                            .enter()
-                            .append("th")
-                            .attr("overflow", "hidden")
-                            .text(function(cell) {return cell; })
-                            .attr("width", cellwidth);
-                }
-            })*/
-
-    /*                                                //funktioniert aber keine unterscheidung zw td und th
-                                                    var cells = row.selectAll("th")
-                                                                    .data(function(d,i) {if(i==0) {return columns;}
-                                                                                         else {return rows[i-1];}})
-                                                                    .enter()
-                                                                    .append("th")
-                                                                    //.attr("overflow", "hidden")
-                                                                    .text(function(cell) { return cell; })
-                                                                   // .attr("width", cellwidth);*/
-
-
-
-        var discriptionYPos = document.getElementById("table-div").getBoundingClientRect().height;
-
-        headingDiscription.attr("y", discriptionYPos + y0 + 130)
-        //headingDiscription.attr("y", 440)
-
-
-        discriptionBackground.attr("height",100) // anpassen
-                                                    .attr("x",x0)
-                                                    .attr("y", discriptionYPos + y0 + 150)
-                                                    .attr("rx",5) 
-                                                    .attr("ry",5)
-                                                    .attr("fill", "white")
 
         return table;
     }
