@@ -4,8 +4,9 @@ html,body {
     margin: 0 0 0 0;
 }
 
-#leftContainer {
-   /* border: 1px solid #e6e6ff;*/
+#scroll-div {
+    height: 100%;
+    width: 100%;
 }
 
 #link { 
@@ -17,9 +18,6 @@ marker {
     stroke: white;
     stroke-width: 1;
                    
-}
-
-rect {
 }
 
 text {
@@ -41,7 +39,7 @@ th {
     color: purple;
     font-size: 20px;
     height: 30px;
-    border-bottom: solid orange /*#d39ed3*/;
+    border-bottom: solid purple /*#d39ed3*/;
 }
 td {
     text-align: center;
@@ -51,7 +49,7 @@ td {
 tr:nth-child(odd){background-color: #f5f2f7}
 
 #table-div {
-    border: thick solid orange;
+    border: thick solid purple;
 }
 
 #info-div {

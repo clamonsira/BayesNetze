@@ -1,7 +1,7 @@
 # BayesNetze
 - Layout
 	- Ebenen (oben ohne eingehende Kanten, unten ohne ausgehende), bereits vorhandener Code?
-		- todo: dynamische YPos + scroll
+	- dynamische YPos + scroll ÜBERARBEITEN RESTKNOTEN
 		- (von links nach rechts)
 		- (planare Graphen)
 		- pro Ebene: die mit meisten Kanten nach außen
@@ -11,21 +11,21 @@
 
 - Links
 	- Links die ankommen zeigen nicht auf gleichen Punkt
-		- todo: highlightLinks zu highlightNode ÜBERARBEITEN: unhighlight
+	- highlightLinks zu highlightNode ÜBERARBEITEN: unhighlight
 	- Links gleicher Ebenen werden waagerecht angezeigt
-		- todo: was passiert wenn ein Node dazwischen liegt?, es mehrere in einer Ebene gibt? LAYOUT
+		- todo: was passiert wenn ein Node dazwischen liegt?, es mehrere in einer Ebene gibt? LAYOUT?
 		- (curvedlinks)
 	
 - Nodes
 	- HighlightNode: wenn angeklickt wird Node eingefärbt, hinführende Links gehigjlighted und Tabelle öffnet sich
 	- Tortendiagramm zeigt die Wkeit ANIMATION
 		- todo: Node Wkeit ausrechnen DB
-		- todo: Namen positionieren, Nodes länger machen
+		- todo: Namen positionieren, Nodes länger machen?
 	- Radio Buttons
 	
 - Tabellen
 	- Anzahl der Zeilen
-	- scroll bei großen Tabellen (feste Größe) ÜBERARBEITEN 200px
+	- scroll bei großen Tabellen (feste Größe)
 	- states mit richtiger Wkeit
 		- todo: Suchfunktion
 		- todo: aktualisierte Tabelle
@@ -41,12 +41,12 @@
 - todo: Säulendiagramm mit genauen Wkeiten auf rechter Seite
 
 - Legende + Info Button 
-	- ausklappbar?
+	- ausklappbar
 
 
 	
 - Zusatzfunktionalitäten
-	- Überlegung: Paper zu Ergebis verlinken -> woher die Daten, wie aktuell
+	- (Überlegung: Paper zu Ergebis verlinken -> woher die Daten, wie aktuell)
 	- Überlegung: Mit welchem zusätzlichen Symptom (Test) würde die W'keit zu einem Ergebnis am meisten steigen -> Empfehlung zu nächstem Test -> kann Kosten/Zeit abschätzen
 
 - ansonsten

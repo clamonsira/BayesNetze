@@ -1,25 +1,5 @@
-d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,http://10.200.1.75:8012/bn?name=bnlung1 Dgraph.json"
+d3.json("http://10.200.1.75:8012/bn?name=bnalarm1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"
     if (error) throw error;
-    // ------------------------------------------
-    // Bayes Netz
-    // ------------------------------------------
-
-    var width = window.innerWidth * 0.65 - 5,
-        height = window.innerHeight - 5;
-
-    var container = d3.select("body").append("svg")
-                                        .attr("width", window.innerWidth +5)
-                                        .attr("height",  window.innerHeight +5)
-                                        .attr("id", "container");
-    
-    var leftContainer = container.append("g");
-    
-    var containerRect = leftContainer.attr("id", "leftContainer")
-                                .append("rect").attr("x", 10).attr("y", 10).attr("height", height-20).attr("width", width-20)
-                                .style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 20).attr("ry", 20);
-    
-    var  graph = leftContainer.append("g")
-                              .attr("id", "graph");
     
     // -----------------
     // Compute Layout
@@ -28,6 +8,7 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
     var positions = computeLayout();
     nodePosX = positions[0];
     nodePosY = positions[1];
+    tmpHeight = positions[2];
     
     //turn layout
     var c1 = 0,c2 = 0;
@@ -43,7 +24,43 @@ d3.json("Dgraph.json", function(error, json) { //"http://10.200.1.75:8012/bn?nam
         positions = computeLayout(true);
         nodePosX = positions[0];
         nodePosY = positions[1];
+        tmpHeight = positions[2];
     }
+    
+    // ------------------------------------------
+    // Bayes Netz
+    // ------------------------------------------
+
+    var lWidth = window.innerWidth * 0.65 - 5,
+        height = window.innerHeight - 5;
+
+    var container = d3.select("body").append("svg") //one big svg because the button click overlaps
+                                        .attr("width", window.innerWidth -5)
+                                        .attr("height", height) // wenn tmpHeight > height scroll ein bauen
+                                        .attr("id", "container");
+    
+    var leftContainer = container.append("g").attr("id", "leftContainer");
+   
+    var scrollDiv = leftContainer.append("foreignObject")
+                                    .attr("y", 4)
+                                    .attr("x", 4)
+                                    .attr("width",lWidth)
+                                    .attr("height",height)
+                                    .append("xhtml:body")
+                                    .append("div")
+                                    .attr("id","scroll-div").style("overflow", "auto")
+//                                    .attr("width",lWidth)
+//                                    .attr("max-height",height)
+    
+    var scrollSVG = scrollDiv.append("svg").attr("viewBox", "0,0,"+lWidth+","+tmpHeight)
+    
+    var containerRect = scrollSVG.attr("id", "leftContainer")
+                                .append("rect").attr("x", 10).attr("y", 10).attr("height", tmpHeight - 20).attr("width", lWidth-20)
+                                .style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 20).attr("ry", 20);
+    
+    var  graph = scrollSVG.append("g")
+                              .attr("id", "graph");
+
     
     // -----------------
     // links
@@ -430,7 +447,7 @@ var reloadRect = reloadButton.append("rect")
             .attr("class","buttonRect")
             .attr("width",50)
             .attr("height",50)
-            .attr("x", width - 80)
+            .attr("x", lWidth - 80)
             .attr("y",32)
             .attr("rx",5) 
             .attr("ry",5)
@@ -439,7 +456,7 @@ var reloadRect = reloadButton.append("rect")
 var reloadText = reloadButton.append("text")
             .attr("class","buttonText")
             .attr("font-family","sans-serif")
-            .attr("x",width - 55)
+            .attr("x",lWidth - 55)
             .attr("y",32 + 25)
             .attr("text-anchor","middle")
             .attr("dominant-baseline","central")
@@ -453,16 +470,16 @@ var reloadText = reloadButton.append("text")
 // RECHTE SEITE
 // ------------------------------------------
     
-var widthRight = window.innerWidth * 0.35 - 5;
+var rWidth = window.innerWidth * 0.35 - 5;
 
 var rightContainer = container.append("g")
                                     .attr("id", "rightContainer")
-                                    .attr("transform", "translate(" + width +","+ 0 +")");
+                                    .attr("transform", "translate(" + lWidth +","+ 0 +")");
 
 var menuGroup = rightContainer.append("g").attr("id","menuGroup")
 var tableGroup = rightContainer.append("g").attr("id","tableGroup")
 
-rightContainer.selectAll("g").append("rect").attr("width", widthRight-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15);
+rightContainer.selectAll("g").append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15);
         
 var x0= 10; //x offset
 var y0= 10; //y offset
@@ -524,6 +541,26 @@ buttonGroups.append("text")
             .attr("font-size", "20px")  
             .text(function(d) {return d;}) 
 // -----------------
+// Laden
+// -----------------
+
+d3.select(document.getElementById("laden"))
+    .on("click", function () {
+        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup")
+        var ladenRect = ladenGroup.append("rect")
+                    .attr("x", x0+13 - 450).attr("y", y0+22)
+                    .attr("width", 440).attr("height", 440)
+                    .attr("rx",5).attr("ry",5)
+                    .style("fill", "white").style("stroke","orange");
+    })
+
+d3.select(document.getElementById("laden"))
+    .on("mouseout", function () {
+                d3.select(document.getElementById("ladenGroup")).remove()
+        })
+
+
+// -----------------
 // Information
 // -----------------
 
@@ -532,14 +569,14 @@ d3.select(document.getElementById("Information"))
         var infoGroup = rightContainer.append("g").attr("id","infoGroup")
         var infoRect = infoGroup.append("rect")
                     .attr("x", x0+13 - 150).attr("y", y0+22)
-                    .attr("width", 440).attr("height", 680)
+                    .attr("width", 440).attr("height", 725)//ANPASSEN
                     .attr("rx",5).attr("ry",5)
                     .style("fill", "white").style("stroke","orange");
         d3.text("Info.txt",function(error,text) {
         var infoText = infoGroup.append("foreignObject")
-                                    .attr("y", y0+22 + 10)
-                                    .attr("x", x0+13 - 150 + 10)
-                                    .attr("width",425)// widthRight)
+                                    .attr("y", y0+22 + 20)
+                                    .attr("x", x0+13 - 150 + 20)
+                                    .attr("width",400)// widthRight)
                                     .attr("height",219)
                                     .append("xhtml:body")
                                     .append("div")
@@ -585,6 +622,14 @@ d3.select(document.getElementById("Legende"))
                                                              if(i == 1) {return "steelblue";};
                                                              if(i == 2) {return "#12858e";};
                                                              if(i == 3) {return "#FE642E";}})
+        var legendText = legendGroup.selectAll("text").data(legendTypes).enter().append("text").text(function(d){return d})
+                                        .attr("x", function(d,i) {return x0+13+15 + (i%2)* 210 + 20})
+                                .attr("y", function(d,i) {return y0+22+15 + (i<2)* 100 + 30})
+                                        .style("fill",function(d,i){if(i == 0) {return "#ffc266";};
+                                                             if(i == 1) {return "steelblue";};
+                                                             if(i == 2) {return "#12858e";};
+                                                             if(i == 3) {return "#FE642E";}})
+                                        .attr("font-size", 22)
                             
                     })
     .on("mouseout", function () {
@@ -600,7 +645,7 @@ d3.select(document.getElementById("tableGroup").firstChild).attr("height", table
 
 var tableHeading = tableGroup.append("text")
                      .style("fill", "purple")
-                     .attr("x", widthRight / 2)
+                     .attr("x", rWidth / 2)
                      .attr("y", 180)
                      .attr("font-size", "25px")            
                      .attr("text-anchor","middle");
@@ -652,11 +697,11 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
 // Funktionen
 // ------------------------------------------
 
-function getNodeHeight(nodeId){
-    if(json.nodes[nodeId].properties.states.length==1){
-        return (json.nodes[nodeId].properties.states.length+1) * 20 + 27
+function getNodeHeight(nodeInd){
+    if(json.nodes[nodeInd].properties.states.length==1){
+        return (json.nodes[nodeInd].properties.states.length+1) * 20 + 27
     }
-    return json.nodes[nodeId].properties.states.length * 20 + 27
+    return json.nodes[nodeInd].properties.states.length * 20 + 27
 }
     
 function computeLayout(turn = false) {
@@ -674,94 +719,198 @@ function computeLayout(turn = false) {
         }
     }
     
-    var allArrays;
-    if(!turn){
+   var allArrays;
+    if(turn){
         allArrays = [symptomNodes, diagnosisNodes, therapyNodes] // gibt die Reihenfolge der Ebenen an
     } else {
         allArrays = [therapyNodes, diagnosisNodes, symptomNodes]
     }
     
- //WENN ES WAAGERECHTE EDGES GIBT, DANN FÜGE DIE BEIDEN NODES NACH VORNE IN DER LISTE
+ //WENN ES WAAGERECHTE EDGES GIBT, DANN FÜGE DIE BEIDEN NODES NACH VORNE IN DER LISTE?
     
-    var xPos = new Array(json.nodes.length), yPos = new Array(json.nodes.length);
-    var YSpace = 250, tmpYPos = 0, YStart = 70;
-    var XSpace = 300, tmpXPos = 0, XStart = 50;
+    var yCounter = 0;
+    var rows = new Array(allArrays.length)
     
     allArrays.forEach(function(a,noOfArray){
+        if(a.length/4 == 0) {
+            rows[noOfArray] = 0;
+        } else
+        if(a.length/4 < 1.1) {
+            yCounter = yCounter + 1;
+            rows[noOfArray] = 1;
+        } else if(a.length/4 < 2) {
+            yCounter = yCounter + 2;
+            rows[noOfArray] = 2;
+        } else if(a.length/4 < 2.5) {
+            yCounter = yCounter + 3;
+            rows[noOfArray] = 3;
+        } else { //array ueber 9 wird in 5er gruppen unterteilt(3+2) und rest wird angehängt
+            var r = 0;
+            if((a.length%5) + 5 < 5) {
+                r = 1;
+            } else if ((a.length%5) + 5 < 8){
+                r = 2;
+            } else if ((a.length%5) + 5 < 10) {
+                r = 3;
+            }
+            yCounter = yCounter + (Math.floor(a.length/5)-1)* 2 + r;
+            rows[noOfArray] = (Math.floor(a.length/5)-1)* 2 + r;
+        }
         
-        if (a.length > 8) {
-            throw error;
-        }
-        else {
-            tmpYPos = YStart + noOfArray * YSpace
-            tmpXPos = XStart 
+    })
+    
+    var xPos = new Array(json.nodes.length), yPos = new Array(json.nodes.length);
+    var YStart = 50, //was ist wenn nur eine Gruppe existiert
+        YSpace = 160,  //states berücksichtigen 
+        groupSpace = Math.max((window.innerHeight - yCounter*YSpace - YStart*2 - 20)/(allArrays.length-1),100),
+        tmpYPos = YStart;
+    var XStart = 50,
+        tmpXPos = XStart;
+    
+    allArrays.forEach(function(a,noOfArray){
+    
+        a.forEach(function(nodeInd, arrayInd,a){
+            
+            if(rows[noOfArray] == 1) {
+                yPos[nodeInd] = tmpYPos;
+                
+                if(a.length == 1){
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                    xPos[nodeInd] = 50;
+                }
+                if(a.length == 2){
+                    if(arrayInd == 1) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                        xPos[nodeInd] = 800;
+                    } else if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                        xPos[nodeInd] = 200;
+                    }
+                }
+                else if(a.length == 3){
+                    if(arrayInd == 1) { 
+                        xPos[nodeInd] = 500;
+                    } else if(arrayInd == 2) {
+                        xPos[nodeInd] = 950;
+                    }
+                }
+                else if(a.length == 4){
+                    if(arrayInd == 1) { 
+                        xPos[nodeInd] = 350;
+                    } else if(arrayInd == 2) { 
+                        xPos[nodeInd] = 650;
+                    } else if(arrayInd == 3) {
+                        xPos[nodeInd] = 950;
+                    }
+                }
+                
+            } else 
+            if(a.length == 5 || rows[noOfArray] > 3) { //5er Gruppen
 
-            a.forEach(function(nodeI, noOfIndex,a){
-                // -----------------
-                // yPos pro Array
-                // ----------------- 
+                yPos[nodeInd] = tmpYPos + Math.floor(arrayInd*2/5)*YSpace;
                 
-                //dyn: yPos[nodeI] = tmpYPos; // + 200 *Reihe array intern
+                if(arrayInd%5 == 0) {
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd%5 == 1) {
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd%5 == 2) {
+                    xPos[nodeInd] = 950;
+                } else if(arrayInd%5 == 3) {
+                    xPos[nodeInd] = 200;
+                } else if(arrayInd%5 == 4) {
+                    xPos[nodeInd] = 800;
+                }
                 
-                if(noOfIndex < 4) {
-                    if (noOfArray == 0) {
-                        yPos[nodeI] = 750;
-                    }
-                    if (noOfArray == 1) {
-                        yPos[nodeI] = 400;
-                    }
-                    if (noOfArray == 2) {
-                        yPos[nodeI] = 70;
-                    }
+            } else if(a.length == 6 || (a.length == 7)) {
+                if(arrayInd < 4) {
+                    yPos[nodeInd] = tmpYPos;
+                } else {
+                    yPos[nodeInd] = tmpYPos + YSpace;
                 }
-                else {
-                    if (noOfArray == 0) {
-                        yPos[nodeI] = 910;
-                    }
-                    if (noOfArray == 1) {
-                        yPos[nodeI] = 560;
-                    }
-                    if (noOfArray == 2) {
-                        yPos[nodeI] = 230;
-                    }
-                }
-            // -----------------
-            // xPos
-            // ----------------- 
-                //dyn: xPos[nodeI] = tmpXPos + (noOfIndex % 4)*XSpace;
                 
-                if(noOfIndex % 4 == 0) {
-                    xPos[nodeI] = 50;
+                if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd == 1) {
+                    xPos[nodeInd] = 350;
+                } else if(arrayInd == 2) {
+                    xPos[nodeInd] = 650;
+                } else if(arrayInd == 3) {
+                    xPos[nodeInd] = 950;
+                } else if(arrayInd == 4) {
+                    xPos[nodeInd] = 200; 
+                } else if(arrayInd == 5) {
+                    if(a.length == 6) { 
+                        xPos[nodeInd] = 800;
+                    } else if(a.length == 7) {
+                        xPos[nodeInd] = 350;
+                    }
+                } else if(arrayInd == 6) {
+                        xPos[nodeInd] = 800;
                 }
-                if(noOfIndex % 4 == 1) {
-                    xPos[nodeI] = 350;
+            } else if(a.length == 8) {
+                if(arrayInd < 3) {
+                    yPos[nodeInd] = tmpYPos;
+                } else if(arrayInd < 5){
+                    yPos[nodeInd] = tmpYPos + YSpace;
+                } else {
+                    yPos[nodeInd] = tmpYPos + 2*YSpace;
                 }
-                if(noOfIndex % 4 == 2) {
-                    xPos[nodeI] = 650;
+                
+                if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd == 1) {
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd == 2) {
+                    xPos[nodeInd] = 950;
+                } else if(arrayInd == 3) {
+                    xPos[nodeInd] = 200;
+                } else if(arrayInd == 4) {
+                    xPos[nodeInd] = 800; 
+                } else if(arrayInd == 5) {
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd == 6) {
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd == 7) {
+                    xPos[nodeInd] = 950;
                 }
-                if(noOfIndex % 4 == 3) {
-                    xPos[nodeI] = 950;
+
+            } else if(a.length == 9) {
+                if(arrayInd < 4) {
+                    yPos[nodeInd] = tmpYPos;
+                } else if(arrayInd < 7){
+                    yPos[nodeInd] = tmpYPos + YSpace;
+                } else {
+                    yPos[nodeInd] = tmpYPos + 2*YSpace;
                 }
-            })
-            //in der letzten Zeile sind nur drei Zustände
-            if(a.length == 3 || a.length == 7) {
-                xPos[a[a.length-1]] = 800;
-                xPos[a[a.length-2]] = 500;
-                xPos[a[a.length-3]] = 200;
+                
+                if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd == 1) {
+                    xPos[nodeInd] = 300;
+                } else if(arrayInd == 2) {
+                    xPos[nodeInd] = 650;
+                } else if(arrayInd == 3) {
+                    xPos[nodeInd] = 950;
+                } else if(arrayInd == 4) {
+                    xPos[nodeInd] = 200; 
+                } else if(arrayInd == 5) {
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd == 6) {
+                    xPos[nodeInd] = 800;
+                } else if(arrayInd == 7) {
+                    xPos[nodeInd] = 200;
+                } else if(arrayInd == 8) {
+                    xPos[nodeInd] = 950;
+                }
             }
-            //in der letzten Zeile sind nur 2 Zustände
-            if(a.length == 6 || a.length == 2) {
-                xPos[a[a.length-1]] = 800;
-                xPos[a[a.length-2]] = 200;
+            else {
+                throw error;
             }
-            //in der letzten Zeile ist nur ein Zustand
-            if(a.length == 1 || a.length == 5) {
-                xPos[a[a.length-1]] = 500;
-            }
-        }
+        })
+        
+        tmpYPos = tmpYPos + rows[noOfArray]*YSpace + groupSpace;
     })
 
-    return [xPos, yPos]; 
+    return [xPos, yPos, Math.max(window.innerHeight-20,tmpYPos-YSpace)]; //ANPASSEN für states der letzten zeile
 }
 
 function getIndexByName(name) {
@@ -769,8 +918,9 @@ function getIndexByName(name) {
         if(json.nodes[i].name == name){
             return i;
         }
-    } // else Fehler
+    } return -1;
 }
+    
 function getParentsIndexByIndex(indexOfNode){
     var name = json.nodes[indexOfNode].name;
     var parents = new Array(0);
@@ -832,118 +982,116 @@ function calculateTableContent(IndexOfNode){
     return tabulate(rows, columns, parentSize)
 }
 
-    function tabulate(rows, columns, parentSize) {
-        var x0= 15; //x offset
-        var y0= 210; //y offset
+function tabulate(rows, columns, parentSize) {
+    var x0= 15; //x offset
+    var y0= 210; //y offset
 
-        var table = rightContainer.append("foreignObject")
-                                    .attr("y", y0)
-                                    .attr("x", x0)
-                                    .attr("width",590)// widthRight)
-                                    .attr("height",200)
-                                    .append("xhtml:body")
-                                    .append("div")
-                                    .attr("id","table-div")
-                                    .style("max-width", "590px")
-                                    .style("max-height", "200px")
-                                    .style("overflow-y","auto")
-                                    .style("overflow-x","hidden")
-                                    //.style("display", "table")
-                                    .append("table")
-                                    .attr("width", 580)
-                                    .attr("heigth", "20%")
-                                    .attr("id", "table")
-                                    //.attr("border", );
+    var table = rightContainer.append("foreignObject")
+                                .attr("y", y0)
+                                .attr("x", x0)
+                                .attr("width",590)// widthRight)
+                                .attr("height",200)
+                                .append("xhtml:body")
+                                .append("div")
+                                .attr("id","table-div")
+                                .style("max-width", "590px")
+                                .style("max-height", "200px")
+                                .style("overflow-y","auto")
+                                .style("overflow-x","auto")
+                                //.style("display", "table")
+                                .append("table")
+                                .attr("width", 580)
+                                .attr("heigth", "20%")
+                                .attr("id", "table")
+                                //.attr("border", );
 
 
-        ths = d3.select("table")
-            .append("tr")
-            .attr("class", "head")
-            .selectAll("th")
-            .data(columns)
-            .enter()
-            .append("th")
-            .html(function (d) {return d;});
+    ths = d3.select("table")
+        .append("tr")
+        .attr("class", "head")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+        .html(function (d) {return d;});
 
-        //thick line between parents and states
-        ths.style("border-right", function(d,i){
-            if(i == parentSize){return "solid orange";}}) 
+    //thick line between parents and states
+    ths.style("border-right", function(d,i){
+        if(i == parentSize){return "solid orange";}}) 
 
-        d3.select("table")
-            .selectAll("tr.data")
-            .data(rows).enter()
-            .append("tr")
-            .attr("class", "data");
+    d3.select("table")
+        .selectAll("tr.data")
+        .data(rows).enter()
+        .append("tr")
+        .attr("class", "data");
 
-        tds = d3.selectAll("tr")
-            .selectAll("td")
-            .data(function(d) {return d3.entries(d)})
-            .enter()
-            .append("td")
-            .html(function (d) {return d.value});
+    tds = d3.selectAll("tr")
+        .selectAll("td")
+        .data(function(d) {return d3.entries(d)})
+        .enter()
+        .append("td")
+        .html(function (d) {return d.value});
 
-        //thick line between parents and states
-        tds.style("border-right", function(d,i){
-            if(i == parentSize){return "solid orange";}})
+    //thick line between parents and states
+    tds.style("border-right", function(d,i){
+        if(i == parentSize){return "solid orange";}})
 
-        return table;
-    }
+    return table;
+}
     
-    function highlightNode(id, ac=false, parents){
-        for (i=0; i<json.nodes.length; i++){
-              if (id == json.nodes[i].name){
-    /*              if (activeNodes[i] && ac){//if this node was highlighted before
-                         d3.select(document.getElementById(id).firstChild).style("stroke-width", 4);
-                         headingDiscription.text(" ");
-                         tableHeading.text(" ");
-                         rightContainer.selectAll("foreignObject").remove();
-                         discriptionBackground.attr("fill","white");
-                         activeNodes[i] = false;
-                         break;
-                    }*/
-                    if (!activeNodes[i]){//if this node was not highlighted before
-                         for (var j = 0; j < activeNodes.length; ++j) { 
-                             if (activeNodes[j]){ //if other node was highlighted before unhighlight it
-                                 //rect
-                                 d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 4);
-                                 //table
-                                 rightContainer.selectAll("foreignObject").remove();
-                                 //links
-                                 var otherParents = [1,0,2]; //ANPASSEN
-                                 for(k = 0; k <otherParents.length; k++){
-                                    for (l = 0; l < json.links.length; l++) {
-                                         if(otherParents[k] == json.links[l].source) {
-                                             d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "lightblue").style("marker-end",  "url(#low)");
+function highlightNode(id, ac=false, parents){
+    for (i=0; i<json.nodes.length; i++){
+          if (id == json.nodes[i].name){
+/*              if (activeNodes[i] && ac){//if this node was highlighted before
+                     d3.select(document.getElementById(id).firstChild).style("stroke-width", 4);
+                     headingDiscription.text(" ");
+                     tableHeading.text(" ");
+                     rightContainer.selectAll("foreignObject").remove();
+                     discriptionBackground.attr("fill","white");
+                     activeNodes[i] = false;
+                     break;
+                }*/
+                if (!activeNodes[i]){//if this node was not highlighted before
+                     for (var j = 0; j < activeNodes.length; ++j) { 
+                         if (activeNodes[j]){ //if other node was highlighted before unhighlight it
+                             //rect
+                             d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 4);
+                             //table
+                             rightContainer.selectAll("foreignObject").remove();
+                             //links
+                             var otherParents = [1,0,2]; //ANPASSEN
+                             for(k = 0; k <otherParents.length; k++){
+                                for (l = 0; l < json.links.length; l++) {
+                                     if(otherParents[k] == json.links[l].source) {
+                                         d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "lightblue").style("marker-end",  "url(#low)");
 
-                                         }
-                                    }
-                                 }
+                                     }
+                                }
                              }
-                             activeNodes[j] = false; 
-                         };
-                         //highlight this node
-                         //links
-                         for(k = 0; k < parents.length; k++){
-                            for (l = 0; l < json.links.length; l++) {
-                                 if(parents[k] == json.links[l].source) {
-                                     d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
-
-                                 }
-                            }
                          }
-                         //rect
-                         d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 6);
-                         activeNodes[i] = true;
-                         //table
-                         var tabl = calculateTableContent(i);
-                         tableHeading.text(id);
-                         headingDiscription.text("Beschreibung");
-                         discriptionBackground.attr("fill","lightblue");
-                         break;
+                         activeNodes[j] = false; 
+                     };
+                     //highlight this node
+                     //links
+                     for(k = 0; k < parents.length; k++){
+                        for (l = 0; l < json.links.length; l++) {
+                             if(parents[k] == json.links[l].source) {
+                                 d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
 
-                     }  
-                  }
+                             }
+                        }
+                     }
+                     //rect
+                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 6);
+                     activeNodes[i] = true;
+                     //table
+                     var tabl = calculateTableContent(i);
+                     tableHeading.text(id);
+                     break;
+
+                 }  
               }
+          }
          
-    }
+}
 })
