@@ -1,4 +1,4 @@
-d3.json("http://10.200.1.75:8012/bn?name=bnalarm1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"
+d3.json("http://10.200.1.75:8012/bn?name=bnhepar1", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"
     if (error) throw error;
     
     // -----------------
@@ -117,13 +117,7 @@ d3.json("http://10.200.1.75:8012/bn?name=bnalarm1", function(error, json) { //"h
                                 }
                             }
                             
-                            //DYNAMISCH?
-                            if(c == 1){x = 100}
-                            else if(c == 2){if(p==1){x=50}else if(p==2){x=150}}
-                            else if(c == 3){if(p==1){x=50}else if(p==2){x=100}else if(p==3){x=150}}
-                            else if(c == 4){if(p==1){x=30}else if(p==2){x=75}else if(p==3){x=125}else if(p==4){x=170}}
-                            else if(c == 5){if(p==1){x=5}else if(p==2){x=50}else if(p==3){x=100}else if(p==4){x=150}else if(p==5){x=195}}
-                            return nodePosX[d.source] + x;}
+                            return nodePosX[d.source] + (200/(c+1))*p;}
                         })
                     .attr("y1",function(d,i){
                         if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
@@ -181,13 +175,7 @@ d3.json("http://10.200.1.75:8012/bn?name=bnalarm1", function(error, json) { //"h
                                 }
                             }
                             
-                            //DYNAMISCH?
-                            if(c == 1){x = 100}
-                            else if(c == 2){if(p==1){x=50}else if(p==2){x=150}}
-                            else if(c == 3){if(p==1){x=50}else if(p==2){x=100}else if(p==3){x=150}}
-                            else if(c == 4){if(p==1){x=30}else if(p==2){x=75}else if(p==3){x=125}else if(p==4){x=170}}
-                            else if(c == 5){if(p==1){x=5}else if(p==2){x=50}else if(p==3){x=100}else if(p==4){x=150}else if(p==5){x=195}}
-                            return nodePosX[d.target] + x;}
+                            return nodePosX[d.target] + (200/(c+1))*p;}
                         })
                     .attr("y2",function(d,i){
                         if(nodePosY[d.source]==nodePosY[d.target]){
