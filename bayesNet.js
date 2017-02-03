@@ -1,0 +1,866 @@
+function bayesNet(id) {
+    
+d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"
+    if (error) throw error;
+    // ------------------------------------------
+    // LINKE SEITE
+    // ------------------------------------------
+
+        // -----------------
+        // Compute Layout
+        // -----------------
+        var nodePosX, nodePosY;
+        var positions = computeLayout();
+        nodePosX = positions[0];
+        nodePosY = positions[1];
+        tmpHeight = positions[2];
+
+        //turn layout
+        var c1 = 0,c2 = 0;
+        for(i = 0; i < json.links.length; i++) {
+            if(nodePosY[json.links[i].target] < nodePosY[json.links[i].source] ) { //link is from down to up
+                c1++;
+            } else {
+                c2++;
+            }
+        }
+
+        if(c1 < c2) {
+            positions = computeLayout(true);
+            nodePosX = positions[0];
+            nodePosY = positions[1];
+            tmpHeight = positions[2];
+        }
+
+        // ------------------------------------------
+        // Bayes Netz
+        // ------------------------------------------
+
+        var leftContainer = container.append("g").attr("id", "leftContainer");
+
+        var scrollDiv = leftContainer.append("foreignObject")
+                                        .attr("y", 4)
+                                        .attr("x", 4)
+                                        .attr("width",lWidth)
+                                        .attr("height",height)
+                                        .append("xhtml:body")
+                                        .append("div")
+                                        .attr("id","scroll-div").style("overflow", "auto")
+    //                                    .attr("width",lWidth)
+    //                                    .attr("max-height",height)
+
+        var scrollSVG = scrollDiv.append("svg").attr("viewBox", "0,0,"+lWidth+","+tmpHeight)
+
+        var containerRect = scrollSVG.attr("id", "leftContainer")
+                                    .append("rect").attr("x", 10).attr("y", 10).attr("height", tmpHeight - 20).attr("width", lWidth-20)
+                                    .style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 20).attr("ry", 20);
+
+        var  graph = scrollSVG.append("g")
+                                  .attr("id", "graph");
+
+
+        // -----------------
+        // links
+        // -----------------
+        var linkSpace = 7;
+        var link = graph.selectAll(".link")
+                        .data(json.links)
+                        .enter().append("line")
+                        .attr("id", "link")
+                        .attr("class", "link")
+                        .attr("x1",function(d,i){
+                            if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+                                if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.source] - linkSpace;}//link from right to left
+                                else {return nodePosX[d.source] + 200 + linkSpace} //link from left to right
+                            } 
+                            else{
+                                var c = 0;//counter, of links which start in source node
+                                var p,x; //p position of this link, x added pixels
+                                if(nodePosY[d.source] > nodePosY[d.target]) { //this link is from down to up
+                                    for(j= 0; j < json.links.length;j++){ 
+                                       if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
+                                           if(json.links[j].source == json.links[i].source){
+                                               c++;
+                                               if(j == i) {
+                                                   p = c;
+                                               }
+                                            } 
+                                        } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]) { //link from up to down
+                                            if(json.links[j].target == json.links[i].source){
+                                               c++;
+                                               if(j == i) {
+                                                   p = c;
+                                               }
+                                            } 
+                                        }
+                                    }
+                                } else {//this link is from up to down
+                                    for(j= 0; j < json.links.length;j++){ 
+                                       if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
+                                           if(json.links[j].target == json.links[i].source){
+                                               c++;
+                                               if(j == i) {
+                                                   p = c;
+                                               }
+                                            } 
+                                        } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]){ //other link is from up to down
+                                            if(json.links[j].source == json.links[i].source){
+                                               c++;
+                                               if(j == i) {
+                                                   p = c;
+                                               }
+                                            } 
+                                        }
+                                    }
+                                }
+
+                                return nodePosX[d.source] + (200/(c+1))*p;}
+                            })
+                        .attr("y1",function(d,i){
+                            if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+                                return nodePosY[d.source] + getNodeHeight(d.source)*0.5;
+                            }                        
+                            else if(nodePosY[d.source] < nodePosY[d.target]){//link from up to down
+                                return nodePosY[d.source] + getNodeHeight(d.source) + linkSpace;
+                            } else{ //links from down to up
+                                return nodePosY[d.source] - linkSpace;
+                            }
+                        })
+                        .attr("x2",function(d,i){ //i index aller links
+                            if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+                                if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.target] +200 + linkSpace;} //link from right to left
+                                else {return nodePosX[d.target] - linkSpace} //link from left to right
+                            }
+                            else{
+                                var c = 0;//counter, of links which start in source node
+                                var p,x; //p position of this link, x added pixels
+                                if(nodePosY[d.source] > nodePosY[d.target]) { //this link is from down to up
+                                    for(j= 0; j < json.links.length;j++){ 
+                                       if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
+                                           if(json.links[j].target == json.links[i].target){
+                                               c++;
+                                               if(j == i) {
+                                                   p = c;
+                                               }
+                                            } 
+                                        } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]){ //link from up to down
+                                            if(json.links[j].source == json.links[i].target){
+                                               c++;
+                                               if(j == i) {
+                                                   p = c;
+                                               }
+                                            } 
+                                        }
+                                    }
+                                } else {//this link is from up to down
+                                    for(j= 0; j < json.links.length;j++){ 
+                                       if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
+                                           if(json.links[j].source == json.links[i].target){
+                                               c++;
+                                               if(j == i) {
+                                                   p = c;
+                                               }
+                                            } 
+                                        } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]){ //other link is from up to down
+                                            if(json.links[j].target == json.links[i].target){
+                                               c++;
+                                               if(j == i) {
+                                                   p = c;
+                                               }
+                                            } 
+                                        }
+                                    }
+                                }
+
+                                return nodePosX[d.target] + (200/(c+1))*p;}
+                            })
+                        .attr("y2",function(d,i){
+                            if(nodePosY[d.source]==nodePosY[d.target]){
+                                return nodePosY[d.target] + getNodeHeight(d.target)*0.5;
+                            }
+                            else if(nodePosY[d.source] < nodePosY[d.target]){//link from up to down
+                                return nodePosY[d.target] - linkSpace;
+                            }
+                            else{ //links from down to up
+                                return nodePosY[d.target] + getNodeHeight(d.target) + linkSpace;
+                            }
+                        })
+                        //.attr("transform", function(d,i){return "translate(100,0)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
+                        .style("marker-end",  "url(#low)")
+                        .attr("stroke", "lightblue")/*function(l,i) { FARBE PRO EBENE?
+                            color = colors[Math.floor(Math.random()*colors.length)];
+                            return color;
+                        });*/
+        //Arrows
+                    graph.append("defs").selectAll("marker")
+                        .data(["low", "high"])
+                        .enter().append("marker")
+                        .attr("id", function(d) { return d; })
+                        .attr("viewBox", "0 -5 10 10")
+                        .attr("refX", 10)//versetzt den Marker nach hinten
+                        .attr("refY", 0)
+                        .attr("fill", function(d,i) {if(i == 0){return "lightblue"} else{ return "#0489B1"}})
+                        .attr("markerWidth", 7)
+                        .attr("markerHeight", 17)
+                        .attr("orient", "auto")
+                        .append("path")
+                        .attr("d", "M0,-5L10,0L0,5")
+                        //.style("opacity", "0.6");    
+
+        // -----------------
+        // Nodes
+        // -----------------   
+
+        var activeNodes = new Array(json.nodes.length);
+        for (var i = 0; i < activeNodes.length; ++i) { activeNodes[i] = false; };
+        var node = graph.selectAll(".node")
+                          .data(json.nodes)
+                        .enter().append("g")
+                          .attr("class", "node")
+                          .attr("id", function(d){return d.name})
+                         .attr("transform", function(d,i) { return "translate(" + nodePosX[i] + "," + nodePosY[i] + ")"}) 
+                         .on("click", function hN() {
+                             var p = getParentsIndexByIndex(getIndexByName(this.id));
+                             highlightNode(this.id, false, p);
+
+                         });
+
+        var rects = node.append("rect").attr("class", "nodeRect");
+
+        var rectAttributes = rects.attr("x", 0)
+                                  .attr("y", 0)
+                                  .attr("width", 200)
+                                  .attr("height", function(d,i) {return getNodeHeight(i)})
+                                  .style("fill", function(d,i) {return "white"})
+                                  .style("stroke", function(d,i) {if(d.properties.type == "diagnosis") {return "#ffc266";};
+                                                                 if(d.properties.type == "therapy") {return "steelblue";};
+                                                                 if(d.properties.type == "examination") {return "#12858e";};
+                                                                 if(d.properties.type == "symptom") {return "#FE642E";}})
+                                  .style("stroke-width", 4)
+                                  .attr("rx", 10)
+                                  .attr("ry", 10);
+
+
+        var name = node.append("text");
+
+        var nameAttributes = name.style("fill", "purple")
+                         .attr("x", 5)
+                         .attr("y", 23)
+                         .text(function (d) {return d.name;})
+                         .attr("font-size", function(d) {return Math.min(25, 80 / this.getComputedTextLength() * 24) + "px"; });
+
+        var stateGroup = node.append("g")
+                             .attr("id", function(d) {return "stateGroup" });//+ d.name} );
+
+
+
+        var color = d3.scale.category10();
+        //RadioButtons
+        var radioButtons= node.append("g")
+                            .attr("id","radioButtons") 
+
+        var buttonGroups= radioButtons.selectAll("g.button")
+                                .data(function(d,i) {return d.properties.states})
+                                .enter()
+                                .append("g")
+                                .attr("class","button")
+                                .style("cursor","pointer")
+
+        //button width and height
+        var bWidth= 10; //button width
+        var bHeight= 10; //button height
+        var bSpace= 9; //space between buttons
+    //ANPASSEN UND NACHGUCKEN
+        var x0= 8; // x offset
+        var y0= 33; //y offset
+
+        //adding a rect to each button group
+        buttonGroups.append("rect")
+                    .attr("class","buttonRect")
+                    .attr("width",bWidth)
+                    .attr("height",bHeight)
+                    .attr("x",function(d,i) {
+                        return x0;
+                    })
+                    .attr("y",function(d,i) {
+                        return y0+(bWidth+bSpace)*i;
+                    })
+                    .attr("fill","white")
+
+        clickedButtons = []; // includes all ids of clicked Buttons
+
+        //adding text to each button group, centered within the button rect
+        buttonGroups.append("text")
+                    .attr("id",function(d,i) { 
+                            return this.parentElement.parentElement.parentElement.id + " " + i
+                    } )
+                    .attr("font-family","sans-serif")
+                    .attr("x",function(d,i) {
+                        return x0 + bWidth/2;
+                    })
+                    .attr("y",function(d,i) {
+                        return y0+(bWidth+bSpace)*i + bWidth/2;
+                    })
+                    .attr("text-anchor","middle")
+                    .attr("dominant-baseline","central")
+                    .style("fill", function(d,i){return color(i)})
+                    .text('\uf10c') //fontawesome labels
+                    .on("click", function highlightButton(){
+                        var p = getParentsIndexByIndex(getIndexByName(this.id.split(" ")[0]));
+                        highlightNode(getIndexByName(this.id.split(" ")[0]),true,p);
+                        active = false;
+                        //checks if clicked button is already clicked an reverses text
+                        if(clickedButtons.indexOf(this.id) != -1){
+                            d3.select(document.getElementById(this.id)).text('\uf10c');
+                            clickedButtons.splice(clickedButtons.indexOf(this.id),1);
+                            active = false;
+                        } else { // button was not clicked before
+                            //checks if there is another clicked button in this node
+                            for(i = 0; i < clickedButtons.length; i++){
+                                if (this.parentElement.parentElement.parentElement.id == clickedButtons[i].split(" ")[0]){
+                                    active = true;
+                                    break;
+                                }
+                            }
+                            //if not, reverse text of this button and push to list
+                            if(active == false){
+                                d3.select(document.getElementById(this.id)).text('\uf192');
+                                clickedButtons.push(this.id);
+                            } else { // if there already is a clicked Button in Node, change text of old and new button and push to list
+                                //old button
+                                for(i = 0; i < clickedButtons.length; i++){
+                                    if (this.parentElement.parentElement.parentElement.id == clickedButtons[i].split(" ")[0]){
+                                        d3.select(document.getElementById(clickedButtons[i])).text('\uf10c');
+                                        oldButtonI = clickedButtons.indexOf(clickedButtons[i]);
+                                        clickedButtons.splice(oldButtonI, 1); //removes oldButtons Id
+                                        clickedButtons.push(this.id)
+                                    }
+                                }
+                                //new button
+                                d3.select(document.getElementById(this.id)).text('\uf192'); 
+                            }
+                        } 
+                     });
+
+
+        //States
+        var stateText = stateGroup.append("text");
+
+        var stateAttributes = stateText
+                         .attr("font-size", "15px")
+                         .attr("x", 10)
+                         .attr("y", 22);
+
+        var states = stateAttributes.selectAll("tspan")
+                         .data(function (d,i) {return d.properties.states})
+                         .enter()
+                         .append("tspan")
+                         .style("fill", function(d,i){return color(i)})
+                         .text(function(d) { return d.name; })
+                         .attr("dy", 20)
+                         .attr("x", 25);
+
+        /*var hightlightState = stateAttributes.selectAll("rect")
+                             .data(function (d,i) {return d.properties.states})
+                            .enter()
+                            .append("rect")
+                            .style("stroke")
+                            .on("click", function(){alert(true)})*/
+        //Pie Chart
+        json.nodes.forEach(function(d,i,a) {
+            var w =60;
+            var h = 60;
+            var r = Math.min(w, h) / 2; //anpassen getNodeHeight 
+
+            var svg = d3.select(document.getElementById(json.nodes[i].name))
+              .append('svg')
+              .attr("x",125)
+              .attr("y", 4)      //anpassen getNodeHeight
+              .attr('width', w)
+              .attr('height', h)
+              .append('g')
+              .attr('transform', 'translate(' + (w / 2) +
+                ',' + (h / 2) + ')');
+
+            var arc = d3.svg.arc()
+              .innerRadius(0)
+              .outerRadius(r);
+
+            var pie = d3.layout.pie()
+              .value(function(d0) {return d0.probability; })
+              .sort(null);
+
+            var path = svg.selectAll('path')
+              .data(pie(d.properties.cpt.probabilities.slice(-(d.properties.states.length - d.properties.cpt.probabilities.length)))) //nimmt im moment die ersten Tabellenwerte ANPASSEN
+              .enter()
+              .append('path')
+              .attr('d', arc)
+              .attr('fill', function(d1,i1) {
+                return color(i1);
+              });
+        })
+
+        //Probabilities
+    /*    var probabilityText = stateGroup.append("text");
+
+        var probabilityAttributes = probabilityText
+                         .style("fill", "purple")
+                         .attr("font-size", "15px")
+                         .attr("x", 5)
+                         .attr("y", 22);
+
+                         //.attr("transform", "translate(0,20)")
+
+        var probabilities = probabilityAttributes.selectAll("tspan")
+                         .data(function (d,i) {return d.properties.cpt.probabilities.slice(-(d.properties.states.length - d.properties.cpt.probabilities.length))})
+                         .enter()
+                         .append("tspan")
+                         .text(function(d) { return d.probability; })
+                         .attr("dy", 20)
+                         .attr("x", 190)
+                         .attr("text-anchor", "end");*/
+
+    // -----------------
+    // Reload Button
+    // -----------------
+
+    var reloadButton = leftContainer.append("g").attr("class","button")
+                            .style("cursor","pointer")
+
+    var reloadRect = reloadButton.append("rect")
+                .attr("id", "reload")
+                .attr("class","buttonRect")
+                .attr("width",50)
+                .attr("height",50)
+                .attr("x", lWidth - 80)
+                .attr("y",32)
+                .attr("rx",5) 
+                .attr("ry",5)
+                .attr("fill","#FE642E")
+
+    var reloadText = reloadButton.append("text")
+                .attr("class","buttonText")
+                .attr("font-family","sans-serif")
+                .attr("x",lWidth - 55)
+                .attr("y",32 + 25)
+                .attr("text-anchor","middle")
+                .attr("dominant-baseline","central")
+                .attr("fill","white")
+                .attr("font-size", "20px")  
+                .text("\uf021") 
+
+    var tablePartHeight = height -yTemp - 10 -5;
+d3.select(document.getElementById("tableGroup").firstChild).attr("height", tablePartHeight).attr("x", 10).attr("y", yTemp)
+//yTemp += (tablePartHeight + gSpace)
+                        var tableHeading = tableGroup.append("text")
+                     .style("fill", "purple")
+                     .attr("x", rWidth / 2)
+                     .attr("y", 180)
+                     .attr("font-size", "25px")            
+                     .attr("text-anchor","middle");
+// ------------------------------------------
+// Funktionen
+// ------------------------------------------
+
+function getNodeHeight(nodeInd){
+    if(json.nodes[nodeInd].properties.states.length==1){
+        return (json.nodes[nodeInd].properties.states.length+1) * 20 + 27
+    }
+    return json.nodes[nodeInd].properties.states.length * 20 + 27
+}
+    
+function computeLayout(turn = false) {
+    //Arrays mit Indexen der Nodes nach Typen sortiert, in therapyNodes sind auch die examinations drin
+    var symptomNodes = [], therapyNodes = [], diagnosisNodes = [];
+    for(i = 0; i < json.nodes.length; i++){
+        if (json.nodes[i].properties.type == "symptom"){
+            symptomNodes.push(i);
+        }
+        if (json.nodes[i].properties.type == "diagnosis"){
+            diagnosisNodes.push(i);
+        }
+        if (json.nodes[i].properties.type == "therapy" || json.nodes[i].properties.type == "examination"){
+            therapyNodes.push(i);
+        }
+    }
+    
+   var allArrays;
+    if(turn){
+        allArrays = [symptomNodes, diagnosisNodes, therapyNodes] // gibt die Reihenfolge der Ebenen an
+    } else {
+        allArrays = [therapyNodes, diagnosisNodes, symptomNodes]
+    }
+    
+ //WENN ES WAAGERECHTE EDGES GIBT, DANN FÜGE DIE BEIDEN NODES NACH VORNE IN DER LISTE?
+    
+    var yCounter = 0;
+    var rows = new Array(allArrays.length)
+    
+    allArrays.forEach(function(a,noOfArray){
+        if(a.length/4 == 0) {
+            rows[noOfArray] = 0;
+        } else
+        if(a.length/4 < 1.1) {
+            yCounter = yCounter + 1;
+            rows[noOfArray] = 1;
+        } else if(a.length/4 < 2) {
+            yCounter = yCounter + 2;
+            rows[noOfArray] = 2;
+        } else if(a.length/4 < 2.5) {
+            yCounter = yCounter + 3;
+            rows[noOfArray] = 3;
+        } else { //array ueber 9 wird in 5er gruppen unterteilt(3+2) und rest wird angehängt
+            var r = 0;
+            if((a.length%5) + 5 < 5) {
+                r = 1;
+            } else if ((a.length%5) + 5 < 8){
+                r = 2;
+            } else if ((a.length%5) + 5 < 10) {
+                r = 3;
+            }
+            yCounter = yCounter + (Math.floor(a.length/5)-1)* 2 + r;
+            rows[noOfArray] = (Math.floor(a.length/5)-1)* 2 + r;
+        }
+        
+    })
+    
+    var xPos = new Array(json.nodes.length), yPos = new Array(json.nodes.length);
+    var YStart = 50, //was ist wenn nur eine Gruppe existiert
+        YSpace = 160,  //states berücksichtigen 
+        groupSpace = Math.max((window.innerHeight - yCounter*YSpace - YStart*2 - 20)/(allArrays.length-1),100),
+        tmpYPos = YStart;
+    var XStart = 50,
+        tmpXPos = XStart;
+    
+    allArrays.forEach(function(a,noOfArray){
+    
+        a.forEach(function(nodeInd, arrayInd,a){
+            
+            if(rows[noOfArray] == 1) {
+                yPos[nodeInd] = tmpYPos;
+                
+                if(a.length == 1){
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                    xPos[nodeInd] = 50;
+                }
+                if(a.length == 2){
+                    if(arrayInd == 1) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                        xPos[nodeInd] = 800;
+                    } else if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                        xPos[nodeInd] = 200;
+                    }
+                }
+                else if(a.length == 3){
+                    if(arrayInd == 1) { 
+                        xPos[nodeInd] = 500;
+                    } else if(arrayInd == 2) {
+                        xPos[nodeInd] = 950;
+                    }
+                }
+                else if(a.length == 4){
+                    if(arrayInd == 1) { 
+                        xPos[nodeInd] = 350;
+                    } else if(arrayInd == 2) { 
+                        xPos[nodeInd] = 650;
+                    } else if(arrayInd == 3) {
+                        xPos[nodeInd] = 950;
+                    }
+                }
+                
+            } else 
+            if(a.length == 5 || rows[noOfArray] > 3) { //5er Gruppen
+
+                yPos[nodeInd] = tmpYPos + Math.floor(arrayInd*2/5)*YSpace;
+                
+                if(arrayInd%5 == 0) {
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd%5 == 1) {
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd%5 == 2) {
+                    xPos[nodeInd] = 950;
+                } else if(arrayInd%5 == 3) {
+                    xPos[nodeInd] = 200;
+                } else if(arrayInd%5 == 4) {
+                    xPos[nodeInd] = 800;
+                }
+                
+            } else if(a.length == 6 || (a.length == 7)) {
+                if(arrayInd < 4) {
+                    yPos[nodeInd] = tmpYPos;
+                } else {
+                    yPos[nodeInd] = tmpYPos + YSpace;
+                }
+                
+                if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd == 1) {
+                    xPos[nodeInd] = 350;
+                } else if(arrayInd == 2) {
+                    xPos[nodeInd] = 650;
+                } else if(arrayInd == 3) {
+                    xPos[nodeInd] = 950;
+                } else if(arrayInd == 4) {
+                    xPos[nodeInd] = 200; 
+                } else if(arrayInd == 5) {
+                    if(a.length == 6) { 
+                        xPos[nodeInd] = 800;
+                    } else if(a.length == 7) {
+                        xPos[nodeInd] = 350;
+                    }
+                } else if(arrayInd == 6) {
+                        xPos[nodeInd] = 800;
+                }
+            } else if(a.length == 8) {
+                if(arrayInd < 3) {
+                    yPos[nodeInd] = tmpYPos;
+                } else if(arrayInd < 5){
+                    yPos[nodeInd] = tmpYPos + YSpace;
+                } else {
+                    yPos[nodeInd] = tmpYPos + 2*YSpace;
+                }
+                
+                if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd == 1) {
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd == 2) {
+                    xPos[nodeInd] = 950;
+                } else if(arrayInd == 3) {
+                    xPos[nodeInd] = 200;
+                } else if(arrayInd == 4) {
+                    xPos[nodeInd] = 800; 
+                } else if(arrayInd == 5) {
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd == 6) {
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd == 7) {
+                    xPos[nodeInd] = 950;
+                }
+
+            } else if(a.length == 9) {
+                if(arrayInd < 4) {
+                    yPos[nodeInd] = tmpYPos;
+                } else if(arrayInd < 7){
+                    yPos[nodeInd] = tmpYPos + YSpace;
+                } else {
+                    yPos[nodeInd] = tmpYPos + 2*YSpace;
+                }
+                
+                if(arrayInd == 0) { //DYN: gerade : startgerade + i * spacegerade, ungerade vice versa
+                    xPos[nodeInd] = 50;
+                } else if(arrayInd == 1) {
+                    xPos[nodeInd] = 300;
+                } else if(arrayInd == 2) {
+                    xPos[nodeInd] = 650;
+                } else if(arrayInd == 3) {
+                    xPos[nodeInd] = 950;
+                } else if(arrayInd == 4) {
+                    xPos[nodeInd] = 200; 
+                } else if(arrayInd == 5) {
+                    xPos[nodeInd] = 500;
+                } else if(arrayInd == 6) {
+                    xPos[nodeInd] = 800;
+                } else if(arrayInd == 7) {
+                    xPos[nodeInd] = 200;
+                } else if(arrayInd == 8) {
+                    xPos[nodeInd] = 950;
+                }
+            }
+            else {
+                throw error;
+            }
+        })
+        
+        tmpYPos = tmpYPos + rows[noOfArray]*YSpace + groupSpace;
+    })
+
+    return [xPos, yPos, Math.max(window.innerHeight-20,tmpYPos-YSpace)]; //ANPASSEN für states der letzten zeile
+}
+
+function getIndexByName(name) {
+    for (var i = 0; i < json.nodes.length; i++) {
+        if(json.nodes[i].name == name){
+            return i;
+        }
+    } return -1;
+}
+    
+function getParentsIndexByIndex(indexOfNode){
+    var name = json.nodes[indexOfNode].name;
+    var parents = new Array(0);
+    for (i = 0; i < json.links.length; i++) {
+       if (json.links[i].target == indexOfNode){
+
+            parents.push(json.links[i].source);
+        }
+    }
+    return parents;
+}
+    
+function calculateTableContent(IndexOfNode){
+        
+    var parents = getParentsIndexByIndex(IndexOfNode);
+    parents.push(IndexOfNode)
+    var parentSize = parents.length -2;
+    
+    // parents in columns (Spalten)
+    var columns = new Array(0);
+    parents.forEach(function(element,Id, array){
+        columns.push(json.nodes[element].name)
+    })
+    // states of this node in last columns (this node is last element of parents)
+    json.nodes.forEach(function(d,i){
+        if(d.name == columns[columns.length-1]){
+            if(d.properties.states.length == 0){ //node has no states (examinstions?)
+                columns.split(columns.length-1,1);
+            } else { //node has states
+                columns[columns.length-1] = d.properties.states[0].name;
+                for(i=0; i<d.properties.states.length-1; i++){
+                    columns.push(d.properties.states[i+1].name);
+                }
+            }
+        }
+    })
+
+    var rows = [];
+    
+    var countRows = 1;
+    for (p = 0; p < parents.length-1; p++){
+        countRows *= json.nodes[parents[p]].properties.states.length;
+    }
+    
+    // statenames 
+    // #columns - #states of this node
+    var stateRow = new Array(columns.length - json.nodes[parents[parents.length-1]].properties.states.length)
+    var probRow = new Array(json.nodes[parents[parents.length-1]].properties.states.length)
+    for (j=0; j<countRows; j++){
+        for(i=0; i<(columns.length - json.nodes[parents[parents.length-1]].properties.states.length); i++){
+            stateRow[i] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*2+i].conditions[i].name;         
+        }
+        for (h=0; h<json.nodes[parents[parents.length-1]].properties.states.length; h++){
+            probRow[h] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*2+h].probability;
+        }
+        rows.push(stateRow.concat(probRow))
+    }
+    
+    return tabulate(rows, columns, parentSize)
+}
+
+function tabulate(rows, columns, parentSize) {
+    var x0= 25; //x offset
+    var y0= 220; //y offset
+
+    var table = rightContainer.append("foreignObject")
+                                .attr("y", y0)
+                                .attr("x", x0)
+                                .attr("width",590)// widthRight)
+                                .attr("height",200)
+                                .append("xhtml:body")
+                                .append("div")
+                                .attr("id","table-div")
+                                .style("max-width", "590px")
+                                .style("max-height", "200px")
+                                .style("overflow-y","auto")
+                                .style("overflow-x","auto")
+                                //.style("display", "table")
+                                .append("table")
+                                .attr("width", 580)
+                                .attr("heigth", "20%")
+                                .attr("id", "table")
+                                //.attr("border", );
+
+
+    ths = d3.select("table")
+        .append("tr")
+        .attr("class", "head")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+        .html(function (d) {return d;});
+
+    //thick line between parents and states
+    ths.style("border-right", function(d,i){
+        if(i == parentSize){return "solid purple";}}) 
+
+    d3.select("table")
+        .selectAll("tr.data")
+        .data(rows).enter()
+        .append("tr")
+        .attr("class", "data");
+
+    tds = d3.selectAll("tr")
+        .selectAll("td")
+        .data(function(d) {return d3.entries(d)})
+        .enter()
+        .append("td")
+        .html(function (d) {return d.value});
+
+    //thick line between parents and states
+    tds.style("border-right", function(d,i){
+        if(i == parentSize){return "solid purple";}})
+
+    return table;
+}
+    
+function highlightNode(id, ac=false, parents){
+// -----------------
+// Heading of Table
+// -----------------
+    for (i=0; i<json.nodes.length; i++){
+          if (id == json.nodes[i].name){
+/*              if (activeNodes[i] && ac){//if this node was highlighted before
+                     d3.select(document.getElementById(id).firstChild).style("stroke-width", 4);
+                     headingDiscription.text(" ");
+                     tableHeading.text(" ");
+                     rightContainer.selectAll("foreignObject").remove();
+                     discriptionBackground.attr("fill","white");
+                     activeNodes[i] = false;
+                     break;
+                }*/
+                if (!activeNodes[i]){//if this node was not highlighted before
+                     for (var j = 0; j < activeNodes.length; ++j) { 
+                         if (activeNodes[j]){ //if other node was highlighted before unhighlight it
+                             //rect
+                             d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 4);
+                             //table
+                             rightContainer.selectAll("foreignObject").remove();
+                             //links
+                             var otherParents = [1,0,2]; //ANPASSEN
+                             for(k = 0; k <otherParents.length; k++){
+                                for (l = 0; l < json.links.length; l++) {
+                                     if(otherParents[k] == json.links[l].source) {
+                                         d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "lightblue").style("marker-end",  "url(#low)");
+
+                                     }
+                                }
+                             }
+                         }
+                         activeNodes[j] = false; 
+                     };
+                     //highlight this node
+                     //links
+/*                     for(k = 0; k < parents.length; k++){
+                        for (l = 0; l < json.links.length; l++) {
+                             if(parents[k] == json.links[l].source) {
+                                 d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "#0489B1").style("marker-end",  "url(#high)");
+
+                             }
+                        }
+                     }*/
+                     //rect
+                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 6);
+                     activeNodes[i] = true;
+                     //table
+                     var tabl = calculateTableContent(i);
+                     tableHeading.text(id);
+                     break;
+
+                 }  
+              }
+          }
+         
+}
+})
+}
