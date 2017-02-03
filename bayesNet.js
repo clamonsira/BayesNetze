@@ -1,6 +1,6 @@
 function bayesNet(id) {
     
-d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"
+d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"http://10.200.1.75:8012/bn?name=" + id
     if (error) throw error;
     // ------------------------------------------
     // LINKE SEITE
@@ -432,7 +432,7 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                 .attr("class","buttonRect")
                 .attr("width",50)
                 .attr("height",50)
-                .attr("x", lWidth - 80)
+                .attr("x", 25)
                 .attr("y",32)
                 .attr("rx",5) 
                 .attr("ry",5)
@@ -441,23 +441,22 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
     var reloadText = reloadButton.append("text")
                 .attr("class","buttonText")
                 .attr("font-family","sans-serif")
-                .attr("x",lWidth - 55)
+                .attr("x",50)
                 .attr("y",32 + 25)
                 .attr("text-anchor","middle")
                 .attr("dominant-baseline","central")
                 .attr("fill","white")
                 .attr("font-size", "20px")  
                 .text("\uf021") 
-
-    var tablePartHeight = height -yTemp - 10 -5;
-d3.select(document.getElementById("tableGroup").firstChild).attr("height", tablePartHeight).attr("x", 10).attr("y", yTemp)
-//yTemp += (tablePartHeight + gSpace)
-                        var tableHeading = tableGroup.append("text")
-                     .style("fill", "purple")
-                     .attr("x", rWidth / 2)
-                     .attr("y", 180)
-                     .attr("font-size", "25px")            
-                     .attr("text-anchor","middle");
+// -----------------
+// Heading of Table
+// -----------------
+    var tableHeading = tableGroup.append("text")
+                         .style("fill", "purple")
+                         .attr("x", rWidth / 2)
+                         .attr("y", 180)
+                         .attr("font-size", "25px")            
+                         .attr("text-anchor","middle");
 // ------------------------------------------
 // Funktionen
 // ------------------------------------------
@@ -805,9 +804,10 @@ function tabulate(rows, columns, parentSize) {
 }
     
 function highlightNode(id, ac=false, parents){
-// -----------------
-// Heading of Table
-// -----------------
+
+    var tablePartHeight = height -yTemp - 10 -5;
+    d3.select(document.getElementById("tableGroup").firstChild).attr("height", tablePartHeight).attr("x", 10).attr("y", yTemp)
+    //yTemp += (tablePartHeight + gSpace)
     for (i=0; i<json.nodes.length; i++){
           if (id == json.nodes[i].name){
 /*              if (activeNodes[i] && ac){//if this node was highlighted before

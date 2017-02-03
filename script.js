@@ -88,35 +88,33 @@ buttonGroups.append("text")
 
 d3.select(document.getElementById("Information"))
     .on("click", function () {
-        var infoGroup = rightContainer.append("g").attr("id","infoGroup")
+        var infoGroup = rightContainer.append("g").attr("id","infoGroup").style("position","fixed")
 
         d3.text("Info.txt",function(error,text) {
             
-            var infoText = infoGroup.append("foreignObject")
+            var infoText = infoGroup.append("foreignObject").style("position","fixed")
                                         .attr("y", y0+22 + 20)
                                         .attr("x", x0+13 - 150 + 20)
                                         .attr("width",400)// widthRight)
                                         .attr("height",219)
-                                        .style("z-index", 2)
-                                        .append("xhtml:body")
-                                        .style("z-index", 3)
+                                        .append("xhtml:body").style("position","fixed")
                                         .append("div")
-                                        .style("z-index", 4)
+                                        .style("position","fixed")
                                         .append("text").html(text).attr("id","info-div")
                                         .attr("font-size", 30)
                                         .style("fill", "purple")
                                         .style("position","fixed")
                                         .attr("x", lWidth+ x0+13 - 150 + 10)
                                         .attr("y", y0+22 + 10)
-                                        .attr("dy", ".35em").style("z-index", 5);
+                                        .attr("dy", ".35em");
             
             var bBox = document.getElementById("info-div").getBoundingClientRect().height;
             
-            var infoRect = infoGroup.append("rect")
+            var infoRect = infoGroup.append("rect").attr("id", "infoRect")
                     .attr("x", x0+13 - 150).attr("y", y0+22)
                     .attr("width", 440).attr("height",bBox + 40)
                     .attr("rx",5).attr("ry",5)
-                    .style("fill", "white").style("stroke","orange").style("z-index", 1).style("position","absolute");
+                    .style("fill", "white").style("stroke","orange");
             d3.select("body").on("click", function() {infoGroup.remove()})
         })
         
@@ -246,6 +244,7 @@ d3.select(document.getElementById("laden"))
                                     .attr("x", -555)
                                     .attr("y", function(d,i) { return 120 + i * 75;})
                                     .style("font-size",20).style("fill", "purple");
+            
             d3.select("body").on("click", function() {ladenGroup.remove()})
                                     
         })
