@@ -5,19 +5,20 @@
 		- (von links nach rechts)
 		- (planare Graphen)
 		- pro Ebene: die mit meisten Kanten nach außen
-	- 1:mitte, 2: außen, 3: mitte,  2 + 3, 4 + 2, usw
+	- große Gruppen werden in 3 + 2 aufgeteilt und Rest wird neuer Zeile drangehängt ANPASSEN
+		- ab 8er Gruppen in 5er aufteilen
 	- Symptome oben wenn viele Links davon abgehen
 
 
 - Links
 	- Links die ankommen zeigen nicht auf gleichen Punkt
 	- highlightLinks zu highlightNode ÜBERARBEITEN: unhighlight
-	- Links gleicher Ebenen werden waagerecht angezeigt
+	- Links gleicher Ebenen werden waagerecht angezeigt CURVED
 		- todo: was passiert wenn ein Node dazwischen liegt?, es mehrere in einer Ebene gibt? LAYOUT?
 		- (curvedlinks)
 	
 - Nodes
-	- HighlightNode: wenn angeklickt wird Node eingefärbt, hinführende Links gehigjlighted und Tabelle öffnet sich
+	- HighlightNode: wenn angeklickt wird Node eingefärbt, hinführende Links gehighlighted und Tabelle öffnet sich
 	- Tortendiagramm zeigt die Wkeit ANIMATION
 		- todo: Node Wkeit ausrechnen DB
 		- todo: Namen positionieren, Nodes länger machen?
@@ -33,19 +34,22 @@
 - Menü
 	- 4 Buttons HIGHLIGHT ANIMATION
 		- todo: Aktualisier-Knopf bei Anpassungen der W'keiten	
-		- Animationen beim Laden, verändern...
+	- am Anfang seht man nur Menü und kann sich alle Netze laden
+		- Animationen 
 		- speichern?
 		- (erweitern?)
-		- Auswahlmöglichkeiten der Graphen am Anfang? Login?
+		- Login?
 
 - todo: Säulendiagramm mit genauen Wkeiten auf rechter Seite
+- todo: Tabelle mit potenziellen Infos über Knoten
 
 - Legende + Info Button 
 	- ausklappbar
-
+		- todo: Legende mit Click ausblenden
+		- todo: Animation
 
 	
-- Zusatzfunktionalitäten
+- (Zusatzfunktionalitäten)
 	- (Überlegung: Paper zu Ergebis verlinken -> woher die Daten, wie aktuell)
 	- Überlegung: Mit welchem zusätzlichen Symptom (Test) würde die W'keit zu einem Ergebnis am meisten steigen -> Empfehlung zu nächstem Test -> kann Kosten/Zeit abschätzen
 

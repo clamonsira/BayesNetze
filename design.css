@@ -7,7 +7,6 @@ html,body {
 #scroll-div {
     height: 100%;
     width: 100%;
-    z-index:  -200;
     position: absolute;
 }
 

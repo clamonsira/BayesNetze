@@ -8,20 +8,18 @@
                                 .attr("width", window.innerWidth -5)
                                 .attr("height", height) // wenn tmpHeight > height scroll ein bauen
                                 .attr("id", "container");
+
 // ------------------------------------------
 // RECHTE SEITE
 // ------------------------------------------
-    
-
-
 var rightContainer = container.append("g")
                                     .attr("id", "rightContainer")
                                     .attr("transform", "translate(" + lWidth +","+ 0 +")");
 
 var menuGroup = rightContainer.append("g").attr("id","menuGroup")
-var tableGroup = rightContainer.append("g").attr("id","tableGroup")
 
-rightContainer.selectAll("g").append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15);
+
+var menuRect = menuGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15);
         
 var x0= 10; //x offset
 var y0= 10; //y offset
@@ -38,16 +36,16 @@ var bWidth= 140; //button width
 var bHeight= 50; //button height
 var bSpace= 10; //space between buttons
     
-d3.select(document.getElementById("menuGroup").firstChild).attr("height", menuHeight).attr("x", x0).attr("y", yTemp)
+menuRect.attr("height", menuHeight).attr("x", x0).attr("y", yTemp)
 yTemp += (menuHeight + gSpace +10)//2xstroke-width
 
-var MenuButtons= menuGroup.append("g")
-                    .attr("id","MenuButtons") 
+var menuButtons= menuGroup.append("g")
+                    .attr("id","menuButtons") 
 
 //fontawesome button labels
 var labels= ['\uf08e laden', '\uf0c7 speichern', "\uf059 Information", '\uf009 Legende',];
 
-var buttonGroups= MenuButtons.selectAll("g.button")
+var buttonGroups= menuButtons.selectAll("g.button")
                         .data(labels)
                         .enter()
                         .append("g")
@@ -88,14 +86,14 @@ buttonGroups.append("text")
 
 d3.select(document.getElementById("Information"))
     .on("click", function () {
-        var infoGroup = rightContainer.append("g").attr("id","infoGroup").style("position","fixed")
+        var infoGroup = rightContainer.append("g").attr("id","infoGroup").style("position","fixed").attr("transform", "translate(" + (150/2 +80) +","+ 100 +")")
 
         d3.text("Info.txt",function(error,text) {
             
             var infoText = infoGroup.append("foreignObject").style("position","fixed")
                                         .attr("y", y0+22 + 20)
                                         .attr("x", x0+13 - 150 + 20)
-                                        .attr("width",400)// widthRight)
+                                        .attr("width",550)// widthRight)
                                         .attr("height",219)
                                         .append("xhtml:body").style("position","fixed")
                                         .append("div")
@@ -104,7 +102,7 @@ d3.select(document.getElementById("Information"))
                                         .attr("font-size", 30)
                                         .style("fill", "purple")
                                         .style("position","fixed")
-                                        .attr("x", lWidth+ x0+13 - 150 + 10)
+                                        .attr("x", lWidth+ x0+13 - 150 + 10 + 150)
                                         .attr("y", y0+22 + 10)
                                         .attr("dy", ".35em");
             
@@ -112,7 +110,7 @@ d3.select(document.getElementById("Information"))
             
             var infoRect = infoGroup.append("rect").attr("id", "infoRect")
                     .attr("x", x0+13 - 150).attr("y", y0+22)
-                    .attr("width", 440).attr("height",bBox + 40)
+                    .attr("width", 550).attr("height",bBox + 40)
                     .attr("rx",5).attr("ry",5)
                     .style("fill", "white").style("stroke","orange");
             d3.select("body").on("click", function() {infoGroup.remove()})
@@ -128,7 +126,7 @@ var legendTypes = ["Therapie","Test","Diagnose","Symptom"]
 
 d3.select(document.getElementById("Legende"))
     .on("click", function () {
-        var legendGroup = rightContainer.append("g").attr("id","legendGroup")
+        var legendGroup = rightContainer.append("g").attr("id","legendGroup").attr("transform", "translate(" + (150/2 +80) +","+ 100 +")")
         var legendRect = legendGroup.append("rect")
                                 .attr("id","legendRect")
                                 .attr("x", x0+13).attr("y", y0+22)
@@ -211,12 +209,12 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
 
 d3.select(document.getElementById("laden"))
     .on("click", function () {
-        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup")
+        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")");
     
         d3.json("allBNs.json",function(error,allBNs) {
             
                     
-            var ladenRect = ladenGroup.append("rect").style("position","absolute").style("z-index", 50)
+            var ladenRect = ladenGroup.append("rect").style("position","absolute")
                     .attr("x", x0+13 - 610).attr("y", y0+22)
                     .attr("width", 600).attr("height", allBNs.length * 67 + 100)
                     .attr("rx",5).attr("ry",5)
@@ -237,6 +235,7 @@ d3.select(document.getElementById("laden"))
                                         d3.select(this).style("stroke-width",2)
                                     })
                                     .on("click",function(d,i) {
+                                        if (document.getElementById("leftContainer") != null) {d3.select(document.getElementById("leftContainer")).remove()};
                                         bayesNet(allBNs[i].graphDBId);
                                     });
             var netTexts = netGroup.selectAll("text").data(allBNs).enter().append("text")

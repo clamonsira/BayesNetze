@@ -1,6 +1,6 @@
 function bayesNet(id) {
     
-d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"http://10.200.1.75:8012/bn?name=" + id
+d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"http://10.200.1.75:8012/bn?name=" + id
     if (error) throw error;
     // ------------------------------------------
     // LINKE SEITE
@@ -35,10 +35,9 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
         // ------------------------------------------
         // Bayes Netz
         // ------------------------------------------
-
         var leftContainer = container.append("g").attr("id", "leftContainer");
 
-        var scrollDiv = leftContainer.append("foreignObject")
+        var scrollDiv = leftContainer.append("foreignObject").style("position", "relative").style("z-index", 99)
                                         .attr("y", 4)
                                         .attr("x", 4)
                                         .attr("width",lWidth)
@@ -420,43 +419,36 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                          .attr("x", 190)
                          .attr("text-anchor", "end");*/
 
-    // -----------------
-    // Reload Button
-    // -----------------
-
-    var reloadButton = leftContainer.append("g").attr("class","button")
-                            .style("cursor","pointer")
-
-    var reloadRect = reloadButton.append("rect")
-                .attr("id", "reload")
-                .attr("class","buttonRect")
-                .attr("width",50)
-                .attr("height",50)
-                .attr("x", 25)
-                .attr("y",32)
-                .attr("rx",5) 
-                .attr("ry",5)
-                .attr("fill","#FE642E")
-
-    var reloadText = reloadButton.append("text")
-                .attr("class","buttonText")
-                .attr("font-family","sans-serif")
-                .attr("x",50)
-                .attr("y",32 + 25)
-                .attr("text-anchor","middle")
-                .attr("dominant-baseline","central")
-                .attr("fill","white")
-                .attr("font-size", "20px")  
-                .text("\uf021") 
+    
 // -----------------
-// Heading of Table
+// Reload Button
 // -----------------
-    var tableHeading = tableGroup.append("text")
-                         .style("fill", "purple")
-                         .attr("x", rWidth / 2)
-                         .attr("y", 180)
-                         .attr("font-size", "25px")            
-                         .attr("text-anchor","middle");
+var reloadButton = leftContainer.append("g").attr("class","button").style("position", "fixed").style("z-index", 999)
+                        .style("cursor","pointer").attr("transform", "translate("+ (lWidth - 80) + "," + (height - 80) + ")")
+
+var reloadRect = reloadButton.append("rect")
+            .attr("id", "reload")
+            .attr("class","buttonRect")
+            .attr("width",50)
+            .attr("height",50)
+            .attr("x", 25)
+            .attr("y",32)
+            .attr("rx",5) 
+            .attr("ry",5)
+            .attr("fill","#FE642E")
+
+var reloadText = reloadButton.append("text")
+            .attr("class","buttonText")
+            .attr("font-family","sans-serif")
+            .attr("x",50)
+            .attr("y",32 + 25)
+            .attr("text-anchor","middle")
+            .attr("dominant-baseline","central")
+            .attr("fill","white")
+            .attr("font-size", "20px")  
+            .text("\uf021") 
+    
+
 // ------------------------------------------
 // Funktionen
 // ------------------------------------------
@@ -697,7 +689,7 @@ function getParentsIndexByIndex(indexOfNode){
     return parents;
 }
     
-function calculateTableContent(IndexOfNode){
+function calculateTableContent(IndexOfNode, id){
         
     var parents = getParentsIndexByIndex(IndexOfNode);
     parents.push(IndexOfNode)
@@ -743,16 +735,33 @@ function calculateTableContent(IndexOfNode){
         rows.push(stateRow.concat(probRow))
     }
     
-    return tabulate(rows, columns, parentSize)
+    return tabulate(rows, columns, parentSize, id)
 }
 
-function tabulate(rows, columns, parentSize) {
+function tabulate(rows, columns, parentSize, id) {
+    
+// -----------------
+// Table Group
+// -----------------
+    var tableGroup = leftContainer.append("g").attr("id","tableGroup")
+    
+    var tableRect = tableGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15).attr("x", 10 + lWidth).attr("y", menuHeight + 25) // ANPASSEN WENN TABLE NICHT OBEN
+    var tablePartHeight = height -menuHeight - 40;
+    tableRect.attr("height", tablePartHeight)
+    var tableHeading = tableGroup.append("text")
+                         .style("fill", "purple")
+                         .attr("x", lWidth + rWidth / 2)
+                         .attr("y", 180)
+                         .attr("font-size", "25px")            
+                         .attr("text-anchor","middle").text(id);;
+
+    
     var x0= 25; //x offset
     var y0= 220; //y offset
 
-    var table = rightContainer.append("foreignObject")
+    var table = tableGroup.append("foreignObject")
                                 .attr("y", y0)
-                                .attr("x", x0)
+                                .attr("x", lWidth + x0)
                                 .attr("width",590)// widthRight)
                                 .attr("height",200)
                                 .append("xhtml:body")
@@ -805,8 +814,6 @@ function tabulate(rows, columns, parentSize) {
     
 function highlightNode(id, ac=false, parents){
 
-    var tablePartHeight = height -yTemp - 10 -5;
-    d3.select(document.getElementById("tableGroup").firstChild).attr("height", tablePartHeight).attr("x", 10).attr("y", yTemp)
     //yTemp += (tablePartHeight + gSpace)
     for (i=0; i<json.nodes.length; i++){
           if (id == json.nodes[i].name){
@@ -825,7 +832,7 @@ function highlightNode(id, ac=false, parents){
                              //rect
                              d3.select(document.getElementById(json.nodes[j].name).firstChild).style("stroke-width", 4);
                              //table
-                             rightContainer.selectAll("foreignObject").remove();
+                             tableGroup.remove();
                              //links
                              var otherParents = [1,0,2]; //ANPASSEN
                              for(k = 0; k <otherParents.length; k++){
@@ -849,12 +856,11 @@ function highlightNode(id, ac=false, parents){
                              }
                         }
                      }*/
-                     //rect
+                     //nodeRect
                      d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 6);
                      activeNodes[i] = true;
                      //table
-                     var tabl = calculateTableContent(i);
-                     tableHeading.text(id);
+                     var tabl = calculateTableContent(i, id);
                      break;
 
                  }  
