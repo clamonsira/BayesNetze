@@ -1,6 +1,6 @@
 function bayesNet(id) {
     
-d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json"http://10.200.1.75:8012/bn?name=" + id
+d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
     if (error) throw error;
     // ------------------------------------------
     // LINKE SEITE
@@ -225,16 +225,22 @@ d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name
                          });
 
         var rects = node.append("rect").attr("class", "nodeRect");
-
+        
+    
+        var diagnosisColor = "#ffc266",
+            therapyColor = "steelblue",
+            examinationColor = "#12858e",
+            symptomColor = "#FE642E";
+    
         var rectAttributes = rects.attr("x", 0)
                                   .attr("y", 0)
                                   .attr("width", 200)
                                   .attr("height", function(d,i) {return getNodeHeight(i)})
                                   .style("fill", function(d,i) {return "white"})
-                                  .style("stroke", function(d,i) {if(d.properties.type == "diagnosis") {return "#ffc266";};
-                                                                 if(d.properties.type == "therapy") {return "steelblue";};
-                                                                 if(d.properties.type == "examination") {return "#12858e";};
-                                                                 if(d.properties.type == "symptom") {return "#FE642E";}})
+                                  .style("stroke", function(d,i) {if(d.properties.type == "diagnosis") {return diagnosisColor;};
+                                                                 if(d.properties.type == "therapy") {return therapyColor;};
+                                                                 if(d.properties.type == "examination") {return examinationColor;};
+                                                                 if(d.properties.type == "symptom") {return symptomColor;}})
                                   .style("stroke-width", 4)
                                   .attr("rx", 10)
                                   .attr("ry", 10);
@@ -250,13 +256,10 @@ d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name
 
         var stateGroup = node.append("g")
                              .attr("id", function(d) {return "stateGroup" });//+ d.name} );
-
-
-
-        var color = d3.scale.category10();
+    
         //RadioButtons
         var radioButtons= node.append("g")
-                            .attr("id","radioButtons") 
+                            .attr("id", function(d,i) {return d.name + "radioButtons"}) 
 
         var buttonGroups= radioButtons.selectAll("g.button")
                                 .data(function(d,i) {return d.properties.states})
@@ -284,7 +287,10 @@ d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name
                     .attr("y",function(d,i) {
                         return y0+(bWidth+bSpace)*i;
                     })
-                    .attr("fill","white")
+                    .attr("fill",function(d,i) {
+            
+                                return d3.rgb(eval(json.nodes[getIndexByName(this.parentElement.parentElement.id.substring(0,this.parentElement.parentElement.id.length-12))].properties.type + "Color")).brighter([i]);
+                            })
 
         clickedButtons = []; // includes all ids of clicked Buttons
 
@@ -302,7 +308,7 @@ d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name
                     })
                     .attr("text-anchor","middle")
                     .attr("dominant-baseline","central")
-                    .style("fill", function(d,i){return color(i)})
+                    .style("fill", function(d,i){return "purple"})
                     .text('\uf10c') //fontawesome labels
                     .on("click", function highlightButton(){
                         var p = getParentsIndexByIndex(getIndexByName(this.id.split(" ")[0]));
@@ -354,7 +360,7 @@ d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name
                          .data(function (d,i) {return d.properties.states})
                          .enter()
                          .append("tspan")
-                         .style("fill", function(d,i){return color(i)})
+                         .style("fill", function(d,i){return "purple"})
                          .text(function(d) { return d.name; })
                          .attr("dy", 20)
                          .attr("x", 25);
@@ -366,15 +372,16 @@ d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name
                             .style("stroke")
                             .on("click", function(){alert(true)})*/
         //Pie Chart
-        json.nodes.forEach(function(d,i,a) {
-            var w =60;
+    d3.json("http://10.200.1.75:8012/bn/inference?name=" + id, function(error, inf) {
+        inf.nodes.forEach(function(d,i,a) {
+            var w = 60;
             var h = 60;
             var r = Math.min(w, h) / 2; //anpassen getNodeHeight 
 
             var svg = d3.select(document.getElementById(json.nodes[i].name))
               .append('svg')
               .attr("x",125)
-              .attr("y", 4)      //anpassen getNodeHeight
+              .attr("y",4)      //anpassen getNodeHeight
               .attr('width', w)
               .attr('height', h)
               .append('g')
@@ -386,18 +393,24 @@ d3.json("cancer.json", function(error, json) {//"http://10.200.1.75:8012/bn?name
               .outerRadius(r);
 
             var pie = d3.layout.pie()
-              .value(function(d0) {return d0.probability; })
+              .value(function(d0) {return d0;})
               .sort(null);
-
+            
+            var beliefArray = [];
+            for (var key in d.properties.beliefs) {
+                beliefArray.push(d.properties.beliefs[key]);
+            }
+            
             var path = svg.selectAll('path')
-              .data(pie(d.properties.cpt.probabilities.slice(-(d.properties.states.length - d.properties.cpt.probabilities.length)))) //nimmt im moment die ersten Tabellenwerte ANPASSEN
+              .data(pie(beliefArray))
               .enter()
               .append('path')
               .attr('d', arc)
               .attr('fill', function(d1,i1) {
-                return color(i1);
+                return d3.rgb(eval(json.nodes[i].properties.type + "Color")).brighter([i1]);
               });
         })
+    })
 
         //Probabilities
     /*    var probabilityText = stateGroup.append("text");
@@ -745,10 +758,10 @@ function tabulate(rows, columns, parentSize, id) {
 // -----------------
     var tableGroup = leftContainer.append("g").attr("id","tableGroup")
     
-    var tableRect = tableGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15).attr("x", 10 + lWidth).attr("y", menuHeight + 25) // ANPASSEN WENN TABLE NICHT OBEN
+    var tableRect = tableGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15).attr("x", 10 + lWidth).attr("y", menuHeight + 25).style("position", "fixed").style("z-index", 40); // ANPASSEN WENN TABLE NICHT OBEN
     var tablePartHeight = height -menuHeight - 40;
     tableRect.attr("height", tablePartHeight)
-    var tableHeading = tableGroup.append("text")
+    var tableHeading = tableGroup.append("text").style("position", "fixed").style("z-index", 40)
                          .style("fill", "purple")
                          .attr("x", lWidth + rWidth / 2)
                          .attr("y", 180)
@@ -772,7 +785,7 @@ function tabulate(rows, columns, parentSize, id) {
                                 .style("overflow-y","auto")
                                 .style("overflow-x","auto")
                                 //.style("display", "table")
-                                .append("table")
+                                .append("table")//.style("position", "fixed").style("z-index", 40)
                                 .attr("width", 580)
                                 .attr("heigth", "20%")
                                 .attr("id", "table")

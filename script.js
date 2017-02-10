@@ -86,7 +86,7 @@ buttonGroups.append("text")
 
 d3.select(document.getElementById("Information"))
     .on("click", function () {
-        var infoGroup = rightContainer.append("g").attr("id","infoGroup").style("position","fixed").attr("transform", "translate(" + (150/2 +80) +","+ 100 +")")
+        var infoGroup = rightContainer.append("g").attr("id","infoGroup").style("position","fixed").attr("transform", "translate(" + (150/2 +80) +","+ 100 +")").style("position", "fixed").style("z-index", 4000);
 
         d3.text("Info.txt",function(error,text) {
             
@@ -126,7 +126,8 @@ var legendTypes = ["Therapie","Test","Diagnose","Symptom"]
 
 d3.select(document.getElementById("Legende"))
     .on("click", function () {
-        var legendGroup = rightContainer.append("g").attr("id","legendGroup").attr("transform", "translate(" + (150/2 +80) +","+ 100 +")")
+        var legendGroup = rightContainer.append("g").attr("id","legendGroup").attr("transform", "translate(" + (150/2 +80) +","+ 100 +")").style("position", "fixed").style("z-index", 4000);
+    
         var legendRect = legendGroup.append("rect")
                                 .attr("id","legendRect")
                                 .attr("x", x0+13).attr("y", y0+22)
@@ -208,8 +209,8 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
 // -----------------
 
 d3.select(document.getElementById("laden"))
-    .on("click", function () {
-        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")");
+    .on("click", function () {    
+        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")").style("position", "fixed").style("z-index", 4000);
     
         d3.json("allBNs.json",function(error,allBNs) {
             

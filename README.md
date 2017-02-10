@@ -20,7 +20,6 @@
 - Nodes
 	- HighlightNode: wenn angeklickt wird Node eingefärbt, hinführende Links gehighlighted und Tabelle öffnet sich
 	- Tortendiagramm zeigt die Wkeit ANIMATION
-		- todo: Node Wkeit ausrechnen DB
 		- todo: Namen positionieren, Nodes länger machen?
 	- Radio Buttons
 	
