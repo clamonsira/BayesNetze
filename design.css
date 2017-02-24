@@ -40,12 +40,13 @@ th {
     color: purple;
     font-size: 20px;
     height: 30px;
-    border-bottom: solid purple /*#d39ed3*/;
+    border-bottom: inset purple /*#d39ed3*/;
 }
 td {
     text-align: center;
     padding: 1px 4px;
     height: 25px;
+    border-bottom: double purple;
 }
 tr:nth-child(odd){background-color: #f5f2f7}
 

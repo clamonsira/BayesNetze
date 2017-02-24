@@ -1,6 +1,6 @@
 function bayesNet(id) {
     
-d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
+d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
     if (error) throw error;
     // ------------------------------------------
     // LINKE SEITE
@@ -10,7 +10,7 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
         // Compute Layout
         // -----------------
         var nodePosX, nodePosY;
-        var positions = computeLayout();
+        var positions = computeLayout(json);
         nodePosX = positions[0];
         nodePosY = positions[1];
         tmpHeight = positions[2];
@@ -26,7 +26,7 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
         }
 
         if(c1 < c2) {
-            positions = computeLayout(true);
+            positions = computeLayout(json,true);
             nodePosX = positions[0];
             nodePosY = positions[1];
             tmpHeight = positions[2];
@@ -61,20 +61,57 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
         // -----------------
         // links
         // -----------------
-        var linkSpace = 7;
+        var linkSpace = 2;
         var link = graph.selectAll(".link")
                         .data(json.links)
                         .enter().append("line")
                         .attr("id", "link")
                         .attr("class", "link")
                         .attr("x1",function(d,i){
-                            if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
-                                if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.source] - linkSpace;}//link from right to left
-                                else {return nodePosX[d.source] + 200 + linkSpace} //link from left to right
+                            if(nodePosY[d.source]== nodePosY[d.target]) {//link in same level
+                                var cs = 0, ct = 0;//counter, of links which start in source node / target node
+                                var ps,pt; //p position of this link
+                                for(j= 0; j < json.links.length;j++){ 
+                                    if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
+                                        if(json.links[j].target == json.links[i].source){
+                                            cs++;
+                                        } 
+                                        if (json.links[j].target == json.links[i].target){
+                                            ct++;
+                                        } 
+                                    } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]) { //link from up to down
+                                        if(json.links[j].source == json.links[i].source){
+                                            cs++;
+                                        } 
+                                        if (json.links[j].source == json.links[i].target){
+                                            ct++;
+                                        }
+                                        
+                                    } else {//link in one level
+                                        if (json.links[j].target == json.links[i].target || json.links[j].source == json.links[i].target){
+                                            ct++;
+                                            if(j == i) {
+                                               pt = ct;
+                                            }
+                                        } 
+                                        if (json.links[j].target == json.links[i].source || json.links[j].source == json.links[i].source){
+                                            cs++;
+                                            if(j == i) {
+                                               ps = cs;
+                                            }
+                                        }
+                                            
+                                    }
+                                
+                                }
+                                document.getElementById("graph").childNodes[i].remove();
+                                curvedLink(json,nodePosY[d.source],(nodePosX[d.source]+ (200/(cs+1))*ps), (nodePosX[d.target]+ (200/(ct+1))*pt), d.source, d.target);
+/*                                if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.source] - linkSpace;}//link from right to left
+                                else {return nodePosX[d.source] + 200 + linkSpace} //link from left to right*/
                             } 
                             else{
                                 var c = 0;//counter, of links which start in source node
-                                var p,x; //p position of this link, x added pixels
+                                var p; //p position of this link
                                 if(nodePosY[d.source] > nodePosY[d.target]) { //this link is from down to up
                                     for(j= 0; j < json.links.length;j++){ 
                                        if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
@@ -87,20 +124,20 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                                         } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]) { //link from up to down
                                             if(json.links[j].target == json.links[i].source){
                                                c++;
-                                               if(j == i) {
-                                                   p = c;
-                                               }
                                             } 
                                         }
                                     }
                                 } else {//this link is from up to down
-                                    for(j= 0; j < json.links.length;j++){ 
+                                    for(j= 0; j < json.links.length;j++){
+                                        if(Math.abs(nodePosY[json.links[j].source]-nodePosY[json.links[j].target]) < 150) { //link in same level
+                                            if(json.links[j].target == json.links[i].source || json.links[j].source == json.links[i].source){
+                                               c++;
+                                            } 
+                                        } 
+                                        else
                                        if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
                                            if(json.links[j].target == json.links[i].source){
                                                c++;
-                                               if(j == i) {
-                                                   p = c;
-                                               }
                                             } 
                                         } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]){ //other link is from up to down
                                             if(json.links[j].source == json.links[i].source){
@@ -116,25 +153,33 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                                 return nodePosX[d.source] + (200/(c+1))*p;}
                             })
                         .attr("y1",function(d,i){
-                            if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
-                                return nodePosY[d.source] + getNodeHeight(d.source)*0.5;
+/*                            if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+                                //DIESER TEIL KANN DANN RAUS
+                                return nodePosY[d.source] + getNodeHeight(json, d.source)*0.5;
                             }                        
-                            else if(nodePosY[d.source] < nodePosY[d.target]){//link from up to down
-                                return nodePosY[d.source] + getNodeHeight(d.source) + linkSpace;
+                            else*/ if(nodePosY[d.source] < nodePosY[d.target]){//link from up to down
+                                return nodePosY[d.source] + getNodeHeight(json, d.source) + linkSpace;
                             } else{ //links from down to up
                                 return nodePosY[d.source] - linkSpace;
                             }
                         })
                         .attr("x2",function(d,i){ //i index aller links
-                            if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+/*                            if(nodePosY[d.source]==nodePosY[d.target]){//link in same level
+                                //DIESER TEIL KANN DANN RAUS
                                 if(nodePosX[d.target] < nodePosX[d.source]){return nodePosX[d.target] +200 + linkSpace;} //link from right to left
                                 else {return nodePosX[d.target] - linkSpace} //link from left to right
                             }
-                            else{
+                            else{*/
                                 var c = 0;//counter, of links which start in source node
                                 var p,x; //p position of this link, x added pixels
                                 if(nodePosY[d.source] > nodePosY[d.target]) { //this link is from down to up
                                     for(j= 0; j < json.links.length;j++){ 
+                                        if(Math.abs(nodePosY[json.links[j].source]-nodePosY[json.links[j].target]) < 150) { //link in same level
+                                            if(json.links[j].target == json.links[i].target || json.links[j].source == json.links[i].target){
+                                               c++;
+                                            } 
+                                        } 
+                                        else
                                        if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
                                            if(json.links[j].target == json.links[i].target){
                                                c++;
@@ -145,9 +190,6 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                                         } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]){ //link from up to down
                                             if(json.links[j].source == json.links[i].target){
                                                c++;
-                                               if(j == i) {
-                                                   p = c;
-                                               }
                                             } 
                                         }
                                     }
@@ -156,9 +198,6 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                                        if(nodePosY[json.links[j].source] > nodePosY[json.links[j].target]) { //other link is from down to up
                                            if(json.links[j].source == json.links[i].target){
                                                c++;
-                                               if(j == i) {
-                                                   p = c;
-                                               }
                                             } 
                                         } else if(nodePosY[json.links[j].source] < nodePosY[json.links[j].target]){ //other link is from up to down
                                             if(json.links[j].target == json.links[i].target){
@@ -171,21 +210,22 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                                     }
                                 }
 
-                                return nodePosX[d.target] + (200/(c+1))*p;}
+                                return nodePosX[d.target] + (200/(c+1))*p;//}
                             })
                         .attr("y2",function(d,i){
-                            if(nodePosY[d.source]==nodePosY[d.target]){
-                                return nodePosY[d.target] + getNodeHeight(d.target)*0.5;
+/*                            if(nodePosY[d.source]==nodePosY[d.target]){
+                                //DIESER TEIL KANN DANN RAUS
+                                return nodePosY[d.target] + getNodeHeight(json, d.target)*0.5;
                             }
-                            else if(nodePosY[d.source] < nodePosY[d.target]){//link from up to down
+                            else */if(nodePosY[d.source] < nodePosY[d.target]){//link from up to down
                                 return nodePosY[d.target] - linkSpace;
                             }
                             else{ //links from down to up
-                                return nodePosY[d.target] + getNodeHeight(d.target) + linkSpace;
+                                return nodePosY[d.target] + getNodeHeight(json, d.target) + linkSpace;
                             }
                         })
-                        //.attr("transform", function(d,i){return "translate(100,0)"})// +getNodeHeight(json.nodes[d.source])+ ")"})
-                        .style("marker-end",  "url(#low)")
+                        //.attr("transform", function(d,i){return "translate(100,0)"})// +getNodeHeight(json, json.nodes[d.source])+ ")"})
+                        .style("marker-start",  "url(#low)").style("marker-end",  "url(#low)")
                         .attr("stroke", "lightblue")/*function(l,i) { FARBE PRO EBENE?
                             color = colors[Math.floor(Math.random()*colors.length)];
                             return color;
@@ -204,7 +244,12 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                         .attr("orient", "auto")
                         .append("path")
                         .attr("d", "M0,-5L10,0L0,5")
-                        //.style("opacity", "0.6");    
+                        //.style("opacity", "0.6");   
+        //Source Dots//marker start
+                    graph.selectAll("circle").data(json.links).enter().append("circle")
+                    .attr("cx", function(d,i) {return document.getElementById("graph").childNodes[i].getAttribute("x1")})
+                    .attr("cy", function(d,i) {return document.getElementById("graph").childNodes[i].getAttribute("y1")})
+                    .style("fill", d3.rgb("lightblue").darker()).attr("r", 5)
 
         // -----------------
         // Nodes
@@ -219,8 +264,8 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                           .attr("id", function(d){return d.name})
                          .attr("transform", function(d,i) { return "translate(" + nodePosX[i] + "," + nodePosY[i] + ")"}) 
                          .on("click", function hN() {
-                             var p = getParentsIndexByIndex(getIndexByName(this.id));
-                             highlightNode(this.id, false, p);
+                             var p = getParentsIndexByIndex(json,getIndexByName(json,this.id));
+                             highlightNode(json,this.id, false, p);
 
                          });
 
@@ -235,7 +280,7 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
         var rectAttributes = rects.attr("x", 0)
                                   .attr("y", 0)
                                   .attr("width", 200)
-                                  .attr("height", function(d,i) {return getNodeHeight(i)})
+                                  .attr("height", function(d,i) {return getNodeHeight(json, i)})
                                   .style("fill", function(d,i) {return "white"})
                                   .style("stroke", function(d,i) {if(d.properties.type == "diagnosis") {return diagnosisColor;};
                                                                  if(d.properties.type == "therapy") {return therapyColor;};
@@ -243,7 +288,10 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                                                                  if(d.properties.type == "symptom") {return symptomColor;}})
                                   .style("stroke-width", 4)
                                   .attr("rx", 10)
-                                  .attr("ry", 10);
+                                  .attr("ry", 10)
+                                  .on("mouseover", function () {d3.select(this).style("fill", "#EEE9E9")})
+                                  .on("mouseout", function () {d3.select(this).style("fill", "white")});
+
 
 
         var name = node.append("text");
@@ -289,7 +337,7 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                     })
                     .attr("fill",function(d,i) {
             
-                                return d3.rgb(eval(json.nodes[getIndexByName(this.parentElement.parentElement.id.substring(0,this.parentElement.parentElement.id.length-12))].properties.type + "Color")).brighter([i]);
+                                return d3.rgb(eval(json.nodes[getIndexByName(json,this.parentElement.parentElement.id.substring(0,this.parentElement.parentElement.id.length-12))].properties.type + "Color")).brighter([i]);
                             })
 
         clickedButtons = []; // includes all ids of clicked Buttons
@@ -311,8 +359,8 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                     .style("fill", function(d,i){return "purple"})
                     .text('\uf10c') //fontawesome labels
                     .on("click", function highlightButton(){
-                        var p = getParentsIndexByIndex(getIndexByName(this.id.split(" ")[0]));
-                        highlightNode(getIndexByName(this.id.split(" ")[0]),true,p);
+                        var p = getParentsIndexByIndex(json,getIndexByName(json,this.id.split(" ")[0]));
+                        highlightNode(json,getIndexByName(json,this.id.split(" ")[0]),true,p);
                         active = false;
                         //checks if clicked button is already clicked an reverses text
                         if(clickedButtons.indexOf(this.id) != -1){
@@ -372,7 +420,7 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http
                             .style("stroke")
                             .on("click", function(){alert(true)})*/
         //Pie Chart
-    d3.json("http://10.200.1.75:8012/bn/inference?name=" + id, function(error, inf) {
+    d3.json(id + "Inf.json",  function(error, inf) { // "http://10.200.1.75:8012/bn/inference?name=" + id,
         inf.nodes.forEach(function(d,i,a) {
             var w = 60;
             var h = 60;
@@ -461,19 +509,18 @@ var reloadText = reloadButton.append("text")
             .attr("font-size", "20px")  
             .text("\uf021") 
     
-
 // ------------------------------------------
 // Funktionen
 // ------------------------------------------
 
-function getNodeHeight(nodeInd){
+function getNodeHeight(json,nodeInd){
     if(json.nodes[nodeInd].properties.states.length==1){
         return (json.nodes[nodeInd].properties.states.length+1) * 20 + 27
     }
     return json.nodes[nodeInd].properties.states.length * 20 + 27
 }
     
-function computeLayout(turn = false) {
+function computeLayout(json, turn = false) {
     //Arrays mit Indexen der Nodes nach Typen sortiert, in therapyNodes sind auch die examinations drin
     var symptomNodes = [], therapyNodes = [], diagnosisNodes = [];
     for(i = 0; i < json.nodes.length; i++){
@@ -682,7 +729,7 @@ function computeLayout(turn = false) {
     return [xPos, yPos, Math.max(window.innerHeight-20,tmpYPos-YSpace)]; //ANPASSEN für states der letzten zeile
 }
 
-function getIndexByName(name) {
+function getIndexByName(json,name) {
     for (var i = 0; i < json.nodes.length; i++) {
         if(json.nodes[i].name == name){
             return i;
@@ -690,7 +737,7 @@ function getIndexByName(name) {
     } return -1;
 }
     
-function getParentsIndexByIndex(indexOfNode){
+function getParentsIndexByIndex(json,indexOfNode){
     var name = json.nodes[indexOfNode].name;
     var parents = new Array(0);
     for (i = 0; i < json.links.length; i++) {
@@ -702,9 +749,9 @@ function getParentsIndexByIndex(indexOfNode){
     return parents;
 }
     
-function calculateTableContent(IndexOfNode, id){
+function calculateTableContent(json,IndexOfNode, id){
         
-    var parents = getParentsIndexByIndex(IndexOfNode);
+    var parents = getParentsIndexByIndex(json,IndexOfNode);
     parents.push(IndexOfNode)
     var parentSize = parents.length -2;
     
@@ -825,7 +872,7 @@ function tabulate(rows, columns, parentSize, id) {
     return table;
 }
     
-function highlightNode(id, ac=false, parents){
+function highlightNode(json,id, ac=false, parents){
 
     //yTemp += (tablePartHeight + gSpace)
     for (i=0; i<json.nodes.length; i++){
@@ -873,13 +920,38 @@ function highlightNode(id, ac=false, parents){
                      d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 6);
                      activeNodes[i] = true;
                      //table
-                     var tabl = calculateTableContent(i, id);
+                     var tabl = calculateTableContent(json, i, id);
                      break;
 
                  }  
               }
           }
          
+}
+    
+function curvedLink(json,yPos, sX, tX, sourceId, targetId) {
+/*    var c1,cs = 0,ct = 0;
+    if(yPos <=  height/2) { //kante dreht nach oben
+        c1 = - 50;
+    } else { *///kante dreht IMMER nach unten
+        c1 = 60;
+        cs = getNodeHeight(json,sourceId); 
+        ct = getNodeHeight(json,targetId);
+    //} //FALL yPos zu klein fehlt
+    
+    var lineData = [ { "x": sX,   "y": yPos +cs},  { "x": Math.min(sX,tX) + (Math.abs(sX-tX) / 2),  "y": yPos + c1 + Math.max(cs,ct)},
+               { "x": tX,  "y": yPos+ ct}];
+    
+    var lineFunction = d3.svg.line()
+                            .x(function(d) { return d.x; })
+                            .y(function(d) { return d.y; })
+                            .interpolate("basis");
+    
+    graph.append("path").attr("stroke-width", 4).attr("d",lineFunction(lineData)).attr("fill", "white").style("stroke", "lightblue").style("opacity", 0.5).style("marker-end",  "url(#low)")
+    graph.append("circle")
+                    .attr("cx", function(d,i) {return sX})
+                    .attr("cy", function(d,i) {return yPos + cs})
+                    .style("fill", d3.rgb("lightblue").darker()).attr("r", 6)
 }
 })
 }

@@ -3,7 +3,7 @@
 	- Ebenen (oben ohne eingehende Kanten, unten ohne ausgehende), bereits vorhandener Code?
 	- dynamische YPos + scroll ÜBERARBEITEN RESTKNOTEN
 		- (von links nach rechts)
-		- (planare Graphen)
+		- (planare Graphen, partition)
 		- pro Ebene: die mit meisten Kanten nach außen
 	- große Gruppen werden in 3 + 2 aufgeteilt und Rest wird neuer Zeile drangehängt ANPASSEN
 		- ab 8er Gruppen in 5er aufteilen
@@ -13,9 +13,7 @@
 - Links
 	- Links die ankommen zeigen nicht auf gleichen Punkt
 	- highlightLinks zu highlightNode ÜBERARBEITEN: unhighlight
-	- Links gleicher Ebenen werden waagerecht angezeigt CURVED
-		- todo: was passiert wenn ein Node dazwischen liegt?, es mehrere in einer Ebene gibt? LAYOUT?
-		- (curvedlinks)
+	- curvedlinks, wenn sie in einer Ebene sind
 	
 - Nodes
 	- HighlightNode: wenn angeklickt wird Node eingefärbt, hinführende Links gehighlighted und Tabelle öffnet sich
