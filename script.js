@@ -32,7 +32,7 @@ var gSpace= 10; //space between groups
 
 var menuHeight = 90;
 //button width and height
-var bWidth= 140; //button width
+var bWidth= 190; //button width
 var bHeight= 50; //button height
 var bSpace= 10; //space between buttons
     
@@ -43,7 +43,7 @@ var menuButtons= menuGroup.append("g")
                     .attr("id","menuButtons") 
 
 //fontawesome button labels
-var labels= ['\uf08e laden', '\uf0c7 speichern', "\uf059 Information", '\uf009 Legende',];
+var labels= ["\uf059 Information", '\uf03a laden',  '\uf021 aktualisieren'];
 
 var buttonGroups= menuButtons.selectAll("g.button")
                         .data(labels)
@@ -51,11 +51,11 @@ var buttonGroups= menuButtons.selectAll("g.button")
                         .append("g")
                         .attr("class","button")
                         .style("cursor","pointer")
+            .attr("id", function(d,i) {return d.split(" ")[1]})
 
 //adding a rect to each button group
 //sidenote: rx and ry give the rects rounded corners
 buttonGroups.append("rect")
-            .attr("id", function(d,i) {return d.split(" ")[1]})
             .attr("class","buttonRect")
             .attr("width",bWidth)
             .attr("height",bHeight)
@@ -110,16 +110,18 @@ d3.select(document.getElementById("Information"))
             
             var infoRect = infoGroup.append("rect").attr("id", "infoRect")
                     .attr("x", x0+13 - 150).attr("y", y0+22)
-                    .attr("width", 550).attr("height",bBox + 40)
+                    .attr("width", 570).attr("height",bBox + 40)
                     .attr("rx",5).attr("ry",5)
                     .style("fill", "white").style("stroke","orange");
+            
             d3.select("body").on("click", function() {infoGroup.remove()})
         })
         
     })
 
 
-// -----------------
+
+/*// -----------------
 // Legende
 // -----------------
 var legendTypes = ["Therapie","Test","Diagnose","Symptom"]
@@ -161,7 +163,7 @@ d3.select(document.getElementById("Legende"))
 
     .on("mouseout", function () {
                             d3.select(document.getElementById("legendGroup")).remove()
-})
+})*/
 // -----------------
 // Legende
 // -----------------
@@ -210,36 +212,37 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
 
 d3.select(document.getElementById("laden"))
     .on("click", function () {    
-        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")").style("position", "fixed").style("z-index", 4000);
+        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")")
     
         d3.json("allBNs.json",function(error,allBNs) {
             
                     
-            var ladenRect = ladenGroup.append("rect").style("position","absolute")
+            var ladenRect = ladenGroup.append("rect")
                     .attr("x", x0+13 - 610).attr("y", y0+22)
                     .attr("width", 600).attr("height", allBNs.length * 67 + 100)
                     .attr("rx",5).attr("ry",5)
                     .style("fill", "white").style("stroke","orange");
             
-            var netGroup = ladenGroup.append("g")
-            var netRects = netGroup.selectAll("rect").data(allBNs).enter().append("rect")
+            var netGroup = ladenGroup.selectAll("g").data(allBNs).enter().append("g")                                    
+                                    .on("mouseover", function() {
+                                        d3.select(this.firstChild).style("stroke-width",5)
+                                    })
+                                    .on("mouseout", function() {
+                                        d3.select(this.firstChild).style("stroke-width",2)
+                                    })
+                                    .on("click",function(d,i) {
+                                        if (document.getElementById("leftContainer") != null) {d3.select(document.getElementById("leftContainer")).remove()};
+                                        bayesNet(allBNs[i].graphDBId);
+                                    });
+            var netRects = netGroup.append("rect")
                                     .attr("x",-565)
                                     .attr("y", function(d,i) { return 70 + i * 75;})
                                     .attr("width", 560)
                                     .attr("height", 67)
                                     .style("fill", "white").style("stroke", "orange").style("rx", 20).style("ry", 20)
                                     .style("stroke-width",2)
-                                    .on("mouseover", function() {
-                                        d3.select(this).style("stroke-width",5)
-                                    })
-                                    .on("mouseout", function() {
-                                        d3.select(this).style("stroke-width",2)
-                                    })
-                                    .on("click",function(d,i) {
-                                        if (document.getElementById("leftContainer") != null) {d3.select(document.getElementById("leftContainer")).remove()};
-                                        bayesNet(allBNs[i].graphDBId);
-                                    });
-            var netTexts = netGroup.selectAll("text").data(allBNs).enter().append("text")
+
+            var netTexts = netGroup.append("text")
                                     .text(function(d) {return d.graphName})
                                     .attr("x", -555)
                                     .attr("y", function(d,i) { return 120 + i * 75;})
@@ -249,4 +252,3 @@ d3.select(document.getElementById("laden"))
                                     
         })
     })
-
