@@ -1,6 +1,17 @@
 function bayesNet(id) {
+    // ------------------------------------------
+    // Farben
+    // ------------------------------------------
+var highlightColor = "#6FFF0D",
+    contentColor = "purple",
+    contentColorLight = "#575757";
     
-d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
+    var diagnosisColor = "#ffc266",
+            therapyColor = "steelblue",
+            examinationColor = "#12858e",
+            symptomColor = "#FE642E";
+    
+d3.json("http://10.200.1.75:8012/bn?name=" + id, function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
     if (error) throw error;
     // ------------------------------------------
     // LINKE SEITE
@@ -18,13 +29,13 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
         //turn layout
         var c1 = 0,c2 = 0;
         for(i = 0; i < json.links.length; i++) {
-            if(nodePosY[json.links[i].target] < nodePosY[json.links[i].source] ) { //link is from down to up
+            if(nodePosY[json.links[i].target] < nodePosY[json.links[i].source] ) { //link is from up to down
                 c1++;
             } else {
                 c2++;
             }
         }
-
+    
         if(c1 < c2) {
             positions = computeLayout(json,true);
             nodePosX = positions[0];
@@ -53,7 +64,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
 
         var containerRect = scrollSVG.attr("id", "leftContainer")
                                     .append("rect").attr("x", 10).attr("y", 10).attr("height", tmpHeight - 20).attr("width", lWidth-20)
-                                    .style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 20).attr("ry", 20);
+                                    .style("fill", "white").style("stroke", contentColor).style("stroke-width", "5")//.attr("rx", 20).attr("ry", 20);
 
         var  graph = scrollSVG.append("g")
                                   .attr("id", "graph");
@@ -289,12 +300,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
                          .on("mouseout", function () {d3.select(this.childNodes[0]).style("fill", "white")});
 
         var rects = node.append("rect").attr("class", "nodeRect");
-        
-    
-        var diagnosisColor = "#ffc266",
-            therapyColor = "steelblue",
-            examinationColor = "#12858e",
-            symptomColor = "#FE642E";
+
     
         var rectAttributes = rects.attr("x", 0)
                                   .attr("y", 0)
@@ -313,7 +319,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
 
         var name = node.append("text");
 
-        var nameAttributes = name.style("fill", "purple")
+        var nameAttributes = name.style("fill", contentColor)
                          .attr("x", 5)
                          .attr("y", 23)
                          .text(function (d) {return d.name;})
@@ -354,7 +360,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
                     })
                     .attr("fill",function(d,i) {
             
-                                return d3.rgb(eval(json.nodes[getIndexByName(json,this.parentElement.parentElement.id.substring(0,this.parentElement.parentElement.id.length-12))].properties.type + "Color")).brighter([i]);
+                                return d3.rgb(eval(json.nodes[getIndexByName(json,this.parentElement.parentElement.id.substring(0,this.parentElement.parentElement.id.length-12))].properties.type + "Color")).darker(0.4).brighter([i]);
                             })
 
         clickedButtons = []; // includes all ids of clicked Buttons
@@ -373,7 +379,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
                     })
                     .attr("text-anchor","middle")
                     .attr("dominant-baseline","central")
-                    .style("fill", function(d,i){return "purple"})
+                    .style("fill", function(d,i){return contentColor})
                     .text('\uf10c') //fontawesome labels
                     .on("click", function highlightButton(){
                         var p = getParentNodes(json,getIndexByName(json,this.id.split(" ")[0]));
@@ -425,7 +431,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
                          .data(function (d,i) {return d.properties.states})
                          .enter()
                          .append("tspan")
-                         .style("fill", function(d,i){return "purple"})
+                         .style("fill", function(d,i){return contentColor})
                          .text(function(d) { return d.name; })
                          .attr("dy", 20)
                          .attr("x", 25);
@@ -472,7 +478,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
               .append('path')
               .attr('d', arc)
               .attr('fill', function(d1,i1) {
-                return d3.rgb(eval(json.nodes[i].properties.type + "Color")).brighter([i1]);
+                return d3.rgb(eval(json.nodes[i].properties.type + "Color")).darker(0.4).brighter(i1);
               });
         })
     })
@@ -481,7 +487,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
     /*    var probabilityText = stateGroup.append("text");
 
         var probabilityAttributes = probabilityText
-                         .style("fill", "purple")
+                         .style("fill", contentColor)
                          .attr("font-size", "15px")
                          .attr("x", 5)
                          .attr("y", 22);
@@ -527,12 +533,10 @@ function computeLayout(json, turn = false) {
     
    var allArrays;
     if(turn){
-        allArrays = [symptomNodes, diagnosisNodes, therapyNodes] // gibt die Reihenfolge der Ebenen an
+        allArrays = [therapyNodes, diagnosisNodes, symptomNodes] // gibt die Reihenfolge der Ebenen an
     } else {
-        allArrays = [therapyNodes, diagnosisNodes, symptomNodes]
+        allArrays = [symptomNodes, diagnosisNodes, therapyNodes]
     }
-    
- //WENN ES WAAGERECHTE EDGES GIBT, DANN FÜGE DIE BEIDEN NODES NACH VORNE IN DER LISTE?
     
     var yCounter = 0;
     var rows = new Array(allArrays.length)
@@ -560,7 +564,7 @@ function computeLayout(json, turn = false) {
                 r = 3;
             }
             yCounter = yCounter + (Math.floor(a.length/5)-1)* 2 + r;
-            rows[noOfArray] = (Math.floor(a.length/5)-1)* 2 + r;
+            rows[noOfArray] = (Math.floor(a.length/5)-1)* 2 + r + 1; //Anpassen groupspace
         }
         
     })
@@ -810,13 +814,13 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
 // -----------------
     var tableGroup = leftContainer.append("g").attr("id","tableGroup")
     
-    var tableRect = tableGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15).attr("x", 10 + lWidth).attr("y", menuHeight + 25).attr("id","tableRect"); // ANPASSEN WENN TABLE NICHT OBEN
+    var tableRect = tableGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", contentColor).style("stroke-width", "5").attr("x", 10 + lWidth).attr("y", menuHeight + 25).attr("id","tableRect")//.attr("rx", 15).attr("ry", 15); // ANPASSEN WENN TABLE NICHT OBEN
     
     var tablePartHeight = height - menuHeight - 40;
     tableRect.attr("height", tablePartHeight)
     
     var tableHeading = tableGroup.append("text")//.style("position", "fixed")
-                         .style("fill", "purple")
+                         .style("fill", contentColor)
                          .attr("x", lWidth + rWidth / 2)
                          .attr("y", 180)
                          .attr("font-size", "25px")            
@@ -830,12 +834,12 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 .attr("y", y0)
                                 .attr("x", lWidth + x0)
                                 .attr("width",590)// widthRight)
-                                .attr("height",200)
+                                .attr("height",500)
                                 .append("xhtml:body")
                                 .append("div")
                                 .attr("id","table-div")
                                 .style("max-width", "590px")
-                                .style("max-height", "200px")
+                                .style("max-height", "500px")
                                 .style("overflow-y","auto")
                                 .style("overflow-x","auto")
                                 //.style("display", "table")
@@ -846,7 +850,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 //.attr("border", );
 
 
-    ths = d3.select("table")
+    ths = d3.select("table").append("thead")
         .append("tr")
         .attr("class", "head")
         .selectAll("th")
@@ -854,32 +858,116 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
         .enter()
         .append("th")
         .html(function (d) {return d;});
-
+    
+    tfs = d3.select("table").append("tfoot")
+        .append("tr")
+        .attr("class", "head")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+        .html(function (d) {return d;});
+    
     //thick line between parents and states
     ths.style("border-right", function(d,i){
-        if(i == parentSize){return "solid purple";}}) 
+        if(i == parentSize){return "solid "+contentColor;}}) 
 
-    d3.select("table")
+    d3.select("table").append("tbody")
         .selectAll("tr.data")
         .data(rows).enter()
         .append("tr")
         .attr("class", "data");
 
-    tds = d3.selectAll("tr")
+    var tds = d3.selectAll("tr")
         .selectAll("td")
         .data(function(d) {return d3.entries(d)})
         .enter()
-        .append("td")
-        .html(function (d) {return d.value});
+        .append("td").each(function(d){if(typeof(d.value) == "string"){d3.select(this).html(d.value)} 
+                                        else {d3.select(this).append("input").attr("type", "text").attr("value", d.value).attr("size", "10px")}});
 
     //thick line between parents and states
     tds.style("border-right", function(d,i){
-        if(i == parentSize){return "solid purple";}})
+        if(i == parentSize){return "solid "+contentColor;}})
     
+    // https://datatables.net/examples/api/multi_filter.html DATA TABLES
+    $(document).ready(function() {
+        // Setup - add a text input to each footer cell
+        $('#table tfoot th').each( function () {
+            var title = $(this).text();
+            $(this).html( '<input type="text" placeholder="Suche '+title+'" />' );
+        } );
+
+        // DataTable
+        var table = $('#table').DataTable();
+
+        // Apply the search
+        table.columns().every( function () {
+            var that = this;
+
+            $( 'input', this.footer() ).on( 'keyup change', function () {
+                if ( that.search() !== this.value ) {
+                    that
+                        .search( this.value )
+                        .draw();
+                }
+            } );
+        } );
+    } );
+    
+    
+    var yPos = document.getElementById("table-div").offsetHeight
+    
+/*    var search = tableGroup.append("foreignObject")
+                            .attr("y", yPos + y0)
+                            .attr("x", lWidth + x0)
+                            .attr("width",590)// widthRight)
+                            .attr("height",60)
+                            .append("xhtml:body")
+                            .append("div")
+                            .attr("id","search-div")
+                            .style("max-width", "590px")
+                            .style("max-height", "60px")
+                            //.style("overflow-y","auto")
+                            .style("overflow-x","auto")
+                            //.style("display", "table")
+                            .append("table")//.style("position", "fixed").style("z-index", 40)
+                            .attr("width", 590)
+                            .attr("height", "20%")
+                            .attr("id", "search")
+                            //.attr("border", );
+    
+    var searchFields = search.append("tr")
+        .selectAll("td")
+        .data(columns)
+        .enter()
+        .append("td").append("input").attr("type", "text").attr("value", function(d) {return "\uf00e " + d}).attr("size", function(d){return ("\uf00e " + d).length}).style("font-family", "sans-serif").style("color",contentColor).on("click", function() {this.select();}).on("keydown", function() {
+            if(d3.event.keyCode == 13) {
+                var rows = [];
+                columns.forEach(function(){rows.push([])})
+                var values = [];
+                for(i = 0; i <columns.length; i++) {
+                    var columnContent = [];
+                    var val =searchFields.filter(function(d,no){return no == i}).node().value;
+                    if(val.split(" ")[0] != "\uf00e") {
+                        values.push(i);
+                        table.selectAll("tr.data").each(function(d) {
+                            columnContent.push(d3.select(this).selectAll("td").filter(function(d,no){
+                                return no == i;
+                            }).node().getAttribute("html"))//.firstChild.getAttribute("value"))
+                        })
+                        alert(columnContent)
+                        columnContent.forEach(function(d,no,a) {
+                            if(d == val)
+                                rows[i].push(no);
+                        })
+                    }
+                }
+            }
+        })*/
     
     //Children and ParentNodes
     var adjacents = d3.select("#tableGroup").append("g")
-    var yPos = document.getElementById("table-div").offsetHeight
+    //yPos += document.getElementById("search-div").getBoundingClientRect().height; 
     var ks = getChildNodes(json, nodeIndex)
     var kinderBox = 0;
     if(ks.length >0){
@@ -898,7 +986,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 //.style("position","fixed")
                                 .append("text").html("Kinder - Knoten: "+kinderText).attr("id", "kinder-div")
                                 .attr("font-size", 20)
-                                .style("fill", "purple")
+                                .style("fill", contentColor)
                                 //.style("position","fixed")
                                 .attr("x", lWidth + 40)
                                 .attr("y", yPos + 50 + y0)
@@ -927,7 +1015,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 //.style("position","fixed")
                                 .append("text").html("Eltern - Knoten: "+ elternText).attr("id", "eltern-div")
                                 .attr("font-size", 20)
-                                .style("fill", "purple")
+                                .style("fill", contentColor)
                                 //.style("position","fixed")
                                 .attr("x", lWidth + 40)
                                 .attr("y", yPos + 50 + y0 + 50)
@@ -958,7 +1046,7 @@ function highlightNode(json,id, ac=false, parents){
                             tableGroup.remove();
                              //links
                             for (l = 0; l < json.links.length; l++) {
-                                d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "lightblue").style("marker-end",  "url(#lowArrow)").style("marker-start", "url(#lowDot)");
+                                d3.select(document.getElementById("graph").childNodes[l]).style("stroke", "lightblue").style("marker-end",  "url(#lowArrow)").style("marker-start", "url(#lowDot)").style("stroke-width", 4);
                             }
                          }
                          activeNodes[j] = false; 
@@ -968,7 +1056,7 @@ function highlightNode(json,id, ac=false, parents){
                      for(k = 0; k < parents.length; k++){
                         for (l = 0; l < json.links.length; l++) {
                              if(parents[k] == json.links[l].source && json.links[l].target == i) {
-                                 d3.select(document.getElementById("graph").childNodes[l]).attr("stroke", "steelblue").style("marker-end",  "url(#highArrow)").style("marker-start","url(#highDot)");
+                                 d3.select(document.getElementById("graph").childNodes[l]).style("stroke", "steelblue").style("marker-end",  "url(#highArrow)").style("marker-start","url(#highDot)").style("stroke-width",6);
                              }
                         }
                      }
@@ -1005,7 +1093,7 @@ function curvedLink(json,yPos, sX, tX, sourceId, targetId, childNo) {
     
     var newPath = graph.append("path").attr("d",lineFunction(lineData)).attr("fill", "none").style("marker-end",  "url(#lowArrow)").style("marker-start",  "url(#lowDot)").attr("id", "link").style("stroke", "lightblue")
     
-    document.getElementById("graph").insertBefore(newPath.node(),  document.getElementById("graph").childNodes[childNo]); //fügt den path an die stelle der richtigen line ein
+    document.getElementById("graph").insertBefore(newPath.node(), document.getElementById("graph").childNodes[childNo]); //fügt den path an die stelle der richtigen line ein
 }
     
 })

@@ -19,7 +19,7 @@ var rightContainer = container.append("g")
 var menuGroup = rightContainer.append("g").attr("id","menuGroup")
 
 
-var menuRect = menuGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5").attr("rx", 15).attr("ry", 15);
+var menuRect = menuGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", "purple").style("stroke-width", "5")//.attr("rx", 15).attr("ry", 15);
         
 var x0= 10; //x offset
 var y0= 10; //y offset
@@ -214,7 +214,7 @@ d3.select(document.getElementById("laden"))
     .on("click", function () {    
         var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")")
     
-        d3.json("allBNs.json",function(error,allBNs) {
+        d3.json("http://10.200.1.75:8016/graphs/all-bns",function(error,allBNs) {
             
                     
             var ladenRect = ladenGroup.append("rect")
