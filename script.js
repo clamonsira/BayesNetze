@@ -214,7 +214,7 @@ d3.select(document.getElementById("laden"))
     .on("click", function () {    
         var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")")
     
-        d3.json("http://10.200.1.75:8016/graphs/all-bns",function(error,allBNs) {
+        d3.json("allBNs.json",function(error,allBNs) {//"http://10.200.1.75:8016/graphs/all-bns"
             
                     
             var ladenRect = ladenGroup.append("rect")
