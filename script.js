@@ -32,7 +32,7 @@ var gSpace= 10; //space between groups
 
 var menuHeight = 90;
 //button width and height
-var bWidth= 190; //button width
+var bWidth= (rWidth - 60)/2; //button width
 var bHeight= 50; //button height
 var bSpace= 10; //space between buttons
     
@@ -43,7 +43,7 @@ var menuButtons= menuGroup.append("g")
                     .attr("id","menuButtons") 
 
 //fontawesome button labels
-var labels= ["\uf059 Information", '\uf03a laden',  '\uf021 aktualisieren'];
+var labels= ["\uf059 Information", '\uf03a Bayes Net'];
 
 var buttonGroups= menuButtons.selectAll("g.button")
                         .data(labels)
@@ -108,7 +108,7 @@ d3.select(document.getElementById("Information"))
             
             var bBox = document.getElementById("info-div").getBoundingClientRect().height;
             
-            var infoRect = infoGroup.append("rect").attr("id", "infoRect")
+            var infoRect = infoGroup.append("rect").attr("id", "infoRect") //ANPASSEN InsertBefore
                     .attr("x", x0+13 - 150).attr("y", y0+22)
                     .attr("width", 570).attr("height",bBox + 40)
                     .attr("rx",5).attr("ry",5)
@@ -210,11 +210,11 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
 // Laden
 // -----------------
 
-d3.select(document.getElementById("laden"))
+d3.select(document.getElementById("Bayes"))
     .on("click", function () {    
         var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")")
     
-        d3.json("allBNs.json",function(error,allBNs) {//"http://10.200.1.75:8016/graphs/all-bns"
+        d3.json("http://10.200.1.75:8016/graphs/all-bns" ,function(error,allBNs) {//"http://10.200.1.75:8016/graphs/all-bns"
             
                     
             var ladenRect = ladenGroup.append("rect")

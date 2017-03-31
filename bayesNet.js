@@ -11,7 +11,7 @@ var highlightColor = "#6FFF0D",
             examinationColor = "#12858e",
             symptomColor = "#FE642E";
     
-d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
+d3.json("http://10.200.1.75:8012/bn?name=" + id , function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
     if (error) throw error;
     // ------------------------------------------
     // LINKE SEITE
@@ -63,7 +63,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
         var scrollSVG = scrollDiv.append("svg").attr("viewBox", "0,0,"+lWidth+","+tmpHeight)
 
         var containerRect = scrollSVG.attr("id", "leftContainer")
-                                    .append("rect").attr("x", 10).attr("y", 10).attr("height", tmpHeight - 20).attr("width", lWidth-20)
+                                    .append("rect").attr("x", 6).attr("y", 6).attr("height", tmpHeight - 10).attr("width", lWidth-20)
                                     .style("fill", "white").style("stroke", contentColor).style("stroke-width", "5")//.attr("rx", 20).attr("ry", 20);
 
         var  graph = scrollSVG.append("g")
@@ -446,7 +446,7 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
                             .style("stroke")
                             .on("click", function(){alert(true)})*/
         //Pie Chart
-    d3.json(id + "Inf.json",  function(error, inf) { // "http://10.200.1.75:8012/bn/inference?name=" + id,
+    d3.json("http://10.200.1.75:8012/bn/inference?name=" + id,  function(error, inf) { // "http://10.200.1.75:8012/bn/inference?name=" + id,
         inf.nodes.forEach(function(d,i,a) {
             var w = 60;
             var h = 60;
@@ -483,7 +483,11 @@ d3.json(id + ".json", function(error, json) { //"http://10.200.1.75:8012/bn?name
               .attr('d', arc)
               .attr('fill', function(d1,i1) {
                 return d3.rgb(eval(json.nodes[jsonI].properties.type + "Color")).darker(0.4).brighter(i1);
-              });
+              })
+            .on("mouseover", function(d) {
+                d3.select(this).append("text").text(function(d) {return d;}).style("color","white")
+                         .attr("font-size", "15px")
+            });
         })
     })
 
@@ -906,7 +910,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
         // Setup - add a text input to each footer cell
         $('#table tfoot th').each( function () {
             var title = $(this).text();
-            $(this).html( '<input type="text" placeholder="Suche '+title+'" />' );
+            $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
         } );
 
         // DataTable
@@ -996,7 +1000,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 .append("xhtml:body")//.style("position","fixed")
                                 .append("div")
                                 //.style("position","fixed")
-    kinderdiv.append("text").html("Beeinflusste Felder: ").attr("id", "kinder-div")
+    kinderdiv.append("text").html("Influenced by: ").attr("id", "kinder-div")
                                 .attr("font-size", 20)
                                 .style("color", "#111")
                                 //.style("position","fixed")
@@ -1031,7 +1035,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 .append("xhtml:body")//.style("position","fixed")
                                 .append("div")
                                 //.style("position","fixed")
-    elterndiv.append("text").html("Beeinflussende Felder: ").attr("id", "eltern-div")
+    elterndiv.append("text").html("Influencing: ").attr("id", "eltern-div")
                                 .attr("font-size", 20)
                                 .style("color", "#111")
                                 //.style("position","fixed")
@@ -1082,12 +1086,12 @@ function highlightNode(json,id, ac=false, parents){
                      for(k = 0; k < parents.length; k++){
                         for (l = 0; l < json.links.length; l++) {
                              if(parents[k] == json.links[l].source && json.links[l].target == i) {
-                                 d3.select(document.getElementById("graph").childNodes[l]).style("stroke", "steelblue").style("marker-end",  "url(#highArrow)").style("marker-start","url(#highDot)").style("stroke-width",6);
+                                 d3.select(document.getElementById("graph").childNodes[l]).style("stroke", "steelblue").style("marker-end",  "url(#highArrow)").style("marker-start","url(#highDot)").style("stroke-width",8);
                              }
                         }
                      }
                      //nodeRect
-                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 6);
+                     d3.select(document.getElementById(id).childNodes[0]).style("stroke-width", 8);
                      activeNodes[i] = true;
                      //table
                      var yTemp = calculateTableContent(json, i, id);

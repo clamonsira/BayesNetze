@@ -1,7 +1,7 @@
 # BayesNetze
 - Layout
 	- Ebenen (oben ohne eingehende Kanten, unten ohne ausgehende), bereits vorhandener Code?
-	- dynamische YPos + scroll ÜBERARBEITEN RESTKNOTEN
+	- dynamische YPos + scroll
 		- (von links nach rechts)
 		- (planare Graphen, partition)
 		- pro Ebene: die mit meisten Kanten nach außen
@@ -26,24 +26,17 @@
 	- scroll bei großen Tabellen (feste Größe)
 	- states mit richtiger Wkeit
 	- DataTables.js für Suchfunktion
-		- todo: Suchfunktion für input
-		- todo: aktualisierte Tabelle
 
 - Menü
-	- 4 Buttons HIGHLIGHT ANIMATION
-		- todo: Aktualisier-Knopf bei Anpassungen der W'keiten	
+	- Info und laden
 	- am Anfang seht man nur Menü und kann sich alle Netze laden
 		- laden Animationen
 
 - todo: Säulendiagramm mit genauen Wkeiten auf rechter Seite
 - todo: Tabelle mit potenziellen Infos über Knoten
 
-- Legende + Info Button 
-	- ausklappbar
 
-	
-- (Zusatzfunktionalitäten)
-	- Überlegung: Mit welchem zusätzlichen Symptom (Test) würde die W'keit zu einem Ergebnis am meisten steigen -> Empfehlung zu nächstem Test -> kann Kosten/Zeit abschätzen
+- Überlegung: Mit welchem zusätzlichen Symptom (Test) würde die W'keit zu einem Ergebnis am meisten steigen -> Empfehlung zu nächstem Test -> kann Kosten/Zeit abschätzen
 
 - ansonsten
 	- Welche Art von Anfragen?
