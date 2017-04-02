@@ -214,7 +214,7 @@ d3.select(document.getElementById("Bayes"))
     .on("click", function () {    
         var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")")
     
-        d3.json("http://10.200.1.75:8016/graphs/all-bns" ,function(error,allBNs) {//"http://10.200.1.75:8016/graphs/all-bns"
+        d3.json("http://52.59.228.237:8016/graphs/all-bns" ,function(error,allBNs) {//"http://10.200.1.75:8016/graphs/all-bns"
             
                     
             var ladenRect = ladenGroup.append("rect")

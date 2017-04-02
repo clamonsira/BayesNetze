@@ -11,7 +11,7 @@ var highlightColor = "#6FFF0D",
             examinationColor = "#12858e",
             symptomColor = "#FE642E";
     
-d3.json("http://10.200.1.75:8012/bn?name=" + id , function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
+d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
     if (error) throw error;
     // ------------------------------------------
     // LINKE SEITE
@@ -446,7 +446,7 @@ d3.json("http://10.200.1.75:8012/bn?name=" + id , function(error, json) { //"htt
                             .style("stroke")
                             .on("click", function(){alert(true)})*/
         //Pie Chart
-    d3.json("http://10.200.1.75:8012/bn/inference?name=" + id,  function(error, inf) { // "http://10.200.1.75:8012/bn/inference?name=" + id,
+    d3.json("http://52.59.228.237:8012/bn/inference?name=" + id,  function(error, inf) { // "http://10.200.1.75:8012/bn/inference?name=" + id,
         inf.nodes.forEach(function(d,i,a) {
             var w = 60;
             var h = 60;
@@ -729,7 +729,9 @@ function computeLayout(json, turn = false) {
         
         tmpYPos = tmpYPos + rows[noOfArray]*YSpace + groupSpace;
     })
-
+    if(tmpYPos-YSpace > window.innerHeight-20) {
+        tmpYPos+=groupSpace; //unsictbare letzte Zeile wenn scrollbar
+    }
     return [xPos, yPos, Math.max(window.innerHeight-20,tmpYPos-YSpace)]; //ANPASSEN für states der letzten zeile
 }
 
@@ -1000,7 +1002,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 .append("xhtml:body")//.style("position","fixed")
                                 .append("div")
                                 //.style("position","fixed")
-    kinderdiv.append("text").html("Influenced by: ").attr("id", "kinder-div")
+    kinderdiv.append("text").html("Dependent Concepts: ").attr("id", "kinder-div")
                                 .attr("font-size", 20)
                                 .style("color", "#111")
                                 //.style("position","fixed")
@@ -1012,7 +1014,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 //.style("position","fixed")
                                 .attr("x", lWidth + 40)
                                 .attr("y", yPos + 50 + y0)
-                                .attr("dy", ".35em");
+                                .attr("dy", ".35em").attr("id", "kinder-div");
 
     
     kinderBox = document.getElementById("kinder-div").getBoundingClientRect().height; 
@@ -1035,7 +1037,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 .append("xhtml:body")//.style("position","fixed")
                                 .append("div")
                                 //.style("position","fixed")
-    elterndiv.append("text").html("Influencing: ").attr("id", "eltern-div")
+    elterndiv.append("text").html("Influencing Concepts: ").attr("id", "eltern-div")
                                 .attr("font-size", 20)
                                 .style("color", "#111")
                                 //.style("position","fixed")
