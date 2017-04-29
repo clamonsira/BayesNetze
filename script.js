@@ -31,8 +31,6 @@ var gSpace= 10; //space between groups
 // ----------------------------------------------------------
 
 var menuHeight = 90;
-//button width and height
-var bWidth= (rWidth - 60)/2; //button width
 var bHeight= 50; //button height
 var bSpace= 10; //space between buttons
     
@@ -43,7 +41,9 @@ var menuButtons= menuGroup.append("g")
                     .attr("id","menuButtons") 
 
 //fontawesome button labels
-var labels= ["\uf059 Information", '\uf03a Bayes Net'];
+var labels= ['list,Bayes Net', "pencil,define Types", "info,Information"];
+
+var bWidth= (rWidth - 75)/labels.length; //button width
 
 var buttonGroups= menuButtons.selectAll("g.button")
                         .data(labels)
@@ -51,7 +51,7 @@ var buttonGroups= menuButtons.selectAll("g.button")
                         .append("g")
                         .attr("class","button")
                         .style("cursor","pointer")
-            .attr("id", function(d,i) {return d.split(" ")[1]})
+            .attr("id", function(d,i) {return d.split(",")[1]})
 
 //adding a rect to each button group
 //sidenote: rx and ry give the rects rounded corners
@@ -72,15 +72,31 @@ buttonGroups.append("text")
             .attr("class","buttonText")
             .attr("font-family","sans-serif")
             .attr("x",function(d,i) {
-                return x0+13 + (bWidth+bSpace)*i + bWidth/2;
+                return x0+13 + (bWidth+bSpace)*i +40;
             })
             .attr("y",y0+22+bHeight/2)
-            .attr("text-anchor","middle")
+            .attr("text-anchor","begin")
             .attr("dominant-baseline","central")
             .attr("fill","white")
             .attr("font-size", "20px")  
-            .text(function(d) {return d;}) 
-// -----------------
+            .text(function(d) {return d.split(",")[1];})
+
+buttonGroups.append("svg:foreignObject")
+    .attr("width", 200)
+    .attr("height", 200)
+    .attr("y", (y0+22+17) + "px")
+    .attr("x", function(d,i) {return x0+13 + (bWidth+bSpace)*i + 20})
+    .append("xhtml:i")
+            .attr("class", function(d) {return "fa fa-" + d.split(",")[0] +" fa-inverse fa-1.5x";})
+
+/*buttonGroups.append("svg:foreignObject")
+    .attr("width", 200)
+    .attr("height", 200)
+    .attr("y", "-7px")
+    .attr("x", "-7px")
+  .append("xhtml:span")
+    .attr("class", "fa fa-spinner fa-pulse fa-10x");
+// -----------------*/
 // Information
 // -----------------
 
@@ -93,15 +109,15 @@ d3.select(document.getElementById("Information"))
             var infoText = infoGroup.append("foreignObject").style("position","fixed")
                                         .attr("y", y0+22 + 20)
                                         .attr("x", x0+13 - 150 + 20)
-                                        .attr("width",550)// widthRight)
+                                        .attr("width",rWidth - 50)
                                         .attr("height",219)
                                         .append("xhtml:body").style("position","fixed")
                                         .append("div")
                                         .style("position","fixed")
                                         .append("text").html(text).attr("id","info-div")
-                                        .attr("font-size", 30)
+                                        .attr("width",rWidth - 50)
+                                        .attr("font-size", "12px")
                                         .style("fill", "purple")
-                                        .style("position","fixed")
                                         .attr("x", lWidth+ x0+13 - 150 + 10 + 150)
                                         .attr("y", y0+22 + 10)
                                         .attr("dy", ".35em");
@@ -110,9 +126,10 @@ d3.select(document.getElementById("Information"))
             
             var infoRect = infoGroup.append("rect").attr("id", "infoRect") //ANPASSEN InsertBefore
                     .attr("x", x0+13 - 150).attr("y", y0+22)
-                    .attr("width", 570).attr("height",bBox + 40)
+                    .attr("width", rWidth - 50).attr("height",bBox + 40)
                     .attr("rx",5).attr("ry",5)
                     .style("fill", "white").style("stroke","orange");
+            infoGroup.append("i").attr("class", "fa fa-camera-retro")
             
             d3.select("body").on("click", function() {infoGroup.remove()})
         })
@@ -210,20 +227,30 @@ var textLegende = legendeGroup.selectAll("text").data(text).enter()
 // Laden
 // -----------------
 
-d3.select(document.getElementById("Bayes"))
+d3.select(document.getElementById("Bayes Net"))
     .on("click", function () {    
-        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(" + (450 + 150/2 +80) +","+ 100 +")")
+        var ladenGroup = rightContainer.append("g").attr("id","ladenGroup").attr("transform", "translate(0,"+ 100 +")")//" + (450 + 150/2 +80) +
     
-        d3.json("http://52.59.228.237:8016/graphs/all-bns" ,function(error,allBNs) {//"http://10.200.1.75:8016/graphs/all-bns"
+        d3.json("http://52.59.228.237:8016/graphs/all-bns" ,function(error,allBNs) {//"http://52.59.228.237:8016/graphs/all-bns"
             
-                    
-            var ladenRect = ladenGroup.append("rect")
+            var scrollDivLaden = ladenGroup.append("foreignObject")//.style("position", "relative").style("z-index", 99)
+                                        .attr("y", 25)
+                                        .attr("x", 25)
+                                        .attr("width",rWidth-40)
+                                        .attr("height",height - menuHeight - 50+"px") 
+                                        .append("xhtml:body")
+                                        .append("div")
+                                        .attr("id","scroll-div-laden").style("overflow", "auto")
+
+            var scrollSVGLaden = scrollDivLaden.append("svg").attr("viewBox", (x0+13-610)+"," + (y0+22) +","+(rWidth -40) +","+(allBNs.length * 67 + 100))
+
+            var ladenRect = scrollSVGLaden.append("rect")
                     .attr("x", x0+13 - 610).attr("y", y0+22)
-                    .attr("width", 600).attr("height", allBNs.length * 67 + 100)
+                    .attr("width", rWidth - 50).attr("height", allBNs.length * 67 + 100)
                     .attr("rx",5).attr("ry",5)
-                    .style("fill", "white").style("stroke","orange");
+                    .style("fill", "white").style("stroke","orange").style("stroke-width",2);
             
-            var netGroup = ladenGroup.selectAll("g").data(allBNs).enter().append("g")                                    
+            var netGroup = scrollSVGLaden.selectAll("g").data(allBNs).enter().append("g")                                    
                                     .on("mouseover", function() {
                                         d3.select(this.firstChild).style("stroke-width",5)
                                     })
@@ -234,21 +261,45 @@ d3.select(document.getElementById("Bayes"))
                                         if (document.getElementById("leftContainer") != null) {d3.select(document.getElementById("leftContainer")).remove()};
                                         bayesNet(allBNs[i].graphDBId);
                                     });
+            
             var netRects = netGroup.append("rect")
                                     .attr("x",-565)
                                     .attr("y", function(d,i) { return 70 + i * 75;})
-                                    .attr("width", 560)
+                                    .attr("width", rWidth - 100 )
                                     .attr("height", 67)
                                     .style("fill", "white").style("stroke", "orange").style("rx", 20).style("ry", 20)
                                     .style("stroke-width",2)
 
-            var netTexts = netGroup.append("text")
+            var netNames = netGroup.append("text")
                                     .text(function(d) {return d.graphName})
                                     .attr("x", -555)
                                     .attr("y", function(d,i) { return 120 + i * 75;})
                                     .style("font-size",20).style("fill", "purple");
             
+/*            var N = [];
+            var E = [];
+            allBNs.forEach(function(d,i) {
+                d3.json("http://52.59.228.237:8012/bn?name=" + d.graphDBId , function(error, j) {
+                        if (error) throw error;                
+                   N.push(j.nodes.length);
+                   E.push(j.links.length);
+                })
+            })
+            
+            var nodeNo = netGroup.append("text") 
+                                    .text(function(d,i) {
+   
+                                        return "# Nodes: " + N[N.length-1-i] + " # Edges: " + E[N.lenght-1-i]; 
+                                    })
+                                    .attr("y", function(d,i) { return 120 + i * 75;})
+                                    .attr("x", -555 +rWidth - 120)
+                                    .style("font-size",12).style("fill", "purple").attr("text-anchor","end");
+
+            */
             d3.select("body").on("click", function() {ladenGroup.remove()})
-                                    
         })
     })
+
+// -----------------
+// Typen
+// -----------------

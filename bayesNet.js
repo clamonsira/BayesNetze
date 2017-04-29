@@ -6,12 +6,12 @@ var highlightColor = "#6FFF0D",
     contentColor = "purple",
     contentColorLight = "#575757";
     
-    var diagnosisColor = "#ffc266",
-            therapyColor = "steelblue",
-            examinationColor = "#12858e",
-            symptomColor = "#FE642E";
-    
-d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
+var diagnosisColor = "#ffc266",
+    therapyColor = "steelblue",
+    examinationColor = "#12858e",
+    symptomColor = "#FE642E";
+
+d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) {//"http://52.59.228.237:8012/bn?name=" + id  //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
     if (error) throw error;
     // ------------------------------------------
     // LINKE SEITE
@@ -26,7 +26,7 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
         nodePosY = positions[1];
         tmpHeight = positions[2];
 
-        //turn layout
+/*        //turn layout
         var c1 = 0,c2 = 0;
         for(i = 0; i < json.links.length; i++) {
             if(nodePosY[json.links[i].target] < nodePosY[json.links[i].source] ) { //link is from up to down
@@ -41,8 +41,8 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
             nodePosX = positions[0];
             nodePosY = positions[1];
             tmpHeight = positions[2];
-        }
-
+        }*/
+    
         // ------------------------------------------
         // Bayes Netz
         // ------------------------------------------
@@ -69,11 +69,10 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
         var  graph = scrollSVG.append("g")
                                   .attr("id", "graph");
 
-
         // -----------------
         // links
         // -----------------
-        var linkSpace = 2;
+        var linkSpace = 2; //Platz zwischen Kantenende und Knoten
         var link = graph.selectAll(".link")
                         .data(json.links)
                         .enter().append("line")
@@ -254,7 +253,7 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
                         .attr("orient", "auto").attr("fill","lightblue")
                         .append("path")
                         .attr("d", "M2,2L2,11L10,6L2,2")
-      d3.select("#highArrow").attr("refX", 10)//versetzt den Marker nach hinten
+      d3.select("#highArrow").attr("refX", 9)//versetzt den Marker nach hinten
                         .attr("refY", 6)
                         .attr("markerWidth", 13)
                         .attr("markerHeight", 13)
@@ -270,7 +269,7 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
                         .attr("cx",5)
                         .attr("cy",5)
                         .attr("fill",d3.rgb("lightblue").darker()).attr("r", 1.75)
-    d3.select("#highDot").attr("refX", 5)//versetzt den Marker nach hinten
+      d3.select("#highDot").attr("refX", 5)//versetzt den Marker nach hinten
                         .attr("refY", 5)
                         .attr("markerWidth", 8)
                         .attr("markerHeight", 8)
@@ -347,15 +346,14 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
         var y0= 33; //y offset
 
         //adding a rect to each button group
-        buttonGroups.append("rect")
+        buttonGroups.append("circle")
                     .attr("class","buttonRect")
-                    .attr("width",bWidth)
-                    .attr("height",bHeight)
-                    .attr("x",function(d,i) {
-                        return x0;
+                    .attr("r",6)
+                    .attr("cx",function(d,i) {
+                        return x0 + 4;
                     })
-                    .attr("y",function(d,i) {
-                        return y0+(bWidth+bSpace)*i;
+                    .attr("cy",function(d,i) {
+                        return y0+(bWidth+bSpace)*i +6;
                     })
                     .attr("fill",function(d,i) {
             
@@ -364,62 +362,7 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
 
         clickedButtons = []; // includes all ids of clicked Buttons
 
-        //adding text to each button group, centered within the button rect
-        buttonGroups.append("text")
-                    .attr("id",function(d,i) { 
-                            return this.parentElement.parentElement.parentElement.id + " " + i
-                    } )
-                    .attr("font-family","sans-serif")
-                    .attr("x",function(d,i) {
-                        return x0 + bWidth/2;
-                    })
-                    .attr("y",function(d,i) {
-                        return y0+(bWidth+bSpace)*i + bWidth/2;
-                    })
-                    .attr("text-anchor","middle")
-                    .attr("dominant-baseline","central")
-                    .style("fill", function(d,i){return contentColor})
-                    .text('\uf10c') //fontawesome labels
-                    .on("click", function highlightButton(){
-                        var p = getParentNodes(json,getIndexByName(json,this.id.split(" ")[0]));
-                        highlightNode(json,getIndexByName(json,this.id.split(" ")[0]),true,p);
-                        active = false;
-                        //checks if clicked button is already clicked an reverses text
-                        if(clickedButtons.indexOf(this.id) != -1){
-                            d3.select(document.getElementById(this.id)).text('\uf10c');
-                            clickedButtons.splice(clickedButtons.indexOf(this.id),1);
-                            active = false;
-                        } else { // button was not clicked before
-                            //checks if there is another clicked button in this node
-                            for(i = 0; i < clickedButtons.length; i++){
-                                if (this.parentElement.parentElement.parentElement.id == clickedButtons[i].split(" ")[0]){
-                                    active = true;
-                                    break;
-                                }
-                            }
-                            //if not, reverse text of this button and push to list
-                            if(active == false){
-                                d3.select(document.getElementById(this.id)).text('\uf192');
-                                clickedButtons.push(this.id);
-                            } else { // if there already is a clicked Button in Node, change text of old and new button and push to list
-                                //old button
-                                for(i = 0; i < clickedButtons.length; i++){
-                                    if (this.parentElement.parentElement.parentElement.id == clickedButtons[i].split(" ")[0]){
-                                        d3.select(document.getElementById(clickedButtons[i])).text('\uf10c');
-                                        oldButtonI = clickedButtons.indexOf(clickedButtons[i]);
-                                        clickedButtons.splice(oldButtonI, 1); //removes oldButtons Id
-                                        clickedButtons.push(this.id)
-                                    }
-                                }
-                                //new button
-                                d3.select(document.getElementById(this.id)).text('\uf192'); 
-                            }
-                        } 
-                     });
-
-
         //States
-    
         var stateGroup = node.append("g")
                              .attr("id", function(d) {return "stateGroup" });//+ d.name} );
     
@@ -434,10 +377,21 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
                          .data(function (d,i) {return d.properties.states})
                          .enter()
                          .append("tspan")
-                         .style("fill", function(d,i){return contentColor})
+                         .style("fill", function(d,i){return "black"})
                          .text(function(d) { return d.name; })
                          .attr("dy", 20)
-                         .attr("x", 25);
+                         .attr("x", 25)
+                        .style("cursor","pointer")
+                        .on("click", function() {
+                            var childNo= 0; 
+                            var child = this;
+                            while( child.previousSibling != null ){ 
+                                childNo++;
+                                child = child.previousSibling;
+                            }
+                            var stateID = this.parentElement.parentElement.parentElement.id + "," + childNo;
+                            highlightButton(stateID);
+                        });
 
         /*var hightlightState = stateAttributes.selectAll("rect")
                              .data(function (d,i) {return d.properties.states})
@@ -445,51 +399,31 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) { //"h
                             .append("rect")
                             .style("stroke")
                             .on("click", function(){alert(true)})*/
+    
+    
+        //adding text to each button group, centered within the button rect
+        buttonGroups.append("svg:foreignObject")
+        .attr("width", 200)
+        .attr("height", 200)
+        .attr("y",function(d,i) {
+                        return y0+(bWidth+bSpace)*i + bWidth/2 -8;
+                    })
+        .attr("x",function(d,i) {
+                        return x0 + bWidth/2 - 8;
+                    })
+        .append("xhtml:i")
+            .attr("class", function(d) {return "fa fa-circle-o fa-1.5x";})
+        .attr("id",function(d,i) { 
+                return this.parentElement.parentElement.parentElement.id + "," + i
+                    } )
+        .style("fill", contentColor)
+                    .on("click", function() {
+                        var stateID = this.id;
+                        highlightButton(stateID);
+                    });
+
         //Pie Chart
-    d3.json("http://52.59.228.237:8012/bn/inference?name=" + id,  function(error, inf) { // "http://10.200.1.75:8012/bn/inference?name=" + id,
-        inf.nodes.forEach(function(d,i,a) {
-            var w = 60;
-            var h = 60;
-            var r = Math.min(w, h) / 2; //anpassen getNodeHeight 
-
-            var svg = d3.select(document.getElementById(inf.nodes[i].name))
-              .append('svg')
-              .attr("x",125)
-              .attr("y",4)      //anpassen getNodeHeight
-              .attr('width', w)
-              .attr('height', h)
-              .append('g')
-              .attr('transform', 'translate(' + (w / 2) +
-                ',' + (h / 2) + ')');
-
-            var arc = d3.svg.arc()
-              .innerRadius(0)
-              .outerRadius(r);
-
-            var pie = d3.layout.pie()
-              .value(function(d0) {return d0;})
-              .sort(null);
-            
-            var beliefArray = [];
-            for (var key in d.properties.beliefs) {
-                
-                beliefArray.push(Math.round(d.properties.beliefs[key]*100)/100);
-            }
-            var jsonI = getIndexByName(json,inf.nodes[i].name);
-            var path = svg.selectAll('path')
-              .data(pie(beliefArray))
-              .enter()
-              .append('path')
-              .attr('d', arc)
-              .attr('fill', function(d1,i1) {
-                return d3.rgb(eval(json.nodes[jsonI].properties.type + "Color")).darker(0.4).brighter(i1);
-              })
-            .on("mouseover", function(d) {
-                d3.select(this).append("text").text(function(d) {return d;}).style("color","white")
-                         .attr("font-size", "15px")
-            });
-        })
-    })
+        showInference(id);
 
         //Probabilities
     /*    var probabilityText = stateGroup.append("text");
@@ -537,39 +471,120 @@ function computeLayout(json, turn = false) {
         if (json.nodes[i].properties.type == "therapy" || json.nodes[i].properties.type == "examination"){
             therapyNodes.push(i);
         }
+        //symptomNodes.push(i); FARBEIN THESIS
     }
     
    var allArrays;
-    if(turn){
-        allArrays = [therapyNodes, diagnosisNodes, symptomNodes] // gibt die Reihenfolge der Ebenen an
-    } else {
+//    if(turn){
+//        allArrays = [therapyNodes, diagnosisNodes, symptomNodes] // gibt die Reihenfolge der Ebenen an
+//    } else {
         allArrays = [symptomNodes, diagnosisNodes, therapyNodes]
+    //}
+    //KLAPPT NICHT WENN NUR SYMPOME IM DRITTEN ARRAY
+    var nodeWidth = 200;
+    var XStart = 50;
+    var minSpace = 100; //Mindestabstand zwischen 2 Knoten in einer Zeile
+        var xPos = new Array(json.nodes.length), yPos = new Array(json.nodes.length);
+    var YStart = 50, //was ist wenn nur eine Gruppe existiert
+        YSpace = 160,  //states berücksichtigen 
+        tmpYPos = YStart;
+    
+    //berechnet maximale Knoten Anzahl in einer Zeile MUSS DAS NICHT 2*XSTART SEIN???
+    var maxNodes = Math.floor((lWidth - 2* XStart + minSpace)/(nodeWidth + minSpace))
+    if(maxNodes <= 2) {
+        throw error; // Nachricht anpassen
     }
     
+    //berechnet wie viele Zeilen pro Gruppe gebraucht werden
+    var rows = new Array(allArrays.length); //Array mit Liste von rows für jede Gruppe
+    for(var r = 0; r<rows.length; r++) {
+        rows[r] = [];
+    }
+    
+    allArrays.forEach(function(a,noOfArray) {
+        var len = a.length;
+        if(len == 0) {
+            rows.splice(noOfArray,1)
+        }//MUSS NO OF ARRAY ANGEPASST WERDEN?
+        while(len != 0) {
+            if(len <= maxNodes) { //nur wenn es erste Stelle gibt
+                if((rows[noOfArray][0] + len)%2 == 1) { // verhindert, dass gerade auf ungerade trifft
+                    rows[noOfArray].unshift(len);
+                } else {
+                    rows[noOfArray].push(len);
+               }
+                break;
+            } else
+            if((len/(2*maxNodes - 1)) < 1) { //IDEE: teste verteilung sodass abstand zwischen zeilenAnz am kleinsten ist und ungerade
+                rows[noOfArray].push(maxNodes);
+                len -= maxNodes;
+            } else {
+                rows[noOfArray].push(maxNodes);
+                rows[noOfArray].push(maxNodes - 1);
+                len -= 2*maxNodes -1;
+            }
+            
+        }
+    })
+    
+    
+    var yCounter = 0; //berechnet die Zeilen die das Netz insgesamt hat
+    rows.forEach(function(r,rNo){
+        yCounter += r.length;
+    }) 
+    //Platz zwischen zwei Gruppen
+    var groupSpace = Math.max((window.innerHeight - yCounter*YSpace - YStart*2 - 20)/(allArrays.length-1),100);
+    
+    //berechnet die Positionen für jeden Knoten
+    rows.forEach(function(a, aNo) {
+        var noOfNode = 0;
+        a.forEach(function(r, rNo) {
+            for(var i = 1; i <= r; i++) {
+                if(r == 1) { // in Mitte
+                    xPos[allArrays[aNo][noOfNode]] = lWidth / 2 - nodeWidth / 2; 
+                } else if(r <= maxNodes - 1) { //eingerückt weil es der zweite Teil der Gruppe ist und 2 wird immer eingerückt
+                    xPos[allArrays[aNo][i-1 + noOfNode]] = XStart + (lWidth - 2* XStart -nodeWidth - nodeWidth)/(r-1)*(i-1) + 0.5*nodeWidth;
+                }
+                else { // alle anderen werden gleichmäßig auf die Zeile verteilt
+                    xPos[allArrays[aNo][i-1+ noOfNode]] = XStart + (lWidth - 2* XStart -nodeWidth)/(r-1)*(i-1);
+                }
+                
+                yPos[allArrays[aNo][i-1 + noOfNode]] = tmpYPos;
+                
+            }
+            noOfNode += r;
+            tmpYPos += YSpace;
+        })
+        tmpYPos += groupSpace;
+    })
+    
+    
+    /*
     var yCounter = 0;
     var rows = new Array(allArrays.length)
     
+    
     allArrays.forEach(function(a,noOfArray){
-        if(a.length/4 == 0) {
+        if(a.length/maxNodes == 0) {
             rows[noOfArray] = 0;
             emptyArrayCounter++;
         } else
-        if(a.length/4 < 1.1) {
+        if(a.length/maxNodes <= 1) { 
             yCounter = yCounter + 1;
             rows[noOfArray] = 1;
-        } else if(a.length/4 < 2) {
+        } else if(a.length/(maxNodes -1 + maxNodes -2) < 2) { //(maxNodes -1 + maxNodes -2) Größe der Gruppe
             yCounter = yCounter + 2;
             rows[noOfArray] = 2;
-        } else if(a.length/4 < 2.5) {
+        } else if(a.length/maxNodes < 2.5) {
             yCounter = yCounter + 3;
             rows[noOfArray] = 3;
         } else { //array ueber 9 wird in 5er gruppen unterteilt(3+2) und rest wird angehängt
             var r = 0;
-            if((a.length%5) + 5 < 5) {
+            if((a.length%(maxNodes+1)) + 5 < 5) {
                 r = 1;
-            } else if ((a.length%5) + 5 < 8){
+            } else if ((a.length%(maxNodes+1)) + 5 < 8){
                 r = 2;
-            } else if ((a.length%5) + 5 < 10) {
+            } else if ((a.length%(maxNodes+1)) + 5 < 10) {
                 r = 3;
             }
             yCounter = yCounter + (Math.floor(a.length/5)-1)* 2 + r;
@@ -578,13 +593,14 @@ function computeLayout(json, turn = false) {
         
     })
     
+    
+       
     var xPos = new Array(json.nodes.length), yPos = new Array(json.nodes.length);
     var YStart = 50, //was ist wenn nur eine Gruppe existiert
         YSpace = 160,  //states berücksichtigen 
         groupSpace = Math.max((window.innerHeight - yCounter*YSpace - YStart*2 - 20)/(allArrays.length-1),100),
         tmpYPos = YStart;
-    var XStart = 50,
-        tmpXPos = XStart;
+
     var emptyArrayCounter = 0;
     
     allArrays.forEach(function(a,noOfArray){
@@ -728,11 +744,11 @@ function computeLayout(json, turn = false) {
         })
         
         tmpYPos = tmpYPos + rows[noOfArray]*YSpace + groupSpace;
-    })
-    if(tmpYPos-YSpace > window.innerHeight-20) {
-        tmpYPos+=groupSpace; //unsictbare letzte Zeile wenn scrollbar
+    })*/
+    if(tmpYPos> window.innerHeight-20) { //MUSS DAS NICHT IMMER GEMACHT WERDEN? CANCER??
+        tmpYPos-= groupSpace; 
     }
-    return [xPos, yPos, Math.max(window.innerHeight-20,tmpYPos-YSpace)]; //ANPASSEN für states der letzten zeile
+    return [xPos, yPos, Math.max(window.innerHeight-20,tmpYPos)]; //ANPASSEN für states der letzten zeile
 }
 
 function getIndexByName(json,name) {
@@ -795,7 +811,6 @@ function calculateTableContent(json,IndexOfNode, id){
             }
         }
     })
-
     var rows = [];
     
     var countRows = 1;
@@ -806,22 +821,20 @@ function calculateTableContent(json,IndexOfNode, id){
     // statenames 
     // #columns - #states of this node
     var stateRow = new Array(columns.length - json.nodes[parents[parents.length-1]].properties.states.length)
-    var probRow = new Array(json.nodes[parents[parents.length-1]].properties.states.length)
+    var probRow = new Array(json.nodes[parents[parents.length-1]].properties.states.length +1)
     for (j=0; j<countRows; j++){
         for(i=0; i<(columns.length - json.nodes[parents[parents.length-1]].properties.states.length); i++){
-                if(json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*json.nodes[parents[parents.length-1]].properties.states.length] == undefined) {
-                    alert(i)
-                    stateRow[i] = 0;
-                } else{
-            
-            stateRow[i] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*json.nodes[parents[parents.length-1]].properties.states.length].conditions[i].name;   }      
+            stateRow[i] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*json.nodes[parents[parents.length-1]].properties.states.length].conditions[i].name;       
         }
         for (h=0; h<json.nodes[parents[parents.length-1]].properties.states.length; h++){
             probRow[h] = json.nodes[parents[parents.length-1]].properties.cpt.probabilities[j*json.nodes[parents[parents.length-1]].properties.states.length+h].probability;
         }
-        rows.push(stateRow.concat(probRow))
+        var allRows = stateRow.concat(probRow)
+        allRows.push("1")
+        rows.push(allRows)
     }
 
+    columns.push("∑")
     return tabulate(rows, columns, parentSize,IndexOfNode, id)
 }
 
@@ -830,12 +843,13 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
 // -----------------
 // Table Group
 // -----------------
+
     var tableGroup = leftContainer.append("g").attr("id","tableGroup")
+    var tabRect = tableGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", contentColor).style("stroke-width", "5").attr("x", 10 + lWidth).attr("y", menuHeight + 25).attr("id","tableRect")//.attr("rx", 15).attr("ry", 15); // ANPASSEN WENN TABLE NICHT OBEN
     
-    var tableRect = tableGroup.append("rect").attr("width", rWidth-25).style("fill", "white").style("stroke", contentColor).style("stroke-width", "5").attr("x", 10 + lWidth).attr("y", menuHeight + 25).attr("id","tableRect")//.attr("rx", 15).attr("ry", 15); // ANPASSEN WENN TABLE NICHT OBEN
     
     var tablePartHeight = height - menuHeight - 40;
-    tableRect.attr("height", tablePartHeight)
+    tabRect.attr("height", tablePartHeight);
     
     var tableHeading = tableGroup.append("text")//.style("position", "fixed")
                          .style("fill", "#111")
@@ -851,19 +865,19 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
     var table = tableGroup.append("foreignObject")
                                 .attr("y", y0)
                                 .attr("x", lWidth + x0)
-                                .attr("width",590)// widthRight)
+                                .attr("width",rWidth -50)// widthRight)
                                 .attr("height",520)
                                 .append("xhtml:body")
                                 .append("div")
                                 .attr("id","table-div")
-                                .style("max-width", "590px")
-                                .style("max-height", "520px")
+                                .style("max-width", rWidth -50+"px")
+                                .style("max-height", height - menuHeight - 200 + "px")
                                 .style("overflow-y","auto")
                                 .style("overflow-x","auto")
                                 //.style("display", "table")
                                 .append("table")//.style("position", "fixed").style("z-index", 40)
-                                .attr("width", 580)
-                                .attr("height", "20%")
+                                .attr("width", rWidth-50+"px")
+                                .attr("height", "70%")
                                 .attr("id", "table")
                                 //.attr("border", );
 
@@ -888,7 +902,8 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
     
     //thick line between parents and states
     ths.style("border-right", function(d,i){
-        if(i == parentSize){return "solid "+contentColor;}}) 
+        if(i == parentSize|| i == columns.length -2){return "solid "+contentColor;}}) 
+    
 
     d3.select("table").append("tbody")
         .selectAll("tr.data")
@@ -900,19 +915,30 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
         .selectAll("td")
         .data(function(d) {return d3.entries(d)})
         .enter()
-        .append("td").each(function(d){if(typeof(d.value) == "string"){d3.select(this).html(d.value)} 
-                                        else {d3.select(this).html(Math.round(d.value*100)/100)}})//d3.select(this).append("input").attr("type", "text").attr("value", Math.round(d.value*100)/100).attr("size", "5px")}});
+        .append("td").each(function(d){
+            if(typeof(d.value) == "string"){
+                d3.select(this).html(d.value)
+            } else {
+                d3.select(this).append("input").attr("type", "text").attr("value", Math.round(d.value*100)/100)
+                    .attr("size", "5px")}})
+                    .on("keydown", function() {
+                        if(d3.event.keyCode == 13) {
+                            alert(this.firstChild.value);
+                        }
+                    });
 
     //thick line between parents and states
     tds.style("border-right", function(d,i){
-        if(i == parentSize){return "solid "+contentColor;}})
+        if(i == parentSize|| i == columns.length -2 ){return "solid "+contentColor;}})
     
     // https://datatables.net/examples/api/multi_filter.html DATA TABLES
     $(document).ready(function() {
         // Setup - add a text input to each footer cell
-        $('#table tfoot th').each( function () {
-            var title = $(this).text();
-            $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+        $('#table tfoot th').slice(0,parentSize+1).each( function (d,no) {
+            
+                var title = $(this).text();
+                $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+            
         } );
 
         // DataTable
@@ -932,9 +958,8 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
         } );
     } );
     
-    
     var yPos = document.getElementById("table-div").offsetHeight
-    
+    //Suche
 /*    var search = tableGroup.append("foreignObject")
                             .attr("y", yPos + y0)
                             .attr("x", lWidth + x0)
@@ -984,9 +1009,13 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
         })*/
     
     //Children and ParentNodes
-    var adjacents = d3.select("#tableGroup").append("g")
+    var adjacents = d3.select(document.getElementById("table-div")).append("g")
     //yPos += document.getElementById("search-div").getBoundingClientRect().height; 
-    var ks = getChildNodes(json, nodeIndex)
+        //Children and ParentNodes
+    //var adjacents = d3.select("#tableGroup").append("g")
+    //yPos += document.getElementById("search-div").getBoundingClientRect().height; 
+    
+   var ks = getChildNodes(json, nodeIndex)
     var kinderBox = 0;
     if(ks.length >0){
         var kinderText = json.nodes[ks[0]].name
@@ -994,30 +1023,21 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
             kinderText += ", " + json.nodes[ks[i]].name
             }
         })
-    var kinderdiv = adjacents.append("foreignObject")//.style("position","fixed")
-                                .attr("y", yPos + 50 + y0)
-                                .attr("x", lWidth + 40)
-                                .attr("width", 590)
-                                .attr("height",219)
-                                .append("xhtml:body")//.style("position","fixed")
-                                .append("div")
-                                //.style("position","fixed")
-    kinderdiv.append("text").html("Dependent Concepts: ").attr("id", "kinder-div")
-                                .attr("font-size", 20)
-                                .style("color", "#111")
-                                //.style("position","fixed")
-                                .attr("x", lWidth + 40)
-                                .attr("y", yPos + 50 + y0)
-                                .attr("dy", ".35em");
-    kinderdiv.append("text").html(kinderText).attr("font-size", 20)
-                                .style("color", contentColor)
-                                //.style("position","fixed")
-                                .attr("x", lWidth + 40)
-                                .attr("y", yPos + 50 + y0)
-                                .attr("dy", ".35em").attr("id", "kinder-div");
-
+    var kinderdiv = adjacents.append("div").style("margin", "7em 1em 1em")
     
-    kinderBox = document.getElementById("kinder-div").getBoundingClientRect().height; 
+    
+    kinderdiv.append("div")
+                                .style("float","left")
+                                .style("clear","both")
+                                .style("width", "12em")
+        .append("text").html("Dependent Concepts: ")
+                                .style("font-size", "19px")
+                                .style("color", "#111");
+        
+    kinderdiv.append("div").style("width", "25em").style("margin-left", "12em").style("margin-top", "7em").style("clear","right")
+            .append("text").html(kinderText)
+                        .style("font-size", "18px")
+                        .style("color", contentColor);
     }
     
     
@@ -1029,32 +1049,76 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
 
             }
         })    
-    var elterndiv =  adjacents.append("foreignObject")//.style("position","fixed")
-                                .attr("y", yPos + 50 + y0 + kinderBox+ 10)
-                                .attr("x", lWidth + 40)
-                                .attr("width", 590)
-                                .attr("height",219)
-                                .append("xhtml:body")//.style("position","fixed")
-                                .append("div")
+    var elterndiv =  adjacents.append("div").style("margin", "2em 1em 1em")
+    
+    elterndiv.append("div")
+                                .style("float","left")
+                                .style("clear","both")
+                                .style("width", "12em")
+        .append("text").html("Influencing Concepts: ")
+                                .style("font-size", "19px")
+                                .style("color", "#111")
+        
+    elterndiv.append("div").style("width", "25em").style("margin-left", "12em").style("clear","right").style("margin-top", "1em")
+            .append("text").html(elternText)
+                        .style("font-size", "18px")
+                        .style("color", contentColor)
+                        
+        
+                        //.style("position","fixed")
+                        //.style("clear","both")
+                        //.attr("x", lWidth + 40)
+                        //.attr("y", yPos + 50 + y0 + 50 + kinderBox)
+                        //.attr("dy", ".35em");
+    
+    }
+/*   
+    var kinderdiv = adjacents.append("div").style("margin-top", "100px")
                                 //.style("position","fixed")
-    elterndiv.append("text").html("Influencing Concepts: ").attr("id", "eltern-div")
-                                .attr("font-size", 20)
+    
+    var kinder = kinderdiv.append("text").attr("id", "kinder-div").attr("dy", "20px");
+        kinder.append("tspan").html("Dependant Concepts: ").style("padding","10px").style("padding-right","1px")
+                                .style("font-size", "20px")
+                                .style("clear","both")
+                                .style("float","left")
                                 .style("color", "#111")
                                 //.style("position","fixed")
                                 .attr("x", lWidth + 40)
-                                .attr("y", yPos + 50 + y0 + 50)
-                                .attr("dy", ".35em");
-    elterndiv.append("text").html(elternText)
-                        .attr("font-size", 20)
-                        .style("color", contentColor)
-                        //.style("position","fixed")
-                        .attr("x", lWidth + 40)
-                        .attr("y", yPos + 50 + y0 + 50)
-                        .attr("dy", ".35em");
+                                .attr("y", yPos + 50 + y0 + 200)
+                                .attr("dy", "20px");
     
+    var ks = getChildNodes(json, nodeIndex)
+    if(ks.length >0){
+        ks.forEach( function(d,i) { if (i == ks.length-1) {
+       kinder.append("tspan").text(json.nodes[ks[ks.length-1]].name).style("float","left").style("font-size", "20px").style("padding","10px").style("padding-right","1px").attr("y", yPos + 50 + y0 + 200)} 
+        else{
+            kinder.append("tspan").text(json.nodes[ks[i]].name+ ", ").style("float","left").style("font-size", "20px").style("padding","10px").style("padding-right","1px").attr("y", yPos + 50 + y0 + 200)
+        }
+        })
+    }   
+    
+    
+    var eltern = kinderdiv.append("text")
+        eltern.append("tspan").html("Influencing Concepts: ").style("padding","10px").style("padding-right","1px")
+                                .style("font-size", "20px")
+                                .style("color", "#111")
+                                .style("clear","both")
+                                .style("float","left")
+                                .attr("x", lWidth + 40)
+                                .attr("y", yPos + 50 + y0 )
+                                .attr("dy", ".35em")
+    
+    var ps = getParentNodes(json, nodeIndex)
+    if(ps.length > 0) {
+        ps.forEach( function(d,i) { if (i == ps.length-1) {
+       eltern.append("tspan").text(json.nodes[ps[ps.length-1]].name).style("float","left").style("font-size", "20px").style("padding","10px").style("padding-right","1px").attr("y", yPos + 50 + y0 + 200)} 
+        else{
+            eltern.append("tspan").text(json.nodes[ps[i]].name+ ", ").style("float","left").style("font-size", "20px").style("padding","10px").style("padding-right","1px").attr("y", yPos + 50 + y0 + 200)
+        }
+        })
+    }*/    
+
     }
-    return 800;
-}
     
 function highlightNode(json,id, ac=false, parents){
 
@@ -1088,7 +1152,7 @@ function highlightNode(json,id, ac=false, parents){
                      for(k = 0; k < parents.length; k++){
                         for (l = 0; l < json.links.length; l++) {
                              if(parents[k] == json.links[l].source && json.links[l].target == i) {
-                                 d3.select(document.getElementById("graph").childNodes[l]).style("stroke", "steelblue").style("marker-end",  "url(#highArrow)").style("marker-start","url(#highDot)").style("stroke-width",8);
+                                 d3.select(document.getElementById("graph").childNodes[l]).style("stroke", "steelblue").style("marker-end",  "url(#highArrow)").style("marker-start","url(#highDot)").style("stroke-width",6);
                              }
                         }
                      }
@@ -1128,5 +1192,112 @@ function curvedLink(json,yPos, sX, tX, sourceId, targetId, childNo) {
     document.getElementById("graph").insertBefore(newPath.node(), document.getElementById("graph").childNodes[childNo]); //fügt den path an die stelle der richtigen line ein
 }
     
+function highlightButton(stateID){
+    
+    var nodeName = stateID.split(",")[0].replace("radioButtons","");
+    var stateNo = stateID.split(",")[1];
+    stateID = nodeName + "radioButtons," + stateNo;
+    var dbID = json.nodes[getIndexByName(json,nodeName)].properties.id;
+    var stateName = json.nodes[getIndexByName(json,nodeName)].properties.states[stateNo].name;
+    
+    var p = getParentNodes(json,getIndexByName(json,nodeName));
+    highlightNode(json,getIndexByName(json,nodeName),true,p);
+    active = false;
+    //checks if clicked button is already clicked an reverses text
+    if(clickedButtons.indexOf(stateID) != -1){
+        d3.select(document.getElementById(stateID)).attr("class", "fa fa-circle-o");
+        clickedButtons.splice(clickedButtons.indexOf(stateID),1);
+        active = false;
+        //LEERE OBSERVATION
+        stateName = "";
+    } else { // button was not clicked before
+        //checks if there is another clicked button in this node
+        for(i = 0; i < clickedButtons.length; i++){
+            if (document.getElementById(stateID).parentElement.parentElement.parentElement.id == clickedButtons[i].split(",")[0]){
+                active = true;
+                break;
+            }
+        }
+        //if not, reverse text of this button and push to list
+        if(active == false){
+            d3.select(document.getElementById(stateID)).attr("class", "fa fa-check-circle-o");
+            clickedButtons.push(stateID);
+
+        } else { // if there already is a clicked Button in Node, change text of old and new button and push to list
+            //old button
+            for(i = 0; i < clickedButtons.length; i++){
+                if (document.getElementById(stateID).parentElement.parentElement.parentElement.id == clickedButtons[i].split(",")[0]){
+                    d3.select(document.getElementById(clickedButtons[i])).attr("class", "fa fa-circle-o");
+                    oldButtonI = clickedButtons.indexOf(clickedButtons[i]);
+                    clickedButtons.splice(oldButtonI, 1); //removes oldButtons Id
+                    clickedButtons.push(stateID)
+                }
+            }
+            //new button
+            d3.select(document.getElementById(stateID)).attr("class", "fa fa-check-circle-o"); 
+        }
+    }
+
+    //aktualisiere Datenbank mit observation
+    showInference(id,true,dbID,stateName);         
+}
+    
+function showInference(id, obs = false, dbID, stateName) {
+    if(obs) {
+        d3.json("http://52.59.228.237:8012/bn/edit/vertex/"+ dbID + "?name=" + id + "&observation=" + stateName , function(leer,error) {
+            if(error) throw error;
+        })
+    }
+    //aktualisiere PieCharts 
+    d3.json("http://52.59.228.237:8012/bn/inference?name=" + id,  function(error, inf) {//"http://52.59.228.237:8012/bn/inference?name=" + id
+            inf.nodes.forEach(function(d,i,a) {
+                var w = 60;
+                var h = 60;
+                var r = Math.min(w, h) / 2; //anpassen getNodeHeight 
+
+                var svg = d3.select(document.getElementById(inf.nodes[i].name))
+                  .append('svg').attr("class", "inf")
+                  .attr("x",125)
+                  .attr("y",4)      //anpassen getNodeHeight
+                  .attr('width', w)
+                  .attr('height', h)
+                  .append('g')
+                  .attr('transform', 'translate(' + (w / 2) +
+                    ',' + (h / 2) + ')');
+
+                var arc = d3.svg.arc()
+                  .innerRadius(0)
+                  .outerRadius(r);
+
+                var pie = d3.layout.pie()
+                  .value(function(d0) {return d0;})
+                  .sort(null);
+
+                var beliefArray = [];
+                for (var key in d.properties.beliefs) {
+                    var bPos = 0;
+                    for(f=0; f< d.properties.states.length; f++) {
+                        if(key.split("\"")[7] == d.properties.states[f].name) {
+                            bPos = f;
+                        }
+                    }
+                    beliefArray[bPos] = (Math.round(d.properties.beliefs[key]*100)/100);
+                }
+                var jsonI = getIndexByName(json,inf.nodes[i].name);
+                var path = svg.selectAll('path')
+                  .data(pie(beliefArray))
+                  .enter()
+                  .append('path')
+                  .attr('d', arc)
+                  .attr('fill', function(d1,i1) {
+                    return d3.rgb(eval(json.nodes[jsonI].properties.type + "Color")).darker(0.5).brighter(i1);
+                  })
+                .on("mouseover", function(d) { //HIER SOLL WKEIT ANGEZEIGT WERDEN
+                    d3.select(this).append("text").text(function(d) {return d;}).style("color","white")
+                             .attr("font-size", "15px")
+                });
+            })
+    })
+}
 })
 }

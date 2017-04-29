@@ -5,7 +5,7 @@ html,body {
     font-family: sans-serif;
 }
 
-#scroll-div {
+#scroll-div ,#scroll-tabdiv, #scroll-div-laden{
     height: 100%;
     width: 100%;
     /*position: absolute;
@@ -15,10 +15,6 @@ html,body {
 #link { 
     stroke-width: 4;
     opacity: 0.5;
-}
-
-marker {
-                   
 }
 
 text {
@@ -33,6 +29,9 @@ text {
     font-family: sans-serif;
     border-radius: 6px;
     color: purple;
+}
+tfoot{
+    border-top: solid purple /*#d39ed3*/;
 }
 tfoot input {
         width: 100%;
@@ -127,12 +126,9 @@ tr:hover {
 }
 
 #table-div {
-    border: thick solid purple;
+    /*border: thick solid purple;*/
 }
 
-#info-div{
-    position: absolute;
-}
 #info-div, #kinder-div, #eltern-div {
-        font-size: 20px;
+    font-size: 12px;
 }
