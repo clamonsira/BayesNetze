@@ -6,7 +6,7 @@
     
     var container = d3.select("body").append("svg") //one big svg because the button click overlaps
                                 .attr("width", window.innerWidth -5)
-                                .attr("height", height) // wenn tmpHeight > height scroll ein bauen
+                                .attr("height", height)
                                 .attr("id", "container");
 
 // ------------------------------------------
@@ -41,7 +41,7 @@ var menuButtons= menuGroup.append("g")
                     .attr("id","menuButtons") 
 
 //fontawesome button labels
-var labels= ['list,Bayes Net', "pencil,define Types", "info,Information"];
+var labels= ['list,Bayes Net', "info,Information"]; //, "pencil,define Types" an zweiter Stelle für Fotos 
 
 var bWidth= (rWidth - 75)/labels.length; //button width
 
@@ -82,21 +82,14 @@ buttonGroups.append("text")
             .text(function(d) {return d.split(",")[1];})
 
 buttonGroups.append("svg:foreignObject")
-    .attr("width", 200)
-    .attr("height", 200)
+    .attr("width", 20)
+    .attr("height", 20)
     .attr("y", (y0+22+17) + "px")
     .attr("x", function(d,i) {return x0+13 + (bWidth+bSpace)*i + 20})
     .append("xhtml:i")
             .attr("class", function(d) {return "fa fa-" + d.split(",")[0] +" fa-inverse fa-1.5x";})
 
-/*buttonGroups.append("svg:foreignObject")
-    .attr("width", 200)
-    .attr("height", 200)
-    .attr("y", "-7px")
-    .attr("x", "-7px")
-  .append("xhtml:span")
-    .attr("class", "fa fa-spinner fa-pulse fa-10x");
-// -----------------*/
+// -----------------
 // Information
 // -----------------
 
@@ -106,30 +99,32 @@ d3.select(document.getElementById("Information"))
 
         d3.text("Info.txt",function(error,text) {
             
+            
             var infoText = infoGroup.append("foreignObject").style("position","fixed")
-                                        .attr("y", y0+22 + 20)
+                                        .attr("y", y0+22 + 20).attr("id", "info-div")
                                         .attr("x", x0+13 - 150 + 20)
-                                        .attr("width",rWidth - 50)
-                                        .attr("height",219)
+                                        .attr("width",rWidth - 100)
+                                        .attr("height",height)
                                         .append("xhtml:body").style("position","fixed")
-                                        .append("div")
-                                        .style("position","fixed")
-                                        .append("text").html(text).attr("id","info-div")
-                                        .attr("width",rWidth - 50)
-                                        .attr("font-size", "12px")
-                                        .style("fill", "purple")
-                                        .attr("x", lWidth+ x0+13 - 150 + 10 + 150)
-                                        .attr("y", y0+22 + 10)
-                                        .attr("dy", ".35em");
+                                        .append("div").style("width", rWidth - 80)
+                                        //.style("position","fixed")
+                                        .append("text").html(text).attr("id","info-text")
+                                        .style("font-size", "19px")
+                                        //.style("fill", "purple")
+                                        //.attr("x", lWidth+ x0+13 - 150 + 10 + 150)
+                                        //.attr("y", y0+22 + 10)
+                                        //.attr("dy", ".35em");
             
-            var bBox = document.getElementById("info-div").getBoundingClientRect().height;
+            var bBox = document.getElementById("info-text").getBoundingClientRect().height;
             
-            var infoRect = infoGroup.append("rect").attr("id", "infoRect") //ANPASSEN InsertBefore
+            var infoRect = infoGroup.append("rect").attr("id", "infoRect") 
                     .attr("x", x0+13 - 150).attr("y", y0+22)
-                    .attr("width", rWidth - 50).attr("height",bBox + 40)
+                    .attr("width", rWidth - 50)
+                    .attr("height",bBox+ 15)
                     .attr("rx",5).attr("ry",5)
                     .style("fill", "white").style("stroke","orange");
-            infoGroup.append("i").attr("class", "fa fa-camera-retro")
+            
+            document.getElementById("infoGroup").insertBefore(infoRect.node(), document.getElementById("info-div"));
             
             d3.select("body").on("click", function() {infoGroup.remove()})
         })
@@ -248,7 +243,7 @@ d3.select(document.getElementById("Bayes Net"))
                     .attr("x", x0+13 - 610).attr("y", y0+22)
                     .attr("width", rWidth - 50).attr("height", allBNs.length * 67 + 100)
                     .attr("rx",5).attr("ry",5)
-                    .style("fill", "white").style("stroke","orange").style("stroke-width",2);
+                    .style("fill", "white").style("stroke","#ffc266").style("stroke-width",2);
             
             var netGroup = scrollSVGLaden.selectAll("g").data(allBNs).enter().append("g")                                    
                                     .on("mouseover", function() {

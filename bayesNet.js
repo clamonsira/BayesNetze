@@ -6,13 +6,25 @@ var highlightColor = "#6FFF0D",
     contentColor = "purple",
     contentColorLight = "#575757";
     
-var diagnosisColor = "#ffc266",
-    therapyColor = "steelblue",
-    examinationColor = "#12858e",
-    symptomColor = "#FE642E";
+var diagnosisColor ="#FE642E",//"#FE642E"
+    therapyColor = "#118b54",
+    examinationColor = "steelblue",//#12858e"
+    symptomColor = "#ffc266"
 
-d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) {//"http://52.59.228.237:8012/bn?name=" + id  //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
+var spinner = container.append("svg:foreignObject") //laden Animation
+    .attr("width", 2000)
+    .attr("height", 2000)
+    .attr("y", window.innerHeight*0.5-100+"px")
+    .attr("x", window.innerWidth*0.5-100+"px")
+  spinner.append("xhtml:span").style("fill", "purple")
+    .attr("class", "fa fa-spinner fa-pulse fa-5x");
+    
+setTimeout(function() {//damit der spinner immer kruz angezeigt wird
+d3.json("http://52.59.228.237:8012/bn?name=" + id  //"http://52.59.228.237:8012/bn?name=" + id  //"http://10.200.1.75:8012/bn?name=bncancer1,lung1,asia1,alarm1,hepar1, Dgraph.json" "cancer.json", function(error, json) {//
+        , function(error, json){
     if (error) throw error;
+    
+    spinner.remove();
     // ------------------------------------------
     // LINKE SEITE
     // ------------------------------------------
@@ -357,11 +369,9 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) {//"ht
                     })
                     .attr("fill",function(d,i) {
             
-                                return d3.rgb(eval(json.nodes[getIndexByName(json,this.parentElement.parentElement.id.substring(0,this.parentElement.parentElement.id.length-12))].properties.type + "Color")).darker(0.4).brighter([i]);
+                                return d3.rgb(eval(json.nodes[getIndexByName(json,this.parentElement.parentElement.id.substring(0,this.parentElement.parentElement.id.length-12))].properties.type + "Color")).darker(0.8).brighter(i);
                             })
-
-        clickedButtons = []; // includes all ids of clicked Buttons
-
+    
         //States
         var stateGroup = node.append("g")
                              .attr("id", function(d) {return "stateGroup" });//+ d.name} );
@@ -377,7 +387,7 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) {//"ht
                          .data(function (d,i) {return d.properties.states})
                          .enter()
                          .append("tspan")
-                         .style("fill", function(d,i){return "black"})
+                         .style("fill", "black")
                          .text(function(d) { return d.name; })
                          .attr("dy", 20)
                          .attr("x", 25)
@@ -403,8 +413,8 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) {//"ht
     
         //adding text to each button group, centered within the button rect
         buttonGroups.append("svg:foreignObject")
-        .attr("width", 200)
-        .attr("height", 200)
+        .attr("width", 20)
+        .attr("height", 20)
         .attr("y",function(d,i) {
                         return y0+(bWidth+bSpace)*i + bWidth/2 -8;
                     })
@@ -422,6 +432,17 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id , function(error, json) {//"ht
                         highlightButton(stateID);
                     });
 
+    
+        clickedButtons = []; // includes all ids of clicked Buttons
+        json.nodes.forEach(function(d,i) { //GIBT ES EINEN UNTERSCHIED ZWISCHEN INF OBSERVATION UND JSON OBSERVATION? WENN ZU INF DANN IN SHOWINFERENCE PACKEN
+            if(d.properties.observation!=undefined) {
+                d.properties.states.forEach(function(ds, is) {
+                    if(ds.name == d.properties.observation.name) {
+                        highlightButton(d.name + "radioButtons," + is, true);
+                    }
+                })
+            }
+        })
         //Pie Chart
         showInference(id);
 
@@ -471,7 +492,7 @@ function computeLayout(json, turn = false) {
         if (json.nodes[i].properties.type == "therapy" || json.nodes[i].properties.type == "examination"){
             therapyNodes.push(i);
         }
-        //symptomNodes.push(i); FARBEIN THESIS
+       // symptomNodes.push(i); //sFARBEIN THESIS
     }
     
    var allArrays;
@@ -480,7 +501,9 @@ function computeLayout(json, turn = false) {
 //    } else {
         allArrays = [symptomNodes, diagnosisNodes, therapyNodes]
     //}
+    
     //KLAPPT NICHT WENN NUR SYMPOME IM DRITTEN ARRAY
+    
     var nodeWidth = 200;
     var XStart = 50;
     var minSpace = 100; //Mindestabstand zwischen 2 Knoten in einer Zeile
@@ -490,7 +513,7 @@ function computeLayout(json, turn = false) {
         tmpYPos = YStart;
     
     //berechnet maximale Knoten Anzahl in einer Zeile MUSS DAS NICHT 2*XSTART SEIN???
-    var maxNodes = Math.floor((lWidth - 2* XStart + minSpace)/(nodeWidth + minSpace))
+    var maxNodes = Math.round((lWidth - 2* XStart + minSpace)/(nodeWidth + minSpace))
     if(maxNodes <= 2) {
         throw error; // Nachricht anpassen
     }
@@ -501,6 +524,7 @@ function computeLayout(json, turn = false) {
         rows[r] = [];
     }
     
+    //computeRows
     allArrays.forEach(function(a,noOfArray) {
         var len = a.length;
         if(len == 0) {
@@ -527,15 +551,15 @@ function computeLayout(json, turn = false) {
         }
     })
     
-    
-    var yCounter = 0; //berechnet die Zeilen die das Netz insgesamt hat
+    //berechnet die Zeilen die das Netz insgesamt hat
+    var yCounter = 0; 
     rows.forEach(function(r,rNo){
         yCounter += r.length;
     }) 
     //Platz zwischen zwei Gruppen
     var groupSpace = Math.max((window.innerHeight - yCounter*YSpace - YStart*2 - 20)/(allArrays.length-1),100);
     
-    //berechnet die Positionen für jeden Knoten
+    //berechnet die Positionen für jeden Knoten computePos
     rows.forEach(function(a, aNo) {
         var noOfNode = 0;
         a.forEach(function(r, rNo) {
@@ -558,7 +582,7 @@ function computeLayout(json, turn = false) {
         tmpYPos += groupSpace;
     })
     
-    
+    //altes Layout
     /*
     var yCounter = 0;
     var rows = new Array(allArrays.length)
@@ -745,7 +769,10 @@ function computeLayout(json, turn = false) {
         
         tmpYPos = tmpYPos + rows[noOfArray]*YSpace + groupSpace;
     })*/
-    if(tmpYPos> window.innerHeight-20) { //MUSS DAS NICHT IMMER GEMACHT WERDEN? CANCER??
+    
+    //letzte unsichtbare Zeile
+    //MUSS DAS NICHT IMMER GEMACHT WERDEN? CANCER??
+    if(tmpYPos> window.innerHeight-20) { 
         tmpYPos-= groupSpace; 
     }
     return [xPos, yPos, Math.max(window.innerHeight-20,tmpYPos)]; //ANPASSEN für states der letzten zeile
@@ -866,12 +893,12 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 .attr("y", y0)
                                 .attr("x", lWidth + x0)
                                 .attr("width",rWidth -50)// widthRight)
-                                .attr("height",520)
+                                .attr("height",height - menuHeight - 190 + "px")
                                 .append("xhtml:body")
                                 .append("div")
                                 .attr("id","table-div")
                                 .style("max-width", rWidth -50+"px")
-                                .style("max-height", height - menuHeight - 200 + "px")
+                                .style("max-height", height - menuHeight - 190 + "px")
                                 .style("overflow-y","auto")
                                 .style("overflow-x","auto")
                                 //.style("display", "table")
@@ -918,14 +945,15 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
         .append("td").each(function(d){
             if(typeof(d.value) == "string"){
                 d3.select(this).html(d.value)
-            } else {
-                d3.select(this).append("input").attr("type", "text").attr("value", Math.round(d.value*100)/100)
+           } else {
+                d3.select(this).html(Math.round(d.value*100)/100).style("color", "black");
+           }})/*append("input").attr("type", "text").attr("value", Math.round(d.value*100)/100)
                     .attr("size", "5px")}})
                     .on("keydown", function() {
                         if(d3.event.keyCode == 13) {
                             alert(this.firstChild.value);
                         }
-                    });
+                    });*/
 
     //thick line between parents and states
     tds.style("border-right", function(d,i){
@@ -937,7 +965,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
         $('#table tfoot th').slice(0,parentSize+1).each( function (d,no) {
             
                 var title = $(this).text();
-                $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+                $(this).html( '<input type="text" placeholder="Search '+title+" states"+'" />' );
             
         } );
 
@@ -1034,7 +1062,8 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 .style("font-size", "19px")
                                 .style("color", "#111");
         
-    kinderdiv.append("div").style("width", "25em").style("margin-left", "12em").style("margin-top", "7em").style("clear","right")
+    kinderdiv.append("div")//.style("width", "25em")
+        .style("margin-left", "12em").style("clear","right")
             .append("text").html(kinderText)
                         .style("font-size", "18px")
                         .style("color", contentColor);
@@ -1049,7 +1078,7 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
 
             }
         })    
-    var elterndiv =  adjacents.append("div").style("margin", "2em 1em 1em")
+    var elterndiv =  adjacents.append("div").style("margin", "4em 1em 1em")
     
     elterndiv.append("div")
                                 .style("float","left")
@@ -1059,7 +1088,8 @@ function tabulate(rows, columns, parentSize, nodeIndex, name) {
                                 .style("font-size", "19px")
                                 .style("color", "#111")
         
-    elterndiv.append("div").style("width", "25em").style("margin-left", "12em").style("clear","right").style("margin-top", "1em")
+    elterndiv.append("div")//.style("width", "25em")
+        .style("margin-left", "12em").style("clear","right")
             .append("text").html(elternText)
                         .style("font-size", "18px")
                         .style("color", contentColor)
@@ -1192,7 +1222,7 @@ function curvedLink(json,yPos, sX, tX, sourceId, targetId, childNo) {
     document.getElementById("graph").insertBefore(newPath.node(), document.getElementById("graph").childNodes[childNo]); //fügt den path an die stelle der richtigen line ein
 }
     
-function highlightButton(stateID){
+function highlightButton(stateID, begin = false){
     
     var nodeName = stateID.split(",")[0].replace("radioButtons","");
     var stateNo = stateID.split(",")[1];
@@ -1230,7 +1260,7 @@ function highlightButton(stateID){
                     d3.select(document.getElementById(clickedButtons[i])).attr("class", "fa fa-circle-o");
                     oldButtonI = clickedButtons.indexOf(clickedButtons[i]);
                     clickedButtons.splice(oldButtonI, 1); //removes oldButtons Id
-                    clickedButtons.push(stateID)
+                    clickedButtons.push(stateID);
                 }
             }
             //new button
@@ -1239,17 +1269,34 @@ function highlightButton(stateID){
     }
 
     //aktualisiere Datenbank mit observation
-    showInference(id,true,dbID,stateName);         
+    if(!begin){
+        showInference(id,true,dbID,stateName);  
+    }
 }
     
 function showInference(id, obs = false, dbID, stateName) {
     if(obs) {
+        var spinner = leftContainer.append("svg:foreignObject") //laden Animation
+        .attr("width", 2000)
+        .attr("height", 2000)
+        .attr("y", lWidth*0.5+"px")
+        .attr("x", lWidth*0.5+"px")
+      spinner.append("xhtml:span")
+        .attr("class", "fa fa-spinner fa-pulse fa-5x");
+        
+        setTimeout(function(){
         d3.json("http://52.59.228.237:8012/bn/edit/vertex/"+ dbID + "?name=" + id + "&observation=" + stateName , function(leer,error) {
             if(error) throw error;
+            spinner.remove();
         })
+        },1000);
+
     }
+
     //aktualisiere PieCharts 
-    d3.json("http://52.59.228.237:8012/bn/inference?name=" + id,  function(error, inf) {//"http://52.59.228.237:8012/bn/inference?name=" + id
+    d3.json("http://52.59.228.237:8012/bn/inference?name=" + id
+          ,  function(error, inf) {//"http://52.59.228.237:8012/bn/inference?name=" + id
+
             inf.nodes.forEach(function(d,i,a) {
                 var w = 60;
                 var h = 60;
@@ -1283,6 +1330,7 @@ function showInference(id, obs = false, dbID, stateName) {
                     }
                     beliefArray[bPos] = (Math.round(d.properties.beliefs[key]*100)/100);
                 }
+                
                 var jsonI = getIndexByName(json,inf.nodes[i].name);
                 var path = svg.selectAll('path')
                   .data(pie(beliefArray))
@@ -1290,14 +1338,15 @@ function showInference(id, obs = false, dbID, stateName) {
                   .append('path')
                   .attr('d', arc)
                   .attr('fill', function(d1,i1) {
-                    return d3.rgb(eval(json.nodes[jsonI].properties.type + "Color")).darker(0.5).brighter(i1);
+                    return d3.rgb(eval(json.nodes[jsonI].properties.type + "Color")).darker(0.8).brighter(i1);
                   })
-                .on("mouseover", function(d) { //HIER SOLL WKEIT ANGEZEIGT WERDEN
+/*                .on("mouseover", function(d) { //HIER SOLL WKEIT ANGEZEIGT WERDEN
                     d3.select(this).append("text").text(function(d) {return d;}).style("color","white")
                              .attr("font-size", "15px")
-                });
+                });*/
             })
     })
 }
 })
+    }, 100);
 }

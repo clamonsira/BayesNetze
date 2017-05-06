@@ -1,6 +1,6 @@
-Die Visualisierung ist unterteilt in zwei Hälften. <br><br>
-Auf der linken Seite sehen Sie das Bayes Netz, bestehend aus bunten rechteckigen Feldern, die entweder für ein Symptom, eine Therapie, eine Untersuchung oder eine Diagnose stehen. <br><br>
-Die Felder sind mit Pfeilen verbunden, wenn sie voneinander abhängig sind. <br><br>
-Zu einem Feld gehören seine Zustände und die Inferenzen zu den Zuständen, die in einem Tortendiagramm visualisiert werden.<br>
-Sie können die Wahrscheinlichkeit eines Zustands auf 100 % setzen, indem Sie den Zustand markieren. Dann werden alle davon abhängigen Wahrscheinlichkeiten dementsprechend angepasst. <br><br>
-Außerdem finden Sie auf der rechten Seite Details zu den Feldern, wenn Sie diese anklicken. In der Tabelle wird dargestellt, wie die Zustände eines Feldes von seinen Eltern abhängen. Sie haben hier die Möglichkeit mit der Suchfunktion die richtige Zeile zu finden, indem Sie die von Ihnen gesuchten Zustände eingeben. <br>
+This visualization is divided into two parts.<br><br>
+On the left-hand side you can see the Baysian Net, consisting of rectangular fields in different colors, which stand for different types of concepts. You can find these types of concepts: Symptom (yellow), Diagnosis (red), Examination (blue) and Therapy (green). (You can adjust the kind of types in a later version of this system.) <br><br>
+The fields are connected with arrows, which represent the dependence between them.<br><br>
+On each field you can see the belonging states and the prior propabilities, which are shown in the pie chart.<br><br>
+You can set an observation (the observated state's probability becomes 1) by marking the corresponding button on the left. Then every dependent probability will be updated.<br><br>
+On the right-hand side you can see some more details of one field/concept by clicking on it. You can see a table containing the conditional propabilities, depending on the parents of this concept. <br><br>
