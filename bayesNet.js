@@ -434,7 +434,7 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id  //"http://52.59.228.237:8012/
 
     
         clickedButtons = []; // includes all ids of clicked Buttons
-        json.nodes.forEach(function(d,i) { //GIBT ES EINEN UNTERSCHIED ZWISCHEN INF OBSERVATION UND JSON OBSERVATION? WENN ZU INF DANN IN SHOWINFERENCE PACKEN
+        json.nodes.forEach(function(d,i) {
             if(d.properties.observation!=undefined) {
                 d.properties.states.forEach(function(ds, is) {
                     if(ds.name == d.properties.observation.name) {
@@ -443,6 +443,7 @@ d3.json("http://52.59.228.237:8012/bn?name=" + id  //"http://52.59.228.237:8012/
                 })
             }
         })
+    
         //Pie Chart
         showInference(id);
 
@@ -1275,29 +1276,33 @@ function highlightButton(stateID, begin = false){
 }
     
 function showInference(id, obs = false, dbID, stateName) {
-    if(obs) {
-        var spinner = leftContainer.append("svg:foreignObject") //laden Animation
-        .attr("width", 2000)
-        .attr("height", 2000)
-        .attr("y", lWidth*0.5+"px")
-        .attr("x", lWidth*0.5+"px")
-      spinner.append("xhtml:span")
-        .attr("class", "fa fa-spinner fa-pulse fa-5x");
-        
-        setTimeout(function(){
-        d3.json("http://52.59.228.237:8012/bn/edit/vertex/"+ dbID + "?name=" + id + "&observation=" + stateName , function(leer,error) {
-            if(error) throw error;
-            spinner.remove();
-        })
-        },1000);
+    setTimeout(function(){
+        if(obs) {
+            var spinner = leftContainer.append("svg:foreignObject") //laden Animation
+            .attr("width", 2000)
+            .attr("height", 2000)
+            .attr("y", lWidth*0.5+"px")
+            .attr("x", lWidth*0.5+"px")
+          spinner.append("xhtml:span")
+            .attr("class", "fa fa-spinner fa-pulse fa-5x");
 
-    }
-
+            setTimeout(function(){
+            d3.json("http://52.59.228.237:8012/bn/edit/vertex/"+ dbID + "?name=" + id + "&observation=" + stateName , function(error,newInf) {
+                if(error) throw error;
+                spinner.remove();
+                node.selectAll(".inf").remove();
+            })
+            },300);
+            return true;
+        }
+    },10);
+    
+    setTimeout(function(){
     //aktualisiere PieCharts 
     d3.json("http://52.59.228.237:8012/bn/inference?name=" + id
           ,  function(error, inf) {//"http://52.59.228.237:8012/bn/inference?name=" + id
-
             inf.nodes.forEach(function(d,i,a) {
+                    
                 var w = 60;
                 var h = 60;
                 var r = Math.min(w, h) / 2; //anpassen getNodeHeight 
@@ -1346,6 +1351,8 @@ function showInference(id, obs = false, dbID, stateName) {
                 });*/
             })
     })
+    
+    },1000);
 }
 })
     }, 100);
