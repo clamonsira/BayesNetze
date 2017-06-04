@@ -118,7 +118,7 @@ d3.select(document.getElementById("Information"))
             var infoRect = infoGroup.append("rect").attr("id", "infoRect")
                 .attr("x", x0 + 13 - 150).attr("y", y0 + 22)
                 .attr("width", rWidth - 50)
-                .attr("height", bBox + 15)
+                .attr("height", bBox + 25)
                 .attr("rx", 5).attr("ry", 5)
                 .style("fill", "white").style("stroke", "orange");
 
