@@ -171,6 +171,9 @@ d3.select(document.getElementById("Bayes Net"))
                     if (document.getElementById("leftContainer") != null) {
                         d3.select(document.getElementById("leftContainer")).remove()
                     };
+                if(document.getElementById("spinner") != null){
+                    document.getElementById("spinner").remove();
+                }
                     bayesNet(allBNs[i].graphDBId);
                 });
 

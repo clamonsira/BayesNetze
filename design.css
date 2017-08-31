@@ -35,6 +35,8 @@ tfoot input {
         padding: 3px;
         box-sizing: border-box;
 }
+
+/* the following code is taken from DataTables*/
 .dataTables_length, .dataTables_filter, .dataTables_info, #table_paginate { 
     font-family: sans-serif;
     float:left;
@@ -108,12 +110,43 @@ tfoot input {
     text-align:center
 }
 
+table.dataTable thead .sorting,
+table.dataTable thead .sorting_asc,
+table.dataTable thead .sorting_desc,
+table.dataTable thead .sorting_asc_disabled,
+table.dataTable thead .sorting_desc_disabled {
+    cursor: pointer;
+    *cursor: hand
+}
+
+table.dataTable thead .nosorting {
+    cursor: default
+}
+
+table.dataTable thead .sorting,
+table.dataTable thead .sorting_asc,
+table.dataTable thead .sorting_desc,
+table.dataTable thead .sorting_asc_disabled,
+table.dataTable thead .sorting_desc_disabled {
+    background-repeat: no-repeat;
+    background-position: center right
+}
+table.dataTable thead .sorting {
+    background-image: url("sort.png") /*from www.iconfinder.com */
+}
+table.dataTable thead .sorting_asc {
+    background-image: url("sort-up.png")/*from www.iconfinder.com */
+}
+table.dataTable thead .sorting_desc {
+    background-image: url("sort-down.png")/*from www.iconfinder.com */
+}
+
 tr:not(:last-child){
     border-bottom: double purple;
 }
 th {
     
-    padding: 1px 4px;
+    padding: 1px 20px;
     background-color: white;
     color: purple;
     font-size: 20px;

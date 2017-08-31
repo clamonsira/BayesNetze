@@ -15,10 +15,11 @@ function bayesNet(id) {
     // Laden-Animation
     // ------------------------------------------
     var spinner = container.append("svg:foreignObject")
-        .attr("width", 2000)
-        .attr("height", 2000)
-        .attr("y", window.innerHeight * 0.5 - 100 + "px")
-        .attr("x", window.innerWidth * 0.5 - 100 + "px");
+        .attr("width", 20)
+        .attr("height", 20)
+        .attr("y", height * 0.5 + "px")
+        .attr("x", lWidth * 0.5 + "px")
+        .attr("id", "spinner");
     spinner.append("xhtml:span").style("fill", "purple")
         .attr("class", "fa fa-spinner fa-pulse fa-5x");
     
@@ -26,11 +27,11 @@ function bayesNet(id) {
     // Lädt das Netz 
     // ------------------------------------------
     setTimeout(function() { 
-        d3.json("http://10.200.1.75:8012/bn?name=" + id,
+        d3.json("http://52.59.228.237:8012/bn?name=" + id,
             function(error, json) {
                 if (error) throw error;
                 
-                spinner.remove();
+                document.getElementById("spinner").remove();
 
                 // -----------------
                 // Berechne Layout
@@ -644,7 +645,7 @@ function bayesNet(id) {
                 }
 
             
-                // erstellt Tabelle
+                // berechnet Tabelleninhalt
                 function calculateTableContent(json, IndexOfNode, id) {
 
                     var parents = [];
@@ -694,15 +695,16 @@ function bayesNet(id) {
                             probRow[h] = json.nodes[parents[parents.length - 1]].properties.cpt.probabilities[j * json.nodes[parents[parents.length - 1]].properties.states.length + h].probability;
                         }
                         var allRows = stateRow.concat(probRow)
-                        allRows.push("1")
+                        allRows.push(" 1 ")
                         rows.push(allRows)
                     }
 
-                    columns.push("∑")
+                    columns.push(" ∑ ")
                     
                     return tabulate(rows, columns, parentSize, IndexOfNode, id)
                 }
 
+                // erstellt Tabelle
                 function tabulate(rows, columns, parentSize, nodeIndex, name) {
 
                     var tableGroup = leftContainer.append("g").attr("id", "tableGroup")
@@ -786,7 +788,8 @@ function bayesNet(id) {
                             if (typeof(d.value) == "string") {
                                 d3.select(this).html(d.value)
                             } else {
-                                d3.select(this).append("input").attr("type", "text").attr("value", Math.round(d.value * 100) / 100)
+                                //wert nicht gerundet
+                                d3.select(this).append("input").attr("type", "text").attr("value", d.value)//Math.round(d.value * 100) / 100)
                                     .attr("size", "5px")
                             }
                         })
@@ -798,31 +801,52 @@ function bayesNet(id) {
                                 var body = document.getElementById("table").childNodes[2];
                                 changed.forEach(function(l, i) {
                                     //überprüft ob es ein input field ist
-                                    if (body.childNodes[l.line].childNodes[l.cell].childNodes[0].value != undefined) {
-
+                                    //if (body.childNodes[l.line].childNodes[l.cell].childNodes[0].value != undefined) {
+                                    
+                                        var probabilities = "[";
+                                        for(var i = parentSize+1; i < columns.length -1; i++) {
+                                            probabilities += parseFloat(body.childNodes[l.line].childNodes[i].childNodes[0].value) + ",";   
+                                        }
+                                        // es gibt immer mindestens eine wkeit
+                                        probabilities = probabilities.slice(0, -1);
+                                        probabilities += "]";
+                                    
+                                        var influencedStates = "[";
+                                        for(var i = parentSize+1; i < columns.length -1; i++) {
+                                            influencedStates += document.getElementById("table").firstChild.firstChild.childNodes[i].innerHTML + ",";
+                                        }
+                                        influencedStates = influencedStates.slice(0, -1);
+                                        influencedStates += "]";
+                                    
                                         var conditionStates = "[";
                                         //wenn da influencing concepts sind
                                         for (var v = 0; v < document.getElementById("table").firstChild.firstChild.childNodes.length - (json.nodes[getIndexByName(json, name)].properties.states.length + 1); v++) {
                                             conditionStates += "{%22entityName%22:%20%22" + document.getElementById("table").firstChild.firstChild.childNodes[v].innerHTML + "%22,%22name%22:%20%22" + document.getElementById("table").childNodes[2].childNodes[l.line].childNodes[v].innerHTML + "%22},"
                                         }
+                                    if(conditionStates.length > 1) {
                                         conditionStates = conditionStates.slice(0, -1);
+                                    }
                                         conditionStates += "]";
-
-                                        //Sendet alle veränderten Zellen an Datenbank
-/*                                      var spinner = container.append("svg:foreignObject") //laden Animation
-                                            .attr("width", 2000)
-                                            .attr("height", 2000)
-                                            .attr("y", window.innerHeight * 0.5 - 100 + "px")
-                                            .attr("x", window.innerWidth * 0.5 - 100 + "px")
+                                    
+                                    
+                                    //Sendet alle veränderten Zellen an Datenbank
+                                      var spinner = container.append("svg:foreignObject") //laden Animation
+                                            .attr("width", 20)
+                                            .attr("height", 20)
+                                            .attr("y", height * 0.5+ "px")
+                                            .attr("x", lWidth * 0.5+ "px");
                                         spinner.append("xhtml:span").style("fill", "purple")
                                             .attr("class", "fa fa-spinner fa-pulse fa-5x");
+                                    
                                         setTimeout(function() {
-                                            d3.xml("http://10.200.1.75:8012/bn/probability?name=" + id + "&id=" + json.nodes[getIndexByName(json, name)].properties.id + "&probability=" + parseFloat(body.childNodes[l.line].childNodes[l.cell].childNodes[0].value) + "&influenced-state=" + body.parentNode.firstChild.firstChild.childNodes[l.cell].innerHTML + "&condition-states=" + conditionStates, function(error, empty) {
+                                            //alert("http://10.200.1.75:8012/bn/probability?name=" + id + "&id=" + json.nodes[getIndexByName(json, name)].properties.id + "&probability=" + probabilities + "&influenced-state=" + influencedStates + "&condition-states=" + conditionStates);
+                                            d3.xml("http://52.59.228.237:8012/bn/probability?name=" + id + "&id=" + json.nodes[getIndexByName(json, name)].properties.id + "&probability=" + probabilities + "&influenced-state=" + influencedStates + "&condition-states=" + conditionStates, function(error, empty) {
                                                 if (error) throw error;
-                                                spinner.remove;
+                                                if(empty == null) spinner.remove();
                                             })
-                                        }, 100);*/
-                                    }
+                                        }, 100);
+                                    //}
+                                    //changed.remove(l);
                                 })
                             }
                         });
@@ -833,9 +857,29 @@ function bayesNet(id) {
                             return "solid " + contentColor;
                         }
                     })
-
-                    // entnommen aus https://datatables.net/examples/api/multi_filter.html
+                    
+                    var inputColumns = [];
+                    for(var i = parentSize+1; i < columns.length-1; i++) {
+                        inputColumns.push(i);
+                    }
+                    
+                    // entnommen von https://datatables.net/examples/api/multi_filter.html
                     $(document).ready(function() {
+
+                        // DataTable
+                        var table = $('#table').DataTable(
+                            {
+                            "columnDefs": [
+                                {
+                                    "targets": inputColumns,
+                                    "orderDataType": "dom-text"
+                                 }
+                            ]
+                            }
+                        );
+
+
+                        
                         // Setup - add a text input to each footer cell
                         $('#table tfoot th').slice(0, parentSize + 1).each(function(d, no) {
 
@@ -843,10 +887,8 @@ function bayesNet(id) {
                             $(this).html('<input type="text" placeholder="Search ' + title + " states" + '" />');
 
                         });
-
-                        // DataTable
-                        var table = $('#table').DataTable();
-
+                        
+                        
                         // Apply the search
                         table.columns().every(function() {
                             var that = this;
@@ -860,22 +902,41 @@ function bayesNet(id) {
                             });
                         });
                     });
+                    
+                    
+                    /**
+                     * Read information from a column of input (type text) elements and return an
+                     * array to use as a basis for sorting.
+                     *
+                     *  @summary Sorting based on the values of `dt-tag input` elements in a column.
+                     *  @name Input element data source
+                     *  @requires DataTables 1.10+
+                     *  @author [Allan Jardine](http://sprymedia.co.uk)
+                     */
 
-                    var yPos = document.getElementById("table-div").offsetHeight
+                    $.fn.dataTable.ext.order['dom-text'] = function  ( settings, col )
+                    {
+                        return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+                            return $('input', td).val();
+                        } );
+                    };
+                    
+                    
+                    var yPos = document.getElementById("table-div").offsetHeight;
 
                     //Children and ParentNodes
-                    var adjacents = d3.select(document.getElementById("table-div")).append("g")
+                    var adjacents = d3.select(document.getElementById("table-div")).append("g");
 
-                    var ks = getChildNodes(json, nodeIndex)
+                    var ks = getChildNodes(json, nodeIndex);
                     var kinderBox = 0;
                     if (ks.length > 0) {
-                        var kinderText = json.nodes[ks[0]].name
+                        var kinderText = json.nodes[ks[0]].name;
                         ks.forEach(function(d, i) {
                             if (i == 0) {} else {
-                                kinderText += ", " + json.nodes[ks[i]].name
+                                kinderText += ", " + json.nodes[ks[i]].name;
                             }
                         })
-                        var kinderdiv = adjacents.append("div").style("margin", "7em 1em 1em")
+                        var kinderdiv = adjacents.append("div").style("margin", "7em 1em 1em");
 
 
                         kinderdiv.append("div")
@@ -938,24 +999,27 @@ function bayesNet(id) {
                         }
 
                         if (lineSum != 1) {
-                            //falsche Summe in rot geschrieben
-                            d3.select(body.childNodes[p].lastChild).style("color", "red").text(Math.round(lineSum * 100) / 100);
+                            //falsche Summe in rot geschrieben (nicht gerundet)
+                            d3.select(body.childNodes[p].lastChild).style("color", "red").text(lineSum);//Math.round(lineSum * 100) / 100);
                         } else {
                             //richtig in lila
-                            d3.select(body.childNodes[p].lastChild).style("color", "purple").text(Math.round(lineSum * 100) / 100);
+                            d3.select(body.childNodes[p].lastChild).style("color", "purple").text(lineSum);
                             //überprüft welche Zellen verändert wurden und gibt sie zurück 
                             for (var c = 0; c < body.childNodes[p].childNodes.length; c++) {
                                 if (body.childNodes[p].childNodes[c].childNodes[0].value != undefined) {
                                     if (body.childNodes[p].childNodes[c].childNodes[0].value != body.childNodes[p].childNodes[c].childNodes[0].getAttribute("value")) {
                                         changed.push({
-                                            "line": p,
-                                            "cell": c
-                                        })
+                                            "line": p//,
+                                            //"cell": c
+                                        });
+                                        break;
                                     }
                                 }
+                                
                             }
                         }
                     }
+                    //changed lines
                     return changed;
                 }
 
@@ -1058,15 +1122,15 @@ function bayesNet(id) {
                     setTimeout(function() {
                         if (obs) {
                             var spinner = leftContainer.append("svg:foreignObject") //laden Animation
-                                .attr("width", 2000)
-                                .attr("height", 2000)
-                                .attr("y", lWidth * 0.5 + "px")
+                                .attr("width", 20)
+                                .attr("height", 20)
+                                .attr("y", height * 0.5 + "px")
                                 .attr("x", lWidth * 0.5 + "px")
                             spinner.append("xhtml:span")
                                 .attr("class", "fa fa-spinner fa-pulse fa-5x");
 
                             setTimeout(function() {
-                                d3.json("http://10.200.1.75:8012/bn/edit/vertex/" + dbID + "?name=" + id + "&observation=" + stateName, function(error, newInf) {
+                                d3.json("http://52.59.228.237:8012/bn/edit/vertex/" + dbID + "?name=" + id + "&observation=" + stateName, function(error, newInf) {
                                     if (error) throw error;
                                     spinner.remove();
                                     node.selectAll(".inf").remove();
@@ -1078,7 +1142,7 @@ function bayesNet(id) {
 
                     setTimeout(function() {
                         //aktualisiere PieCharts 
-                        d3.json("http://10.200.1.75:8012/bn/inference?name=" + id, function(error, inf) {
+                        d3.json("http://52.59.228.237:8012/bn/inference?name=" + id, function(error, inf) {
                             inf.nodes.forEach(function(d, i, a) {
 
                                 var w = 60;
